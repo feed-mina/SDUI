@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  monospace;
+}
+
+
+/* 페이지 전체를 화면 정중앙에 배치 */
+.page-wrap.LOGIN_PAGE {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  min-height: 100vh; /* 화면 꽉 차게 */
+  background-color: #f9f9f9; /* 배경색 살짝 추가 */height: 100vh;
+  overflow: hidden; /* 넘치는 부분 숨김 */
+}
+
+/* 입력창들을 감싸는 컨테이너 간격 조절 */
+.field-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column; /* 기본은 세로 */
+  align-items: flex-start;
+}
+/* 입력창 자체 디자인 (선택 사항) */
+.field-container input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+}
+/* 이메일 관련 컴포넌트들을 가로로 묶기 위한 설정 */
+/* screen_id가 LOGIN_PAGE이고 component_id가 특정 범위일 때 적용 */
+.LOGIN_PAGE .engine-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+/* index.css */
+.page-wrap.LOGIN_PAGE {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* 스크롤 제거 */
+  background-color: #f8f9fa;
+}
+
+.engine-container {
+  width: 100%;
+  max-width: 400px; /* 로그인 폼의 최대 너비 제한 */
+  padding: 20px;
+}
+
+/* PC 버전: 가로 배치 */
+.email-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+/* index.css 또는 관련 CSS 파일 */
+.page-wrap.MAIN_PAGE {
+  display: flex;
+  flex-direction: column; /* 가로(row)에서 세로(column)로 변경 */
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* 모바일 버전: 세로 배치 */
+@media (max-width: 768px) {
+  .email-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .at-symbol {
+    display: none; /* 모바일에서는 골뱅이 숨김 가능 */
+  }
+}
+
