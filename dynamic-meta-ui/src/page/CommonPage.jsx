@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
-import axios from "../api/axios";
+import axios from "../../../metadata-project/api/axios";
 import { useParams } from "react-router-dom";
-import DynamicEngine from "../components/DynamicEngine";
+import DynamicEngine from "../../../metadata-project/components/DynamicEngine";
 function CommonPage() {
     const { screenId } = useParams();
     const [metadata, setMetadata] = useState([]); // 화면 설계떠

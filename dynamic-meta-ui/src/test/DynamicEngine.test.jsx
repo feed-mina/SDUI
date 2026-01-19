@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import DynamicEngine from '../components/DynamicEngine';
+import DynamicEngine from '../../../metadata-project/components/DynamicEngine';
 
 test('필수 입력값이 없으면 경고 메시지가 출력되는지 테스트', () => {
     const mockData = [{
