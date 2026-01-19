@@ -1,0 +1,2822 @@
+html, body { margin: 0; padding: 0; width: 100%; min-height: 100vh; }
+
+/* 포모도로 모드 배경 설정 */ .pomo-mode { width: 100vw; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
+
+/*header, footer { width: 100%; }*/
+
+/*footer { margin-top: auto; }*/
+
+/*a, .green { text-decoration: none; color: hsla(160, 100%, 37%, 1); transition: 0.4s; padding: 0.1875rem; }*/
+
+/*button { padding: 0.625rem 0.9375rem; border-radius: 1em; background: #eee7db; color: black; cursor: pointer; font-size: 1rem; transition: 0.3s; border: none; }*/
+
+/*button:hover { transform: scale(1.05); }*/
+
+/*button.active, button.active-button { color: #fff; background: #A5778F; }*/
+
+/*input, textarea, select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd; box-sizing: border-box; }*/
+
+/* 네비게이션 공통 스타일 */ .nav-wrap { flex-shrink: 0; background-color: beige; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; padding: 2rem; }
+
+.signup-nav, .nonuser-nav, .diary-nav1, .diary-nav2, .diary-nav3, .diary-nav4, .login-nav { width: 7rem; height: 2.5rem; font-size: 1rem; font-weight: bold; color: white; border-radius: 5px; transition: all 0.3s; }
+
+.signup-nav { background: #A5778F; } .nonuser-nav { background: #604e2e; } .diary-nav1 { background: linear-gradient(145deg, #89e73e, #73c234); } .diary-nav2 { background: linear-gradient(145deg, #fe676f, #d5565e); } .diary-nav3 { background: linear-gradient(145deg, #c841f7, #a837d0); } .diary-nav4 { background: linear-gradient(145deg, #5897f7, #4a7fd0); } .login-nav { background: #7E8C79; }
+
+/* 공통 버튼 스타일 (포모도로, 스톱워치 등) */ .stopwatchButton, .pomobutton, .kakaosendbutton, .toggleMode, .login_form_button { background-color: #FDBFBC; border-radius: 10px; padding: 10px 20px; margin: 5px; font-weight: 600; transition: all 0.3s ease; }
+
+.stopwatchButton:hover, .pomobutton:hover { background-color: #F8BBD0; }
+
+/* 다크모드 스타일 */ .dark body { background-color: #1a202c; color: white; }
+
+.dark .container { background-color: rgba(30, 30, 30, 0.8); backdrop-filter: blur(5px); }
+
+.dark .stopwatchButton, .dark .pomobutton, .dark .toggleMode { background-color: #333; color: #fff; }
+
+/* 반응형 모바일 (767px 이하) */ @media (max-width: 767px) { .nav-wrap { width: 100%; flex-direction: row; justify-content: space-around; padding: 0.5rem; position: fixed; bottom: 0; z-index: 1000; }
+
+
+    .nonuser-nav, .diary-nav1, .diary-nav2, .diary-nav3, .diary-nav4, .login-nav {
+        width: auto;
+        font-size: 0.75rem;
+        padding: 0.5rem;
+    }
+
+    .mainView {
+        height: 100vh;
+        justify-content: space-evenly;
+    }
+}
+
+/* 반응형 데스크탑 (1024px 이상) */ @media (min-width: 1024px) { .page-wrap { display: flex; flex-direction: row; width: 100%; }
+
+    .nav-wrap {
+        width: 10rem;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .content-wrap {
+        flex: 1;
+        padding: 2rem;
+    }
+}
+
+/* 스와이퍼(TimeSelect) 스타일 */ .time-slide { width: 80px !important; height: 40px; display: flex; justify-content: center; align-items: center; background-color: #f5d77b; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+
+.time-slide.selected { background-color: #ffa07a; } .time-slide.is-sleep { background-color: #cbb2ff !important; color: white; } .time-slide.wake { background-color: #f5d36c !important; }
+
+html, body, #app {
+    margin: 0;
+    padding: 0;
+}
+
+.pomo-mode html,
+.pomo-mode body,
+.pomo-mode .v-application {
+    width: 100vw;
+    min-height: 100vh; /* height → min-height 로 변경 */
+    overflow-y: auto;  /* y축 스크롤 허용 */
+    overflow-x: hidden; /* 좌우는 숨기고 */
+}
+
+
+
+/*header {*/
+/*    width: 100%;*/
+/*}*/
+
+/*footer {*/
+/*    width: 100%;*/
+/*    margin-top: auto;*/
+
+/*}*/
+/*a, .green {*/
+/*    text-decoration: none;*/
+/*    color: hsla(160, 100%, 37%, 1);*/
+/*    transition: 0.4s;*/
+/*    padding: 0.1875rem;*/
+/*}*/
+/*button {*/
+/*    padding: 0.625rem 0.9375rem;*/
+/*    border-radius: 1em;*/
+/*    background: #eee7db;*/
+/*    color: black;*/
+/*    cursor: pointer;*/
+/*    font-size: 1rem;*/
+/*    transition: 0.3s;*/
+/*}*/
+
+
+/*button.active {*/
+/*    color: #fff;*/
+/*    background: #A5778F;*/
+/*}*/
+
+
+/*input, textarea, select {*/
+/*    width: 100%;*/
+/*    padding: 8px;*/
+/*    border-radius: 5px;*/
+/*    border: 1px solid #ddd;*/
+/*}*/
+
+.kakaoLoginSection{
+    display: flex;
+    justify-content: center;
+}
+/* ========== 네비게이션 스타일 ========== */
+.nav-wrap {
+    flex-shrink: 0;
+    height: 100%;
+    background-color: beige;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 2rem;
+}
+.signup-button-wrap {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+}
+.signup-nav, .nonuser-nav, .diary-nav1, .diary-nav2, .diary-nav3, .diary-nav4, .login-nav {
+    width: 7rem;
+    height: 2.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.signup-nav { background: #A5778F; }
+.nonuser-nav { background: #604e2e; }
+.diary-nav1 { background: linear-gradient(145deg, #89e73e, #73c234); }
+.diary-nav2 { background: linear-gradient(145deg, #fe676f, #d5565e); }
+.diary-nav3 { background: linear-gradient(145deg, #c841f7, #a837d0); }
+.diary-nav4 { background: linear-gradient(145deg, #5897f7, #4a7fd0); }
+.login-nav { background: #7E8C79; }
+button:hover {
+    transform: scale(1.05);
+}
+.post-it-nav1,
+.post-it-nav2 {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem; /* 버튼 간격 */
+}
+
+@media (max-width: 767px) {
+    .login_form_button_div{
+        display: flex;
+        justify-content: center;
+    }
+    .stopwatchButton,
+    .pomobutton,
+    .kakaosendbutton,
+    .toggleMode,
+    .login_form_button {
+
+        background-color: #FDBFBC;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .kakaoLoginImg{
+        width:11rem;
+        height:3rem;
+    }
+
+    .tutorial {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tutorial_noDalle {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .tutorial_noDalle .section01 input,
+    .tutorial_noDalle .section2 input,
+    .tutorial_noDalle .section3 select,
+    .tutorial_noDalle .section5 select {
+        width: 100% !important;
+        font-size: 1rem;
+    }
+
+    .tutorial_noDalle .section4 textarea {
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .tutorialTitle {
+        font-size: 1.5rem;
+    }
+
+    .nav-wrap {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        /*justify-content: center;*/
+        /*padding: 1rem;*/
+        /*position: static;*/
+        /*box-shadow: none;*/
+        /*background-color: #fefefe;*/
+        /*position: fixed;*/
+        /*bottom: 0;*/
+        /*left: 0;*/
+        background-color: beige;
+        flex-direction: row;  /* 버튼들 가로 배치 */
+        justify-content: space-around;
+        padding: 0.5rem 1rem;
+        z-index: 1000;
+    }
+
+
+    .post-it-nav1,
+    .post-it-nav2 {
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: center;
+    }
+    .signup-button-wrap {
+        /*position: static;*/
+        margin: 0 auto;
+    }
+
+    .nonuser-nav,  .diary-nav1, .diary-nav2, .diary-nav3, .diary-nav4, .login-nav {
+        width: auto;
+        font-size: 0.75rem;
+        padding: 0.5rem;
+    }
+    .signUp_form {
+        width: 95%;
+        padding: 1rem;
+    }
+
+    .signUp_form-input,
+    .signup_form_button,
+    .verification_form_button {
+        font-size: 1rem;
+        padding: 0.6rem;
+    }
+
+    .signup_form_button:hover,
+    .verification_form_button:hover {
+        font-size: 1rem;
+        padding: 0.6rem;
+        color:#fff3e0;
+    }
+
+    .signUp-label {
+        font-size: 0.9rem;
+    }
+
+    .phone-input {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .code-box {
+        width: 100%;
+        font-size: 1.5rem;
+        height: 3rem;
+    }
+
+    /* 로그인 */
+    .login_form {
+        width: 90%;
+    }
+
+
+
+    /* 일기 리스트 */
+    .diaryListSection {
+        grid-template-columns: 1fr;
+    }
+    .memberOutPage {
+        padding: 1rem;
+    }
+
+    .memberOut_form {
+        width: 95%;
+        padding: 1.5rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .editButton {
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .editButton:hover {
+        font-size: 0.9rem;
+        color : #fff;
+    }
+    .editPage {
+        padding: 2rem;
+    }
+
+    .edit_form {
+        padding: 2rem;
+    }
+
+    .edit_form-input {
+        font-size: 1rem;
+    }
+
+    .edit_form_button {
+        font-size: 1rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .confirmHeader {
+        height: 4rem;
+        font-size: 1.5rem;
+        padding: 0 1rem;
+    }
+
+    .confirmTitle {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .layoutContainer {
+        padding: 2rem 1rem;
+    }
+
+    .checkId input,
+    .password_field input {
+        height: 3.5rem;
+        font-size: 1.2rem;
+        padding: 0 1rem;
+    }
+
+    .inputInnerWrap {
+        right: 0.8rem;
+    }
+
+    .password_field_button {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    .home-bubble {
+        height: 10rem;
+        margin-top: 2rem;
+        align-items: center;
+        width: 15rem;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: bold;
+        border-radius: 2rem;
+
+    }
+
+    .diaryhome{
+        padding-top: 2rem;
+    }
+    .diaryImg{
+        border-radius: 3rem;
+    }
+
+    .diarywrite-button,
+    .diarycommon-button {
+        width: 100%;         /* 너비 채우기 */
+        margin: 0.5rem 0;     /* 위아래 여백 */
+        display: block;
+    }
+
+    .signup-button-wrap {
+        margin-right: -1rem;
+        margin-top: 4rem;
+    }
+    .signup-nav{
+        width: auto;
+        font-size: 0.75rem;
+    }
+
+    .main-content {
+        padding-bottom: 5rem; /* 아래 네비 높이만큼 확보 */
+    }
+
+
+    .write_section1{
+        display:flex;
+        margin-bottom: 2rem;
+    }
+    #datepickerInput {
+        width: 100%;
+        min-height: 40px;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    .write_button_section {
+        margin-bottom: 15px;
+    }
+
+
+    /*pomo view*/
+    .mainView {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+    }
+    .background-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        min-height: 100vh;
+        object-fit: cover;
+    }
+    .pomoLogoutButton{
+        /*z-index:9;*/
+    }
+    .tomatoEmogi{
+        width: 100px;
+        height: 100px;
+    }
+    .container {
+        text-align: center;
+    }
+    .currentTime{
+        padding-top: 1rem;
+        text-align: center;
+        font-weight: 800;
+        font-style: italic;
+        font-size: 1.5em;
+    }
+    .currentTimetext{
+        font-size: 1.5em;
+        font-weight: 600;
+        padding: 0.7rem;
+    }
+    .dark button {
+        background-color: #333;
+        color: white;
+    }
+    .dark .formattedTime{
+        font-weight: 600;
+        font-style: italic;
+    }
+    .pomodoro {
+        text-align: center;
+    }
+    .stopwatch {
+        text-align: center;
+    }
+    .login_form_button_div{
+        display: flex;
+        justify-content: center;
+    }
+    .stopwatchButton,
+    .pomobutton,
+    .kakaosendbutton,
+    .toggleMode,
+    .login_form_button {
+        background-color: #FDBFBC;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .stopwatchButton:hover,
+    .pomobutton:hover{
+        background-color: #F8BBD0;
+        transform: scale(1.05);
+    }
+    .dark .toggleMode{
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        transform: scale(1.05);
+        font-weight: 600;
+        font-style: italic;
+        font-size: 1.5em;
+        margin-top: 2rem;
+        padding: 0.7rem;
+    }
+    /* 다크모드일 때 */
+    .dark body {
+        background-color: #1a202c;
+        color: white;
+    }
+    .dark .app {
+        background-color: rgba(0, 0, 0, 0.5); /* 어둡게 덧씌우기 */
+        backdrop-filter: blur(5px); /* 흐림 효과 */
+    }
+    .dark .mainView {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+        animation: fadeIn 2s ease-in-out;
+        font-family: 'Noto Sans KR', sans-serif;
+        color: #f5f5f5;
+    }
+    .background-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        min-height: 100vh;
+        object-fit: cover;
+    }
+    .pomoLogoutButton{
+        /*z-index:9;*/
+    }
+
+    .tomatoEmogi{
+        width: 100px;
+        height: 100px;
+    }
+    /*backdrop-filter: blur(5px);  흐림 효과 */
+    /*filter: brightness(0.7) contrast(1.2);  */
+    /*mix-blend-mode: darken;*/
+    .dark .container {
+        background-color: rgba(30, 30, 30, 0.8);/* 어둡게 덧씌우기 */
+        backdrop-filter: blur(5px); /* 흐림 효과 */
+        text-align: center;
+        /* padding: 100px 20px; */
+    }
+    .dark .formattedTime{
+        font-weight: 600;
+        font-style: italic;
+    }
+    .dark .currentTimetext{
+        background-color: #FADADD;
+        transition: all 0.3s ease;
+        font-size: 1.5em;
+        font-weight: 600;
+        color: #555;
+        font-style: italic;
+        padding: 0.7rem;
+        transform: scale(1.05);
+    }
+    .dark .stopwatchButton:hover,
+    .dark .pomobutton:hover {
+        background-color: #F8BBD0;
+        transform: scale(1.05);
+    }
+    .dark .stopwatchButton,
+    .dark .pomobutton{
+        background-color: #333;
+        color: #fff;
+        border-radius: 50px;
+        padding: 10px 16px;
+    }
+    .dark .timer h2 {
+        font-size: 48px;
+        color: #f5f5f5;
+    }
+    .dark .notification {
+        background-color: #333;
+        color: #fff;
+        border-radius: 50px;
+        padding: 10px 16px;
+    }
+
+    .stopwatch,
+    .formattedTime,
+    .stopwatchButton,
+    .currentTime,
+    .pomodoro,
+    .pomobutton,
+    .kakaosendbutton,
+    .pomobutton_section,
+    .pomobutton{
+        z-index:4;
+    }
+
+    /*   .time-slide {
+           min-width: 70px;
+        width: 60px !important;
+        font-size: 14px;
+        padding: 10px;
+    }*/
+
+    .time-select-swiper {
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .mySwiper {
+        width: 100%;
+        padding-bottom: 1rem;
+    }
+
+    .time-slide {
+        width: 70px !important;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #ffe08c;
+        border-radius: 12px;
+        margin: 4px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        color: #4a4a4a;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+
+    .time-slide.disabled {
+        background-color: #d3d3d3;
+        color: #888;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .time-slide.selected {
+        background-color: #a689f7;
+        color: white;
+        box-shadow: 0 3px 7px rgba(166,137,247, 0.5);
+        transform: scale(1.05);
+    }
+
+    .time-slide:hover:not(.disabled):not(.selected) {
+        background-color: #ffd25c;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        transform: scale(1.03);
+    }
+
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+
+    .kakaoLoginImg{
+        width:12rem;
+        height:3rem;
+    }
+
+    .tutorial {
+        padding: 2rem;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tutorial_noDalle {
+        width: 90%;
+    }
+
+    .tutorial_noDalle .section4 textarea,
+    .tutorial_noDalle .section3 select {
+        width: 100%;
+    }
+
+    .tutorialTitle {
+        font-size: 1.8rem;
+    }
+    .nav-wrap {
+        width: 10rem; /* 기본보다 줄이기 */
+        padding: 8px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .signup-nav, .nonuser-nav, .diary-nav1, .diary-nav2, .diary-nav3, .diary-nav4, .login-nav {
+        width: 100%;
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+
+    .content-wrap {
+        flex: 1;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .tutorial {
+        flex-direction: column;
+    }
+
+    .signUp_form {
+        width: 80%;
+        padding: 2rem;
+    }
+
+    .signUp_form-input {
+        font-size: 1rem;
+    }
+
+    .signUp-label {
+        font-size: 1rem;
+    }
+
+    .signup_form_button {
+        font-size: 1rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .diaryListSection {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(23rem, 1fr));
+        gap: 10px;
+        width: 100%;
+        max-width: 30rem;
+    }
+
+    /* 인증 페이지 */
+    .code-box {
+        width: 2.5rem;
+        height: 3rem;
+        font-size: 1.8rem;
+    }
+
+    /* 로그인 */
+    .login_form {
+        width: 80%;
+        padding: 2rem;
+    }
+
+    .kakao-button {
+        font-size: 18px;
+        padding: 16px 36px;
+    }
+    .memberOutPage {
+        padding: 2rem;
+    }
+
+    .memberOut_form {
+        width: 90%;
+        padding: 2rem;
+    }
+
+    .button-group {
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    .editButton {
+        font-size: 1rem;
+        padding: 0.8rem 1.2rem;
+    }
+
+    .editButton:hover {
+        font-size: 1rem;
+        padding: 0.8rem 1.2rem;
+        color : #fff;
+    }
+    .editPage {
+        padding: 4rem;
+    }
+
+    .edit_form {
+        padding: 3rem;
+    }
+
+    .edit_form-input {
+        font-size: 1rem;
+    }
+
+    .edit_form_button {
+        font-size: 1rem;
+        padding: 0.8rem 1.2rem;
+    }
+
+    .confirmHeader {
+        height: 4.5rem;
+        font-size: 1rem;
+    }
+
+    .confirmTitle {
+        font-size: 2rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .layoutContainer {
+        padding: 3rem 2rem;
+    }
+
+    .checkId input,
+    .password_field input {
+        height: 4rem;
+        font-size: 1.4rem;
+        padding-left: 1.2rem;
+        padding-right: 1.2rem;
+    }
+
+    .password_field_button {
+        width: 1.8rem;
+        height: 1.8rem;
+    }
+
+    .page-wrap {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        /*align-content: center;*/
+        align-items: center;
+        box-sizing: border-box;
+        width: 100%;
+
+    }
+
+    .write_section1{
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    #datepickerInput {
+        width: 100%;
+        min-height: 40px;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    .write_button_section {
+        margin-bottom: 15px;
+    }
+
+    /*pomo View*/
+    .mainView {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+        font-family: 'Noto Sans KR', sans-serif;
+    }
+    .background-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        min-height: 100vh;
+        object-fit: cover;
+    }
+
+    .pomoLogoutButton{
+        /*z-index:9;*/
+    }
+    .tomatoEmogi{
+        width: 100px;
+        height: 100px;
+    }
+
+    .mainView > *:not(.background-image) {
+        position: relative;
+        z-index: 1;
+    }
+    .container {
+        text-align: center;
+    }
+
+
+    .currentTime{
+        padding-top: 1rem;
+        text-align: center;
+        font-weight: 800;
+        font-style: italic;
+        font-size: 1.5em;
+    }
+    .currentTimetext{
+        font-size: 1.5em;
+        font-weight: 600;
+        padding: 0.7rem;
+    }
+    .dark button {
+        background-color: #333;
+        color: white;
+    }
+    .dark .formattedTime{
+        font-weight: 600;
+        font-style: italic;
+    }
+    .pomodoro {
+        text-align: center;
+    }
+    .stopwatch {
+        text-align: center;
+    }
+    .stopwatchButton,
+    .pomobutton,
+    .kakaosendbutton,
+    .toggleMode,
+    .login_form_button {
+        width: 12rem;
+        background-color: #FDBFBC;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .stopwatchButton:hover,
+    .pomobutton:hover {
+        width: 12rem;
+        background-color: #F8BBD0;
+        transform: scale(1.05);
+    }
+    .dark .toggleMode{
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        transform: scale(1.05);
+        font-weight: 600;
+        font-style: italic;
+        font-size: 1.5em;
+        margin-top: 2rem;
+        padding: 0.7rem;
+    }
+    /* 다크모드일 때 */
+    .dark body {
+        background-color: #1a202c;
+        color: white;
+    }
+    .dark .app {
+        background-color: rgba(0, 0, 0, 0.5); /* 어둡게 덧씌우기 */
+        backdrop-filter: blur(5px); /* 흐림 효과 */
+    }
+    .dark .mainView {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+        animation: fadeIn 2s ease-in-out;
+        font-family: 'Noto Sans KR', sans-serif;
+        color: #f5f5f5;
+    }
+
+    /*backdrop-filter: blur(5px);  흐림 효과 */
+    /*filter: brightness(0.7) contrast(1.2);  */
+    /*mix-blend-mode: darken;*/
+    .dark .container {
+        background-color: rgba(30, 30, 30, 0.8);/* 어둡게 덧씌우기 */
+        backdrop-filter: blur(5px); /* 흐림 효과 */
+        text-align: center;
+        /* padding: 100px 20px; */
+    }
+    .dark .formattedTime{
+        font-weight: 600;
+        font-style: italic;
+    }
+    .dark .currentTimetext{
+        background-color: #FADADD;
+        transition: all 0.3s ease;
+        font-size: 1.5em;
+        font-weight: 600;
+        color: #555;
+        font-style: italic;
+        padding: 0.7rem;
+        transform: scale(1.05);
+    }
+    .dark .stopwatchButton:hover,
+    .dark .pomobutton:hover {
+        width: 12rem;
+        background-color: #F8BBD0;
+        transform: scale(1.05);
+    }
+    .dark .stopwatchButton,
+    .dark .pomobutton{
+        width: 12rem;
+        background-color: #333;
+        color: #fff;
+        border-radius: 50px;
+        padding: 10px 16px;
+    }
+    .dark .timer h2 {
+        font-size: 48px;
+        color: #f5f5f5;
+    }
+    .dark .notification {
+        background-color: #333;
+        color: #fff;
+        border-radius: 50px;
+        padding: 10px 16px;
+    }
+
+    .stopwatch,
+    .formattedTime,
+    .stopwatchButton,
+    .currentTime,
+    .pomodoro,
+    .pomobutton,
+    .kakaosendbutton,
+    .pomobutton_section,
+    .pomobutton{
+        z-index:4;
+    }
+    .time-select-swiper {
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .mySwiper {
+        width: 100%;
+        padding-bottom: 1rem;
+    }
+
+    .time-slide {
+        width: 70px !important;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #ffe08c;
+        border-radius: 12px;
+        margin: 4px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        color: #4a4a4a;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+
+    .time-slide.disabled {
+        background-color: #d3d3d3;
+        color: #888;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .time-slide.selected {
+        background-color: #a689f7;
+        color: white;
+        box-shadow: 0 3px 7px rgba(166,137,247, 0.5);
+        transform: scale(1.05);
+    }
+
+    .time-slide:hover:not(.disabled):not(.selected) {
+        background-color: #ffd25c;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        transform: scale(1.03);
+    }
+
+
+
+}
+/* ========== SignupPage 컴포넌트 스타일 ========== */
+
+@media (min-width: 1024px) {
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+    }
+
+    #app {
+        display: grid;
+        /*grid-template-columns: 1fr 1fr;*/
+        padding: 3rem;
+        max-width: 1280px;
+        height: 100%;
+
+    }
+
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-right: 1rem;
+    }
+
+    header .wrapper {
+        display: flex;
+        place-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .logo {
+        margin: 0 2rem 0 0;
+    }
+
+    .nav-wrap {
+        width: 10rem;  /* 기본보다 줄이기 */
+        padding: 8px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+    .page-wrap {
+        display: flex;
+        flex-direction: row;
+        align-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        width: 100%;
+
+    }
+    .main-wrap {
+        display: flex;
+        flex-direction: column; /* 구성 요소들을 세로로 쌓음 */
+        align-items: center;    /* 가로축 기준 중앙 정렬 */
+        justify-content: center;
+        width: 100%;
+        text-align: center;
+    }
+    .content-wrap {
+        flex: 1;
+        height: 100%; /* 부모 컨테이너의 높이를 100% 채움 */
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .DiaryNav {
+        width: 16rem; /* 네비게이션의 너비 */
+        height: 100%;
+        background-color: #f4f4f4; /* 배경색 */
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+    }
+
+    .text-decoration-line-through {
+        text-decoration: line-through;
+    }
+
+
+    .diaryListSection {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(23rem, 1fr));
+        gap: 10px;
+        width: 100%;
+        max-width: 30rem;
+    }
+
+    .login_form {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+
+    .kakao-button {
+        padding-bottom: 10rem;
+        width: 100%;
+        /*background-color: #fee500;*/
+        /*color: #3c1e1e;*/
+        border: none;
+        border-radius: 12px;
+        /*padding: 18px 2.5rem;*/
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        margin-bottom: 3rem;
+        transition: all 0.3s ease;
+    }
+
+
+    .login_form_button_div{
+        display: flex;
+        justify-content: center;
+    }
+
+    .login_form_button {
+        width: 22rem;
+        background-color: #FDBFBC;
+        border: none;
+        border-radius: 10px;
+        padding: 1.5rem;
+        font-size: 2em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .stopwatchButton,
+    .pomobutton,
+    .kakaosendbutton,
+    .toggleMode  {
+        width: 30rem;
+        background-color: #FDBFBC;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .write_section1{
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    #datepickerInput {
+        width: 100%;
+        min-height: 40px;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    .write_button_section {
+        margin-bottom: 15px;
+    }
+
+
+    .stopwatch,
+    .formattedTime,
+    .stopwatchButton,
+    .currentTime,
+    .pomodoro,
+    .pomobutton,
+    .kakaosendbutton,
+    .pomobutton_section,
+    .pomobutton{
+        z-index:4;
+    }
+}
+
+.phone-input {
+    width: 80px; /* 각 입력 필드 너비 */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.phone-input:focus {
+    border: 1px solid #4a90e2;
+    outline: none;
+}
+
+.temp {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* 화면 전체 높이를 채움 */
+    background-color: #f8f9fa; /* 배경색 */
+}
+
+.signUp-session {
+    display: flex;
+    flex-direction: column; /* 수직 정렬 */
+    margin-bottom: 1.5rem; /* 필드 간 여백 */
+}
+
+.signUp-label {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.signUp_form {
+    width: 90%; /* 화면 크기 따라 자동 조정 */
+    max-width: 30rem; /* 최대 너비 설정 */
+    padding: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    margin: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.signUp_form-input {
+    width: 100%; /* 필드 너비가 컨테이너에 맞춰짐 */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.signUp_form-input:focus {
+    border: 1px solid #4a90e2;
+    outline: none;
+}
+
+.signup_form_button {
+    width: 100%; /* 버튼이 컨테이너에 맞춰짐 */
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.signup_form_button:hover {
+    background-color: #357abd;
+}
+.verification_form_button {
+    width: 100%; /* 버튼이 컨테이너에 맞춰짐 */
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.verification_form_button:hover {
+    background-color: #357abd;
+    color:#fff;
+}
+
+.signUp_form-oo {
+    font-size: 1em;
+    color: red;
+    margin-top: 0.5rem;
+}
+
+/* ========== Tutorial 스타일 ========== */
+
+.titleSc {
+    padding-top: 2rem;
+}
+
+.tutorial {
+    display: flex;
+    justify-content: center;
+    /* height: 100vh;  화면 전체 높이를 채움 */
+    background-color: #f8f9fa; /* 배경색 */
+    padding: 10px;
+}
+
+.tutorial_content {
+    height: 100%;
+    width: 100%; /* 모바일에서는 전체 너비 사용 */
+    padding: 1rem;
+    display: flex;
+    flex-direction: column; /* 수직 정렬 */
+    align-items: center; /* 수평 중앙 정렬 */
+}
+
+.diaryView {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.diaryView_content {
+    max-width: 600px;
+    width: 100%;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.diaryViewTitle {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.diaryView_noDalle p {
+    font-size: 16px;
+    color: #555;
+    margin: 10px 0;
+}
+
+.diaryView_noDalle p strong {
+    font-weight: bold;
+    color: #333;
+}
+
+.diaryView_noDalle .content {
+    padding: 15px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+.diaryView_container {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animated-fadeIn {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.diaryTuto {
+    padding-left: 1rem;
+    width: 90%; /* 화면 크기 따라 자동 조정 */
+    display: flex;
+    flex-direction: column; /* 수직 정렬 */
+    justify-content: center;
+    /* overflow-y: auto; 스크롤 가능 */
+    font-size: 1em;
+}
+
+.diaryTuto input,
+textarea {
+    margin-bottom: 0.5rem;
+    border-radius: 0.3125em;
+    background: #eee7db;
+    border: 0 solid black;
+    font-size: 1em;
+}
+
+.tutorialHighlight{
+    width: 100%;
+    max-height: 150px; /* 적당한 높이로 제한 */
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+}
+.tutorialImg{
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    z-index: 1; /* 기본값 */
+}
+.tutorial_container {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.tutorialTitle {
+    font-size: 2rem;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: inset 0 -23px 0 #e89b3d;
+    display: inline;
+}
+
+.tutorial_container form {
+    width: 100%;
+    height: 100%;
+}
+
+.tutorial_noDalle {
+    width: 90%;
+    height: 100%;
+    margin: 0em;
+    float: left;
+}
+
+
+.tutorial_container input:focus {
+    outline: 2px solid #c1ab86;
+    transition: 0.1s;
+}
+
+
+.tutorial_noDalle .section0 {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 0.9375em;
+}
+
+.tutorial_noDalle .section01 {
+    margin-top: 0.125em;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 0.9375em;
+}
+
+.tutorial_noDalle .section01 input {
+    width: 40%;
+    text-align: center;
+}
+
+.tutorial_noDalle .section1 input:hover {
+    transition: 0.3s;
+    opacity: 1;
+    outline: 2px solid #c1ab86;
+    width: 42%;
+}
+
+.tutorial_noDalle .section2 {
+    width: 100%;
+    margin-bottom: 0.625em;
+}
+
+.tutorial_noDalle .section2 .tags {
+    padding-top: 0.625em;
+    width: 95%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.tutorial_noDalle .section2 input {
+    text-align: center;
+    width: 25%;
+    margin: 0.3125em;
+    caret-color: #604e2e;
+}
+
+.tutorial_noDalle .section2 input:hover {
+    transition: 0.3s;
+    opacity: 1;
+    outline: 2px solid #c1ab86;
+    width: 27%;
+}
+.tutorial_noDalle .section2 button:hover {
+    transition: 0.3s;
+    opacity: 1;
+    background: #604e2e;
+    color: white;
+    width: 30%;
+}
+
+.tutorial_noDalle .section3 {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25em;
+}
+
+.tutorial_noDalle .section3 .text {
+    margin-bottom: 0.625em;
+}
+
+.tutorial_noDalle .section3 select {
+    margin-left: 0.625em;
+    border-radius: 0.25em;
+    border: 1px solid #c1ab86;
+    outline: 0 none;
+    text-align: center;
+    width: 35%;
+    height: 2.5em;
+}
+
+.tutorial_noDalle .section3 .selectBox .v-select {
+    background: transparent;
+    outline: 0 none;
+    padding: 0 5px;
+    position: relative;
+}
+
+.tutorial_noDalle .section3 .selectBox .v-select option {
+    color: #c1ab86;
+    padding: 0.1875em 0;
+    font-size: 1em;
+    border-radius: 0.25em;
+    text-align: center;
+}
+
+.tutorial_noDalle .section3 .selectBox .icoArrow {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    width: 2.1875em;
+    height: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tutorial_noDalle .section3 .selectBox .icoArrow img {
+    width: 50%;
+    transition: 0.3s;
+}
+
+.tutorial_noDalle .section3 .selectBox .v-select:focus + .icoArrow img {
+    transform: rotate(180deg);
+}
+
+.tutorial_noDalle .section4 {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.25em;
+    margin-left: 0.3125em;
+    width: 95%;
+}
+
+.tutorial_noDalle .section4 .text {
+    margin-bottom: 0.625em;
+}
+
+.tutorial_noDalle .section4 textarea {
+    width: 100%;
+    padding: 0.625em;
+    font-size: 1em;
+    overflow: auto;
+    resize: vertical;
+}
+
+.tutorial_noDalle .section4 textarea:focus {
+    outline: 2px solid #c1ab86;
+}
+
+.tutorial_noDalle .section5 {
+    width: 95%;
+    display: flex;
+    flex-direction: row;
+    margin-left: 0.3125em;
+}
+
+.tutorial_noDalle .section5 .text {
+    margin-bottom: 0.625em;
+}
+
+.tutorial_noDalle .section5 select {
+    width: 35%;
+    margin-left: 0.625em;
+    border-radius: 0.25em;
+    border: 1px solid #c1ab86;
+    outline: 0 none;
+    text-align: center;
+    margin-right: 0.3125em;
+}
+
+
+.section05 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+.saveDiary {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+    margin-top: 2rem;
+    text-align: center;
+    width: 7rem;
+    height: 2.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    border: #A5778F;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1em; /* 기록하기 버튼과 간격 조정 */
+}
+
+.saveDiary button:hover {
+    background: #8a5e72;
+    color: #fff;
+}
+
+/* ========== VerificationPage 스타일 ========== */
+
+.email-verification {
+    max-width: 25rem;
+    margin: auto;
+    padding: 2rem;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+}
+.highlight {
+    font-weight: bold;
+    color: #555;
+}
+.timer {
+    margin: 10px 0;
+    font-size: 1.2rem;
+    color: #d73a49;
+}
+/* 공통 */
+.code-inputs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* 여러 줄로 내려갈 수 있게 */
+    gap: 8px;
+    margin: 1rem 0;
+    background: beige;
+    padding: 0.5rem;
+}
+
+.code-box {
+    width: 3rem;
+    height: 3rem;
+    font-size: 2rem;
+    text-align: center;
+    background: beige;
+    border: green 2px solid;
+    border-radius: 5px;
+}
+
+.checkButton {
+    padding: 12px 24px;
+    font-size: 1.2rem;
+    background-color: #2ea44f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.checkButton:hover {
+    background-color: #22863a;
+}
+
+/* 모바일 대응 */
+@media (max-width: 480px) {
+    .footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 10rem;
+        background-color: black;
+        color: white;
+        display: flex;
+        justify-content: space-between; /* 양쪽 정렬 */
+        align-items: center;            /* 세로 가운데 */
+        padding: 0 1rem;                /* 좌우 여백 */
+        box-sizing: border-box;
+    }
+
+    .footer-icon-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color:#fff;
+    }
+
+    .content-wrap {
+        margin-left: 0 !important; /* 원래 네비게이션 너비만큼 공간 없애기 */
+        width: 100%;
+    }
+
+    .code-box {
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 1.2rem;
+    }
+
+    .checkButton {
+        font-size: 1rem;
+        padding: 10px 18px;
+    }
+    .stopwatch,
+    .formattedTime,
+    .stopwatchButton,
+    .currentTime,
+    .pomodoro,
+    .pomobutton,
+    .kakaosendbutton,
+    .pomobutton_section,
+    .pomobutton{
+        z-index:4;
+    }
+
+    .email-verification {
+        padding: 1rem;
+    }
+
+    .pomobutton_section{
+        padding-bottom: 3rem;
+    }
+
+    .time-slide {
+        width: 60px !important;  /* 데스크탑보다 작게 */
+        height: 36px;
+        font-size: 14px;
+        margin: 2px;
+    }
+
+
+    .swiper-nav-buttons {
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .swiper-button-prev,
+    .swiper-button-next {
+        font-size: 20px;
+        width: 30px;
+        height: 30px;
+    }
+
+    .diaryWriting_content {
+        overflow: visible;
+        position: relative;
+        z-index: 1;
+    }
+
+
+    .diaryWritingTitle {
+        font-size: 18px;
+        text-align: center;
+    }
+
+    input,
+    textarea,
+    select {
+        font-size: 14px;
+    }
+
+    .save-button {
+        font-size: 14px;
+        padding: 10px;
+        width: 100%;
+    }
+
+}
+
+/* 모바일 대응 ======*/
+
+
+@media (hover: hover) {
+    a:hover {
+        background-color: hsla(160, 100%, 37%, 0.2);
+    }
+}
+.message {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: #d73a49;
+}
+.kakao-img {
+    max-width: 180px;
+}
+
+.kakaoLogin_pomo {
+    max-width: 200px;
+}
+
+/* 로그인 */
+.login-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(180deg, #ffe5f0, #fff);
+    padding: 0; /* 위에 필요 없는 여백 없애기 */
+    margin: 0; /* 기본 여백 없애기 */
+}
+
+.loginPage {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    background-color: #f8f9fa;
+    padding: 3rem;
+    flex-direction: column;
+}
+
+.login-label {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.login-guide {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #555;
+    font-weight: 800;
+}
+
+
+.login-container_pomo {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(180deg, #ffe5f0, #fff);
+    font-size: 2em;
+    color: #555;
+    padding: 0; /* 위에 필요 없는 여백 없애기 */
+    margin: 0; /* 기본 여백 없애기 */
+}
+
+.login-guide_pomo {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 1rem;
+    color: #555;
+    font-weight: 800;
+}
+
+
+.login_form_box {
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+.login_form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    padding: 1.5rem;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    justify-content: flex-start;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.login_form-input {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+
+.login_form-input:focus {
+    border: 1px solid #4a90e2;
+    outline: none;
+}
+.login_form-input:focus {
+    border-color: #4a90e2;
+    outline: none;
+}
+
+.login_form_button_div{
+    display: flex;
+    justify-content: center;
+}
+
+.login_form-oo {
+    font-size: 0.9rem;
+    color: red;
+    margin-top: 0.5rem;
+}
+
+
+.emotionSelect{
+    width: 100%;
+    min-height: 40px;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.diaryTextarea{
+    width: 100%;
+    min-height: 40px;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+.save-button_t{
+    color:#fff;
+}
+.save-button {
+    width: 100%;
+    padding: 10px;
+    background: #00796b;
+
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.active-button {
+    background-color: #a48f7a;
+    color: white;
+}
+
+.section_status {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 3rem;
+}
+
+.section_status button {
+    padding: 10px 15px;
+    border-radius: 1em;
+    background: #eee7db;
+    color: black;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.section_status button.active-button {
+    color: #fff;
+    background: #A5778F;
+}
+
+/*=========일기리스트========== */
+
+/* 필터 체크박스 스타일 */
+.filter-section {
+    display: flex;
+    justify-content: flex-end;
+    padding: 2rem;
+}
+
+.filter-checkbox {
+    text-align: center;
+    background-color: cadetblue;
+    color: white;
+    padding: 1rem;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.filter-checkbox input {
+    margin-right: 10px;
+}
+
+/* 일기 목록 스타일 */
+.diaryList {
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.diary-post {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+}
+
+.diary-post:hover {
+    transform: scale(1.05);
+}
+
+.diaryTitle, .diaryContent {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 페이지네이션 */
+.pagination {
+    margin-top: 1em;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination button {
+    margin: 0.5em;
+    padding: 0.5em 1em;
+    border: none;
+    background-color: #00796b;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pagination button.active {
+    background-color: #004d40;
+}
+
+
+/* ==========MemberOutpage 컴포넌트 스타일 ========== */
+
+.memberOutPage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+    padding: 2rem;
+    flex-direction: column;
+}
+
+.memberOut_form {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 30rem;
+}
+
+.title {
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    color: #555;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.editButton {
+    flex: 1;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+
+.editButton:hover {
+    font-size: 1rem;
+    padding: 0.8rem 1.2rem;
+    color : #fff;
+}
+.editButton.warning {
+    background-color: #ff5733;
+}
+
+.editButton.warning:hover {
+    background-color: #d43f00;
+    color:#fff;
+}
+
+.info-list {
+    list-style-type: none;
+    padding: 0;
+    color: #555;
+}
+
+.info-list li {
+    margin-bottom: 1rem;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+.signoutbutton-container {
+    margin-top: 1.5rem;
+}
+
+
+/* ========== editPassword 컴포넌트 스타일 ========== */
+
+.editPage {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    background-color: #f8f9fa;
+    flex-direction: column;
+}
+
+.edit_form {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    padding: 5rem;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    /* margin: auto; */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    justify-content: flex-start;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem; /* 필드 간 여백 */
+}
+
+.edit_form_box {
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.edit-label {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.edit_form-input {
+    width: 100%; /* 필드 너비가 컨테이너에 맞춰짐 */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.edit_form-input:focus {
+    border: 1px solid #4a90e2;
+    outline: none;
+
+}
+
+.edit_form_button {
+    width: 100%; /* 버튼이 컨테이너에 맞춰짐 */
+    color: #333;
+    background: #ddd;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.edit_form_button:hover {
+    background-color: #357abd;
+    color: white;
+
+}
+
+.edit_form-oo {
+    font-size: 0.9rem;
+    color: red;
+    margin-top: 0.5rem;
+}
+
+
+/* ========== confirmPassword 스타일 ========== */
+
+.confirmHeader {
+    /* position: fixed; */
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 5rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.prevBtn {
+    /* position: absolute; */
+    top: 50%;
+    left: 0.4rem;
+    transform: translateY(-50%);
+    padding: 0.8rem;
+    font-size: 0px;
+}
+
+.header_svg {
+    transform: rotate(180deg);
+}
+
+.layoutContainer {
+    padding: 4rem 2rem;
+}
+
+.confirmTitle {
+    margin-bottom: 3.2rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.checkId input:read-only {
+    cursor: default;
+}
+
+.checkId input:disabled {
+}
+
+.checkId input {
+    width: 100%;
+    height: 4.8rem;
+    padding-left: 1.6rem;
+    padding-right: 1.6rem;
+    font-size: 1.6rem;
+    border-radius: 1.2rem;
+}
+
+.gapCheckInput {
+    margin-top: 1rem;
+}
+
+
+.inputInnerWrap {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+}
+
+.password_field_button.show {
+    background: url(https://common-module.interparkcdn.net/assets/member-mypage/icon_view_hide.png) center center / 100% no-repeat;
+}
+
+.password_field_button {
+    width: 2rem;
+    height: 2rem;
+}
+
+
+/*=========POMOVIEW========== */
+
+.mainView {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    min-height: 100vh;
+    object-fit: cover;
+}
+
+
+.pomoLogoutButton{
+    /*z-index:9;*/
+}
+.tomatoEmogi{
+    width: 100px;
+    height: 100px;
+}
+
+.container {
+    text-align: center;
+}
+.currentTime{
+    padding-top: 1rem;
+    text-align: center;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 1.5em;
+}
+.currentTimetext{
+    font-size: 1.5em;
+    font-weight: 600;
+    padding: 0.7rem;
+}
+.dark button {
+    background-color: #333;
+    color: white;
+}
+.dark .formattedTime{
+    font-weight: 600;
+    font-style: italic;
+}
+.pomodoro {
+    text-align: center;
+}
+.stopwatch {
+    text-align: center;
+}
+.login_form_button_div{
+    display: flex;
+    justify-content: center;
+}
+.stopwatchButton,
+.pomobutton,
+.kakaosendbutton,
+.toggleMode {
+    width: 12rem;
+    background-color: #FDBFBC;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stopwatchButton:hover,
+.pomobutton:hover{
+    background-color: #F8BBD0;
+    transform: scale(1.05);
+}
+.dark .toggleMode{
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    transform: scale(1.05);
+    font-weight: 600;
+    font-style: italic;
+    font-size: 1.5em;
+    margin-top: 2rem;
+    padding: 0.7rem;
+}
+/* 다크모드일 때 */
+.dark body {
+    background-color: #1a202c;
+    color: white;
+}
+.dark .app {
+    background-color: rgba(0, 0, 0, 0.5); /* 어둡게 덧씌우기 */
+    backdrop-filter: blur(5px); /* 흐림 효과 */
+}
+.dark .mainView {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    animation: fadeIn 2s ease-in-out;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #f5f5f5;
+}
+
+/*backdrop-filter: blur(5px);  흐림 효과 */
+/*filter: brightness(0.7) contrast(1.2);  */
+/*mix-blend-mode: darken;*/
+.dark .container {
+    background-color: rgba(30, 30, 30, 0.8);/* 어둡게 덧씌우기 */
+    backdrop-filter: blur(5px); /* 흐림 효과 */
+    text-align: center;
+    /* padding: 100px 20px; */
+}
+.dark .formattedTime{
+    font-weight: 600;
+    font-style: italic;
+}
+.dark .currentTimetext{
+    background-color: #FADADD;
+    transition: all 0.3s ease;
+    font-size: 1.5em;
+    font-weight: 600;
+    color: #555;
+    font-style: italic;
+    padding: 0.7rem;
+    transform: scale(1.05);
+}
+.dark .stopwatchButton:hover,
+.dark .pomobutton:hover {
+    background-color: #F8BBD0;
+    transform: scale(1.05);
+}
+.dark .stopwatchButton,
+.dark .pomobutton{
+    background-color: #333;
+    color: #fff;
+    border-radius: 50px;
+    padding: 10px 16px;
+}
+.dark .timer h2 {
+    font-size: 48px;
+    color: #f5f5f5;
+}
+.dark .notification {
+    background-color: #333;
+    color: #fff;
+    border-radius: 50px;
+    padding: 10px 16px;
+}
+
+
+
+/* ========== Footer 스타일 ========== */
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 4rem;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: space-between; /* 양쪽 정렬 */
+    align-items: center;            /* 세로 가운데 */
+    padding: 0 1rem;                /* 좌우 여백 */
+    box-sizing: border-box;
+}
+
+.footer-text {
+    margin: 0;
+    padding-left:2rem;
+    font-size: 0.9rem;
+    line-height: 1;
+}
+
+.footer-icon-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color:#fff;
+}
+
+.tomatoEmogi {
+    width: 32px;
+    height: auto;
+    cursor: pointer;
+}
+.footer-label{
+    font-size:1rem;
+}
+
+/* ========== Header 스타일 ========== */
+.header {
+    background-color: #4a90e2;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+
+.toggleMode {
+    background-color: #FADADD;
+    border: none;
+    border-radius: 10px;
+    transform: scale(1.05);
+    font-weight: 600;
+    font-style: italic;
+    font-size: 1.5em;
+    margin-top: 2rem;
+    padding: 0.7rem;
+}
+
+.timer h2 {
+    font-size: 2.5em;
+}
+
+.kakaosendbutton {
+    width: 18rem;
+    background-color: #F8BBD0;
+    border: none;
+    border-radius: 10px;
+    margin: 3rem;
+    transition: all 0.3s ease;
+    font-size: 1.5em;
+    font-weight: 600;
+    padding: 0.7rem;
+    transform: scale(1.05);
+}
+.notification {
+    background-color: yellow;
+    padding: 10px;
+}
+
+.logo {
+    display: block;
+    margin: 0 auto 2rem;
+}
+
+.main-content {
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* 상단 정렬 */
+    width: 100%;
+}
+
+.diaryhome{
+    padding-top: 2rem;
+}
+.diaryImg{
+    border-radius: 3rem;
+}
+
+.home-bubble {
+    height: 10rem;
+    margin-top: 2rem;
+    width: 15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #e0f7fa;
+    border-radius: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.home-button,
+.login-button,
+.diarywrite-button,
+.diarycommon-button {
+    margin: 10px;
+    padding: 10px 1rem;
+    background: #00796b;
+    border-radius: 1rem;
+    color: #fff;
+}
+
+.home {
+    display: flex;
+    justify-content: center;
+    /*align-items: flex-start;  */
+    height: 100vh;
+    background-color: #f8f9fa;
+    padding: 1rem;
+}
+.formattedTime,
+.stopwatchButton,
+.currentTime,
+.pomodoro,
+.pomobutton,
+.kakaosendbutton
+{
+    z-index: 3;
+}
+
+.pomobutton_section{
+    padding-bottom: 3rem;
+}
+/* App.vue 또는 TimeSelect.vue style 안에 추가 */
+
+
+
+/*=========timeSelect========== */
+.mySwiper {
+    width: 100%;
+}
+
+.time-select-swiper {
+    position: relative;
+    padding: 20px;
+    margin: 0 auto;
+    /*overflow: hidden;*/
+}
+
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: auto !important;
+}
+
+.time-slide {
+    width: 80px !important;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 16px;
+    margin: 4px;
+    border-radius: 10px;
+    background-color: #f5d77b;
+    font-size: 16px;
+    font-weight: bold;
+    color: #4a4a4a;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.time-slide.disabled {
+    background-color: #d3d3d3;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.time-slide.selected {
+    background-color: #ffa07a;
+}
+
+.time-slide.is-sleep {
+    background-color: #c4b5fd;
+    color: white;
+}
+
+.time-slide.wake {
+    background-color: #fde68a;
+}
+
+.time-slide.is-sleep {
+    background-color: #cbb2ff !important; /* 보라색 sleep */
+}
+
+.time-slide.wake {
+    background-color: #f5d36c !important; /* 노랑 wake */
+}
+
+.time-slide.selected {
+    font-weight: bold;
+}
+
+.time-slide.is-sleep {
+    background-color: #cbb2ff !important; /* 보라색 sleep */
+}
+
+.time-slide.wake {
+    background-color: #f5d36c !important; /* 노랑 wake */
+}
+
+.time_legend {
+    margin-top: 10px;
+}
+
+.box {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    margin-right: 5px;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+    display: none !important; /* Swiper 기본 화살표 없애기 */
+}
+.diaryWriting_content {
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+}
+.write_section1 {
+    overflow: visible !important;
+    position: relative;
+    z-index: 2;
+}
