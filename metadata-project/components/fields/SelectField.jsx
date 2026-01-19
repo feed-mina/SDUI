@@ -1,3 +1,4 @@
+'use client';
 // src/components/fields/SelectField.js
 import React, { useState } from 'react';
 

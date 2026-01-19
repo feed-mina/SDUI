@@ -1,3 +1,4 @@
+'use client';
 // src/components/fields/InputField.js
 
 function InputField({ id,pwType, showPassword, label, className, style, placeholder, readOnly, isRequired, onChange, onAction, metadata }) {

@@ -1,3 +1,4 @@
+'use client';
 function ButtonField({ meta, onAction }) {
     return (
         <button

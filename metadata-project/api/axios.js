@@ -2,9 +2,14 @@ import axios from 'axios'
 
 // 1. Axios 인스턴스 생성
 const instance = axios.create({
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:8080',
     withCredentials: true // 쿠키를 주고받기 위해 필수 설정
 })
+
+// document가 존재할 때만 쿠키를 읽도록 방어
+const token = typeof document !== "undefined"
+    ? document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1]
+    : null;
 
 // 2. 요청 인터셉터(모든 요청 직전에 실행
 instance.interceptors.request.use(
@@ -24,8 +29,8 @@ instance.interceptors.request.use(
 // 3. 응답 인터셉터(모든 응답 직후에 실행)
 instance.interceptors.response.use(
 (response) => response, // 성공 시 그대로 반환
-async (eeror) => {
-    const originalRequest = eeror.config;
+async (error) => {
+    const originalRequest = error.config;
 
     // 401에러 (만료)가 발생했고 재시도 한 적이 없다면
     if (error.response?.status === 401 && !originalRequest._retry) {

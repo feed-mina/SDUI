@@ -1,3 +1,4 @@
+'use client';
 function ImageField({ meta }) {
 
     // 경로가 /img/ 안에 있다면 아래처럼 합쳐줍니다.
