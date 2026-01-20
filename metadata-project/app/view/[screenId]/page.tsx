@@ -5,6 +5,8 @@ import React, { useEffect, useState } from "react";
 import axios from "@/api/axios";
 import { useParams, useRouter } from "next/navigation"; // Next.js 전용으로 변경
 import DynamicEngine from "@/components/DynamicEngine";
+import Pagination from "@/components/Pagination";
+import FilterToggle from "@/components/FilterToggle";
 
 export default function CommonPage() {
     const params = useParams();
@@ -18,7 +20,17 @@ export default function CommonPage() {
     const [loading, setLoading] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [pwType, setPwType] = useState("password");
+
     const [totalCount, setTotalCount] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 5; // 한 페이지당 보여줄 개수
+
+    const [isOnlyMine, setIsOnlyMine] = useState(false);
+
+    const handleToggleMine = () => {
+        setIsOnlyMine(prev => !prev);
+        setCurrentPage(1);
+    };
 
     // --- 쿠키 및 로그인 로직 (기존 코드 유지) ---
     const getCookie = (name:any) => {
@@ -67,20 +79,27 @@ export default function CommonPage() {
                     console.log("지금 source에 들어 있는 모든 것 :", Object.keys(source));
                     console.log("DB에서 온 원본 소스:", source);
                     try {
+                        if (source.componnentId === "diary_list_source"){
+                            source.dataSqlKey= isOnlyMine ? "GET_MEMBER_DIARY_LIST" : "GET_DIARY_LIST_PAGE";
+                        }
+
                         const apiUrl = source.dataApiUrl.includes('/api/execute') ? source.dataApiUrl : `/api/execute/${source.dataSqlKey}`;
-                        const mockParams = { limit: 5, offset: 0 };
                         // dataParams가 문자열이면 객체로 바꾸고 없으면 빈 객체를 기본값으로 준다
                         const rawParams = source.dataParams || source.data_params || "{}";
                         const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
 
+                        const calculatedOffset = (currentPage - 1) * pageSize;
+
                         const finalParmas = {
-                            lilmit : 5,
-                            offset : 0,
-                            ...parsedParams // DB 설정값이 있으면 기본값을 덮어쓴다
+                            ...parsedParams, // DB 설정값이 있으면 기본값을 덮어쓴다
+                            limit : pageSize, // GET_MEMBER
+                            pageSize: pageSize,
+                            offset : calculatedOffset,
+                            userId: isOnlyMine ? parsedParams.userId : ""
                         }
                         // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
                         console.log("백엔드로 보낼 최종 재료:", { ...parsedParams });
-                        const res = await axios.post(apiUrl, {...parsedParams});
+                        const res = await axios.post(apiUrl, {...finalParmas});
                         console.log(`${source.componentId}의 응답 데이터:`, res.data);
                         return {
                             id: source.componentId,
@@ -123,7 +142,7 @@ export default function CommonPage() {
             }
         };
         initializePage();
-    }, [screenId, isLoggedIn, router]);
+    }, [screenId, isLoggedIn, router, currentPage, pageSize, isOnlyMine]);
 
     // --- 핸들러 함수들 (기존 코드 유지하되 router.push 사용) ---
     const handleChange = (id: any, value : any) => {
@@ -185,6 +204,9 @@ export default function CommonPage() {
 
     return (
         <div className={`page-wrap ${screenId}`}>
+            {screenId === "DIARY_LIST" && (
+                <FilterToggle isOnlyMine={isOnlyMine} onToggle={handleToggleMine} />
+            )}
             <DynamicEngine
                 metadata={filtedMetadata}
                 onChange={handleChange}
@@ -193,6 +215,18 @@ export default function CommonPage() {
                 pwType={pwType}
                 showPassword={showPassword}
             />
+
+            {screenId === "DIARY_LIST"  && (
+                <Pagination
+                    totalCount={totalCount}
+                    pageSize={pageSize}
+                    currentPage={currentPage}
+                    onPageChange={(page) => {
+                        setCurrentPage(page);
+                        console.log(`[페이지 변경] 현재 페이지: ${currentPage}, 변경된 페이지: ${page}`);
+                    }}
+                />
+            )}
         </div>
     );
 }

@@ -6,6 +6,7 @@ import ImageField from "./fields/ImageField";
 import TextField from "./fields/TextField";
 import SelectField from "./fields/SelectField";
 import PasswordField from "@/components/fields/PasswordField";
+import Pagination from "@/components/Pagination";
 
 const componentMap = {
     INPUT: InputField,
@@ -124,6 +125,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                         onChange={onChange}
                         onAction={onAction}
                     />
+
                 );
                 }
 
