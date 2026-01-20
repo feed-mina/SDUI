@@ -27,6 +27,7 @@ public class Diary {
     private String title;
     private String content;
     // 문자열 userId 필드
+    @Column(name = "user_id")
     private String userId;
     // 실제 연관관계 필드(DB의  user_sqno 칼럼을 실제로 관리함)
     @ManyToOne(fetch = FetchType.LAZY)

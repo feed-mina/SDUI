@@ -18,6 +18,7 @@ export default function CommonPage() {
     const [loading, setLoading] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
     const [pwType, setPwType] = useState("password");
+    const [totalCount, setTotalCount] = useState(0);
 
     // --- 쿠키 및 로그인 로직 (기존 코드 유지) ---
     const getCookie = (name:any) => {
@@ -70,16 +71,25 @@ export default function CommonPage() {
                         const mockParams = { limit: 5, offset: 0 };
                         // dataParams가 문자열이면 객체로 바꾸고 없으면 빈 객체를 기본값으로 준다
                         const rawParams = source.dataParams || source.data_params || "{}";
-                        // console.log("꺼내온 원본 파라미터:", rawParams);
                         const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
-                        // console.log("전송 직전 재료:", parsedParams);
+
+                        const finalParmas = {
+                            lilmit : 5,
+                            offset : 0,
+                            ...parsedParams // DB 설정값이 있으면 기본값을 덮어쓴다
+                        }
                         // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
-                        // console.log("백엔드로 보낼 최종 재료:", { ...parsedParams });
-                        const res = await axios.post(apiUrl, {...mockParams});
+                        console.log("백엔드로 보낼 최종 재료:", { ...parsedParams });
+                        const res = await axios.post(apiUrl, {...parsedParams});
                         console.log(`${source.componentId}의 응답 데이터:`, res.data);
-                        return {id: source.componentId, status: "success", data: res.data.data};
+                        return {
+                            id: source.componentId,
+                            status: "success",
+                            data: res.data.data
+                        };
 
                     } catch (err) {
+                        console.log(`${source.componentId}의 응답 데이터: `, err);
                         return { id: source.componentId, data: [] };
                     }
                 });
@@ -92,6 +102,13 @@ export default function CommonPage() {
                             status : res.status,
                             data : res.data
                         };
+
+                        if(res.id === "diary_total_count"){
+                            // SINGLE 타입이므로 데이터 구조에 따라 꺼내온다.
+                            const total = res.data?.total_count || 0;
+                            setTotalCount(total);
+                            console.log("찾았다 ! 전체 개수:", total);
+                        }
                         console.log(`상자에 저장되는 이름: ${res.id}, 데이터 개수: ${res.data?.length}`);
                         // combinedData[res.id] = res;
                     }
