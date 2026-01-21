@@ -22,6 +22,8 @@ public class UiController {
 
     @GetMapping("/{screenId}")
     public ApiResponse<List<UiMetadata>> getUiMetadataList(@PathVariable String screenId){
+        System.out.println("@@@UiController 시작!");
+        System.out.println("screenId: " + screenId);
         List<UiMetadata> list = uiMetadataRepository.findByScreenIdOrderBySortOrderAsc(screenId);
         return ApiResponse.success(list);
     }

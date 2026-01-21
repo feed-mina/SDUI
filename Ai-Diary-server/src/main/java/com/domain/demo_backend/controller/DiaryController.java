@@ -143,7 +143,6 @@ public class DiaryController {
         System.out.println("@@@5--diaryReq:: " + diaryReq);
         try {
             System.out.println("@@@viewDiaryItem 서비스 로직 진입");
-
             Optional<Diary> diaryItem = diaryService.viewDiaryItem(diaryReq);
             System.out.println("@@@6--selectDiaryList 서비스:: " + diaryItem);
             Map<String, Object> response = new HashMap<>();
@@ -151,17 +150,6 @@ public class DiaryController {
             System.out.println("@@@7--selectDiaryList diaryItem:: " + diaryItem);
             System.out.println("@@@7--selectDiaryListresponse:: " + response);
             return ResponseEntity.ok(response);
-        /*
-        else{
-            System.out.println("findDiaryById 서비스 로직 진입");
-            Set<DiaryResponse> diaryItem = diaryService.findDiaryById(diaryReq);
-            System.out.println("6--findDiaryById 서비스:: " + diaryItem);
-            Map<String, Object> response = new HashMap<>();
-            response.put("diaryItem", diaryItem);
-            System.out.println("7--findDiaryById response:: " + response);
-            return ResponseEntity.ok(response);
-            }
-         */
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -175,7 +163,7 @@ public class DiaryController {
     public ResponseEntity<?> addDiaryList(
             HttpServletRequest request,
             HttpServletResponse response,
-            @RequestBody DiaryRequest diaryRequest
+            @RequestBody DiaryRequest diaryRequest, Authentication authentication
     ) {
         // 1) 헤더에서 IP 가져오기
         String ip = request.getHeader("X-Forwarded-For");
@@ -186,6 +174,8 @@ public class DiaryController {
             ip = request.getRemoteAddr();
         }
         System.out.println("@@@클라이언트 IP: " + ip);
+        /*
+
         String authorizationHeader = request.getHeader("Authorization");
         System.out.println("@@@addDiaryList authorizationHeader" + authorizationHeader);
 
@@ -202,24 +192,21 @@ public class DiaryController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid JWT Token.");
         }
         String userSqnoStr = claims.get("hashedPassword", String.class); // String으로 읽기
-//        System.out.println("@@@ diaryRequest.getTag1(): " + diaryRequest.getTag1());
-//        System.out.println("@@@ diaryRequest.getTag2(): " + diaryRequest.getTag2());
-//        System.out.println("@@@ diaryRequest.getTag3(): " + diaryRequest.getTag3());
-
+         */
+        // 2. 현재 로그인한 사용자 정보 꺼내기
         CustomUserDetails currentUser = UserInfoHelper.getMemberInfo();
         System.out.println("@@@currentUser 값: " + currentUser);
 
-        String currentUserName = currentUser.getUsername(); // email을 받는다
-        String currentUserId = currentUser.getUserId(); // 일반로그인에서는 아이디를 받는다
-        System.out.println("@@@currentUserId : " +currentUserId);
+        diaryRequest.setUserSqno(currentUser.getUserSqno());
+        diaryRequest.setUserId(currentUser.getUserId());
+        diaryRequest.setEmail(currentUser.getUsername());
 
-        System.out.println("@@@diaryService 들어가기" + diaryRequest);
+        System.out.println("@@@ [안전하게 세팅된] diaryRequest: " + diaryRequest);
+
         try {
-            if (diaryRequest.getEmail() == null || !diaryRequest.getEmail().equals(currentUserName)) {
-                System.out.println("@@@diaryRequest.getEmail() : " + diaryRequest.getEmail());
-                System.out.println("@@@currentUserName : " +currentUserName);
-                throw new IllegalArgumentException("로그인한 유저만 자신의 일기를 작성할 수 있습니다.");
-            }
+            diaryService.addDiary(diaryRequest, ip, SecurityContextHolder.getContext().getAuthentication());
+
+            return ResponseEntity.ok().body(Map.of("success", true));
         } catch (IllegalArgumentException e) {
             System.err.println("Invalid request: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("유효하지 않은 요청입니다");
@@ -227,15 +214,13 @@ public class DiaryController {
             System.err.println("서버 오류: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버에서 오류가 발생했습니다.");
         }
-        diaryService.addDiary(diaryRequest, ip, SecurityContextHolder.getContext().getAuthentication());
-
-        return ResponseEntity.ok().body(Map.of("success", true));
 
     }
 // 보안컨텍스트 SecurityContextHolder에 담긴 검증된 유저 정보를 사용
     @GetMapping("/member-diaries")
     public ResponseEntity<?> getMemberDiaries(@RequestParam(value = "pageNo", defaultValue = "1") int pageNo, @RequestParam(value = "pageSize", defaultValue = "5") int pageSize) {
         // 현재 인증된 유저 정보 가져오기
+        System.out.println("@@@ 다이어리 불러오기 시작");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         try{
             PageInfo<DiaryResponse> diaryList = diaryService.selectMemberDiaryList(authentication, pageNo, pageSize);

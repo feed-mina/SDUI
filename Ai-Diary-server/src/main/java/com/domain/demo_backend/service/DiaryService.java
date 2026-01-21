@@ -104,6 +104,9 @@ public class DiaryService {
         dto.setTitle(diary.getTitle());
         dto.setContent(diary.getContent());
         dto.setRegDt(diary.getRegDt());
+        dto.setUserId(diary.getUserId());
+        // dto.setUserId(diary.getUser().getUserId());
+        dto.setAuthor(diary.getAuthor());
         return dto;
     }
 
@@ -154,13 +157,18 @@ public class DiaryService {
 
         // 1. 먼저 DB에서 유저를 찾는다.
         User user = userRepository.findByUserSqno(diaryRequest.getUserSqno()).orElseThrow(()-> new IllegalArgumentException("존재하지 않은 사용자입니다."));
-
+        // 안전한 ID 만들기 (User 엔티티 활용)
+                String safeUserId = user.getUserId(); // 1순위: DB에 저장된 ID
+                if (safeUserId == null || safeUserId.isEmpty()) {
+                    // 2순위: DB ID가 없으면 이메일(@앞부분)을 ID처럼 사용
+                    safeUserId = user.getEmail().split("@")[0];
+                }
         // 2.빌더를 사용해 다이어리를 만든다
         Diary diary = Diary.builder()
                 .user(user) // userSqno 대신 객체 자체를 넣어준다.
                 .title(diaryRequest.getTitle() != null ? diaryRequest.getTitle() : "Untitled")
                 .author(diaryRequest.getAuthor() != null ? diaryRequest.getAuthor() : "Undefined")
-                .userId(diaryRequest.getUserId() != null ? diaryRequest.getUserId() : "Undefined")
+                .userId(safeUserId)
                 .content(diaryRequest.getContent() != null ? diaryRequest.getContent() : "")
                 .tag1(diaryRequest.getTag1() != null ? diaryRequest.getTag1() : "")
                 .tag2(diaryRequest.getTag2() != null ? diaryRequest.getTag2() : "")
