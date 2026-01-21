@@ -107,13 +107,13 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
             const Component = componentMap[typeKey];
 
             // console.log(`컴포넌트[${node.componentId}]가 찾는 상자: "${rDataId}"`);
-            console.log(`[검사] 컴포넌트: ${node.componentId}, 타입: ${node.componentType}, 찾는키: ${node.refDataId}`);
+            // console.log(`[검사] 컴포넌트: ${node.componentId}, 타입: ${node.componentType}, 찾는키: ${node.refDataId}`);
             // console.log("엔진이 컴포넌트에 전달하는 데이터:", remoteData);
             if (typeKey === "DATA_SOURCE") return null;
             if (Component) {
                 // const finalData = rowData ? rowData : remoteData;
                 const finalData = rowData ? rowData : (pageData && pageData[rDataId]?.data?.[0] || pageData[rDataId]);
-                console.log(`[배달 확인] ${node.componentId}에게 전달되는 데이터:`, finalData);
+                // console.log(`[배달 확인] ${node.componentId}에게 전달되는 데이터:`, finalData);
 
                 return (
                     <Component

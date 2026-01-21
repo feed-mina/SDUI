@@ -79,15 +79,18 @@ export default function CommonPage() {
                     console.log("지금 source에 들어 있는 모든 것 :", Object.keys(source));
                     console.log("DB에서 온 원본 소스:", source);
                     try {
-                        if (source.componnentId === "diary_list_source"){
-                            source.dataSqlKey= isOnlyMine ? "GET_MEMBER_DIARY_LIST" : "GET_DIARY_LIST_PAGE";
-                        }
+                        let apiUrl = source.dataApiUrl.includes('/api/execute') ? source.dataApiUrl : `/api/execute/${source.dataSqlKey}`;
 
-                        const apiUrl = source.dataApiUrl.includes('/api/execute') ? source.dataApiUrl : `/api/execute/${source.dataSqlKey}`;
-                        // dataParams가 문자열이면 객체로 바꾸고 없으면 빈 객체를 기본값으로 준다
                         const rawParams = source.dataParams || source.data_params || "{}";
                         const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
 
+                        // 내 일기 모드 일때 URL변경
+                        if (source.componentId === "diary_list_source" && isOnlyMine){
+                            apiUrl = "/api/diary/member-diaries";
+                            // source.dataSqlKey= isOnlyMine ? "GET_MEMBER_DIARY_LIST" : "GET_DIARY_LIST_PAGE";
+                        }
+
+                        // dataParams가 문자열이면 객체로 바꾸고 없으면 빈 객체를 기본값으로 준다
                         const calculatedOffset = (currentPage - 1) * pageSize;
 
                         const finalParmas = {
@@ -95,16 +98,25 @@ export default function CommonPage() {
                             limit : pageSize, // GET_MEMBER
                             pageSize: pageSize,
                             offset : calculatedOffset,
-                            userId: isOnlyMine ? parsedParams.userId : ""
+                            pageNo : currentPage, // member-diaries용
+                            userId: isOnlyMine ? undefined : "",
+                            userSqno : parsedParams.userSqno || "1"
                         }
+                        console.log("finalParams: ", finalParmas);
                         // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
                         console.log("백엔드로 보낼 최종 재료:", { ...parsedParams });
-                        const res = await axios.post(apiUrl, {...finalParmas});
-                        console.log(`${source.componentId}의 응답 데이터:`, res.data);
+
+                        // const res = await axios.post(apiUrl, {...finalParmas});
+                        const res = isOnlyMine && source.componentId === "diary_list_source" ? await axios.get(apiUrl, { params: finalParmas})
+                            : await axios.post(apiUrl, {...finalParmas});
+                            const responeBody = res.data;
+                            const realData = responeBody.data || responeBody;
+                            console.log(`${source.componentId}의 응답 데이터:`, realData);
+
                         return {
                             id: source.componentId,
                             status: "success",
-                            data: res.data.data
+                            data: realData
                         };
 
                     } catch (err) {
@@ -115,24 +127,50 @@ export default function CommonPage() {
 
                 const results = await Promise.all(dataPromises);
                 const combinedData: any = {};
+
                 results.forEach((res: any) => {
                     if (res && res.id) {
+                        // 1. 백엔드가 준 보따리 풀기 (member-diaries는 res.data에 직접 데이터가 옴)
+                        const rawResponse = res.data || {};
+
+                        // 2. 진짜 알맹이(배열) 찾기
+                        // list에 있으면 list를, data에 있으면 data를, 아니면 본체 자체가 배열인지 확인
+                        const realList = rawResponse.list || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
+
+                        // 3. 엔진이 이해할 수 있게 이름표 갈아끼우기 (Alias 통일)
+                        const unifiedList = realList.map((item: any) => ({
+                            ...item,
+                            diary_id: item.diaryId || item.diary_id,
+                            user_id: item.userId || item.user_id || item.author || item.nickname || "알수없음",
+                            reg_dt: (item.regDt || item.reg_dt || item.date).replace(/-/g, '.'),
+                            title: item.title || "제목 없음",
+                            content: item.content || "내용 없음"
+                        }));
+
+                        // 4. 창고에 저장
                         combinedData[res.id] = {
-                            status : res.status,
-                            data : res.data
+                            status: res.status,
+                            data: unifiedList
                         };
 
-                        if(res.id === "diary_total_count"){
-                            // SINGLE 타입이므로 데이터 구조에 따라 꺼내온다.
-                            const total = res.data?.total_count || 0;
+                        // 5. 페이지네이션 숫자(TotalCount) 똑똑하게 맞추기
+                        if (res.id === "diary_list_source" && isOnlyMine) {
+                            // '내 일기' 모드일 때는 보따리에 적힌 total(14)을 사용
+                            const total = rawResponse.total || 0;
                             setTotalCount(total);
-                            console.log("찾았다 ! 전체 개수:", total);
+                            console.log("내 일기 개수 적용:", total);
+                        } else if (res.id === "diary_total_count" && !isOnlyMine) {
+                            // '전체' 모드일 때는 전용 개수 쿼리의 결과(21)를 사용
+                            const total = unifiedList[0]?.total_count || rawResponse.total_count || 0;
+                            setTotalCount(total);
+                            console.log("전체 일기 개수 적용:total_count", total);
                         }
-                        console.log(`상자에 저장되는 이름: ${res.id}, 데이터 개수: ${res.data?.length}`);
-                        // combinedData[res.id] = res;
+
+                        console.log(`[최종확인] ${res.id} 상자에 담긴 실제 데이터 개수:`, unifiedList.length);
+                        console.log("최종 pageData:", combinedData);
+                        setPageData(combinedData);
                     }
                 });
-
                 console.log("진짜로 이름표가 붙은 창고:", combinedData);
                 setPageData(combinedData);
             } catch (error) {
