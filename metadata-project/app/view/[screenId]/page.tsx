@@ -81,35 +81,62 @@ export default function CommonPage() {
                     try {
                         let apiUrl = source.dataApiUrl.includes('/api/execute') ? source.dataApiUrl : `/api/execute/${source.dataSqlKey}`;
 
-                        const rawParams = source.dataParams || source.data_params || "{}";
-                        const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
-
                         // 내 일기 모드 일때 URL변경
                         if (source.componentId === "diary_list_source" && isOnlyMine){
                             apiUrl = "/api/diary/member-diaries";
-                            // source.dataSqlKey= isOnlyMine ? "GET_MEMBER_DIARY_LIST" : "GET_DIARY_LIST_PAGE";
                         }
 
+                        const rawParams = source.dataParams || source.data_params || "{}";
+                        const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
                         // dataParams가 문자열이면 객체로 바꾸고 없으면 빈 객체를 기본값으로 준다
-                        const calculatedOffset = (currentPage - 1) * pageSize;
 
-                        const finalParmas = {
+                        const calculatedOffset = (currentPage - 1) * pageSize; // SQL용 (0, 5, 10...)
+                        const apiPageNumber = currentPage - 1; // API용 (0, 1, 2...) -> 0부터 시작!
+
+                        const finalParams = {
                             ...parsedParams, // DB 설정값이 있으면 기본값을 덮어쓴다
-                            limit : pageSize, // GET_MEMBER
+                            // limit : pageSize,
                             pageSize: pageSize,
                             offset : calculatedOffset,
-                            pageNo : currentPage, // member-diaries용
-                            userId: isOnlyMine ? undefined : "",
-                            userSqno : parsedParams.userSqno || "1"
+                            page : apiPageNumber,
+                            pageNo : currentPage,
+                            filterId: isOnlyMine ? (formData["user_id"] || "본인ID") : "",
+                            userId: undefined,
+                            // userId: isOnlyMine ?(formData["user_id"] || "본인ID") : "",
+                            userSqno : parsedParams.userSqno || "9999"
                         }
-                        console.log("finalParams: ", finalParmas);
                         // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
-                        console.log("백엔드로 보낼 최종 재료:", { ...parsedParams });
 
-                        // const res = await axios.post(apiUrl, {...finalParmas});
-                        const res = isOnlyMine && source.componentId === "diary_list_source" ? await axios.get(apiUrl, { params: finalParmas})
-                            : await axios.post(apiUrl, {...finalParmas});
-                            const responeBody = res.data;
+                        console.log(`[요청] 모드:${isOnlyMine ? 'API' : 'SQL'}, URL:${apiUrl}`);
+                        console.log(`[파라미터] offset:${calculatedOffset}, page(0-base):${apiPageNumber}`);
+                        const token = getCookie("accessToken");
+                        console.log(`[토큰 확인] 현재 토큰 값: ${token ? "있음(앞자리: " + token.substring(0, 10) + "...)" : "없음(NULL)"}`);
+
+                        const headers: any = {};
+                        if (isOnlyMine && token) {
+                            headers["Authorization"] = `Bearer ${token}`; // "Bearer " 뒤에 공백 필수!
+                        }
+                        // const res = await axios.post(apiUrl, {...finalParams});
+                        console.log(`[요청 헤더]`, headers);
+
+                        let res;
+                        try {
+                            if (isOnlyMine && source.componentId === "diary_list_source") {
+                                // GET 요청: headers는 config 객체 안에 넣어야 함 (중요!)
+                                res = await axios.get(apiUrl, {
+                                    params: finalParams,
+                                    headers: headers  // <--- 여기가 핵심
+                                });
+                            } else {
+                                // POST 요청
+                                res = await axios.post(apiUrl, { ...finalParams });
+                            }
+                        } catch (e) {
+                            console.error("API 요청 실패:", e);
+                            return { id: source.componentId, data: [] };
+                        }
+
+                        const responeBody = res.data;
                             const realData = responeBody.data || responeBody;
                             console.log(`${source.componentId}의 응답 데이터:`, realData);
 
