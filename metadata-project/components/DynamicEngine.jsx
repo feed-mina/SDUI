@@ -7,6 +7,7 @@ import TextField from "./fields/TextField";
 import SelectField from "./fields/SelectField";
 import PasswordField from "@/components/fields/PasswordField";
 import Pagination from "@/components/Pagination";
+import TextAreaField from "@/components/fields/TextAreaField";
 
 const componentMap = {
     INPUT: InputField,
@@ -18,6 +19,7 @@ const componentMap = {
     IMAGE: ImageField,
     SELECT: SelectField,
     GROUP: (props) => <div>{props.children}</div>,
+    TEXTAREA : TextAreaField,
 };
 
 function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPassword}) {
@@ -103,7 +105,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                 ));
             }
             // 자식이 없다면 실제 컴포넌트를 그립니다.
-            const typeKey = (node.componentType || "").toUpperCase();
+            const typeKey = (node.componentType || node.component_type || "").toUpperCase();
             const Component = componentMap[typeKey];
 
             // console.log(`컴포넌트[${node.componentId}]가 찾는 상자: "${rDataId}"`);
