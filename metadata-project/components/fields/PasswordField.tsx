@@ -48,14 +48,15 @@ const PasswordField: React.FC<any> = ({meta, onChange, onAction}) => {
                         right: '10px',
                         top: '50%',
                         background: 'none',
-                        border: '#666',
-                        fontSize: '16px',
+                        border: 'none',
+                        fontSize: '30px',
                         fontWeight: 'bold',
                         zIndex: 2,
-                        // transform: 'translateY(-50%)',
+                        transform: 'translateY(-50%)',
                         cursor: 'pointer',
+                        filter: 'grayscale(100%)',
                     }}>
-                {showPassword ? '숨기기' : '보이기'}
+                {showPassword ? '👀' : '🕶️'}
             </button>
         </div>
     );
