@@ -37,7 +37,7 @@ export default function CommonPage() {
     }).filter((item:any) => {
         if (item.componentId === "go_login_btn" || item.componentId === "go_tutorial_btn")
             return !isLoggedIn;
-        if (item.componentId === "go_diary_btn" || item.componentId === "go_tutorial_btn")
+        if (item.componentId === "go_diary_btn" || item.componentId === "view_diary_list_btn")
             return isLoggedIn;
         return true;
     });
