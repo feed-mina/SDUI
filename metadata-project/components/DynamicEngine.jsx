@@ -59,9 +59,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
         return nodes.map((node) =>{
 
             const uId = node.uiId || Math.random();
-            const uniqueId = (rowIndex !== null && rowIndex !== undefined)
-                ? `${node.componentId}_${rowIndex}`
-                : node.componentId;
+            const uniqueId = `${node.componentId}_${rowIndex}`;
             const cId = node.componentId ;
             const rDataId = node.refDataId || "";
 
@@ -105,7 +103,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
 
                 return (
                     <Component
-                        key={node.uiId || Math.random()}
+                        key={uniqueId}
                         id={uniqueId}
                         meta={node}
                         metadata={metadata} // 전체 설계도를 넘겨 자식들을 찾게 함
