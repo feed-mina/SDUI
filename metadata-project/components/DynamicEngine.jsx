@@ -55,20 +55,21 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
             });
     };
     // 2, 계층 구조를 화면에 그리는 재귀함수
-    const renderNodes = (nodes,rowData = null) =>{
+    const renderNodes = (nodes,rowData = null, rowIndex = 0) =>{
         return nodes.map((node) =>{
 
-            const rDataId = node.refDataId || "";
-            // console.log(`[엔진 확인] ID: ${node.componentId}, 타입: ${node.componentType}, 찾는키: "${rDataId}"`);
-
             const uId = node.uiId || Math.random();
+            const uniqueId = (rowIndex !== null && rowIndex !== undefined)
+                ? `${node.componentId}_${rowIndex}`
+                : node.componentId;
             const cId = node.componentId ;
+            const rDataId = node.refDataId || "";
 
             const remoteData = (pageData && pageData[rDataId]) ? pageData[rDataId] : { status: "success", data: [] };
 
             const dataList = (Array.isArray(remoteData.data) && remoteData.data.length > 0)
             ? remoteData.data : [null];
-           // 자식이 있다면 그룹 (div)를 먼저 만든다.
+           // 자식이 있다면 그룹 (GROUP)를 먼저 만든다.
            if (node.children && node.children.length > 0){
                const groupStyle = {
                    display: "flex",
@@ -91,26 +92,11 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                ));
         }
 
-           // 자식은 없지만 타입이 GROUP인 경우 (빈 상자 방지)
-           //  if ((node.componentType || "").toUpperCase() === "GROUP" ) {
-           //      return null;
-           //  }
-// DynamicEngine 내부 예시 (개념 설명)
-            if (node.componentType === "GROUP" && node.refDataId) {
-                const listData = pageData[node.refDataId]?.data || [];
-                return listData.map((rowData) => (
-                    <div key={rowData.diary_id} style={node.inlineStyle}>
-                        {/* 자식 컴포넌트들을 돌며 rowData[field] 값을 매핑 */}
-                    </div>
-                ));
-            }
+            // DynamicEngine 내부 예시 (개념 설명)
             // 자식이 없다면 실제 컴포넌트를 그립니다.
             const typeKey = (node.componentType || node.component_type || "").toUpperCase();
             const Component = componentMap[typeKey];
 
-            // console.log(`컴포넌트[${node.componentId}]가 찾는 상자: "${rDataId}"`);
-            // console.log(`[검사] 컴포넌트: ${node.componentId}, 타입: ${node.componentType}, 찾는키: ${node.refDataId}`);
-            // console.log("엔진이 컴포넌트에 전달하는 데이터:", remoteData);
             if (typeKey === "DATA_SOURCE") return null;
             if (Component) {
                 // const finalData = rowData ? rowData : remoteData;
@@ -120,7 +106,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                 return (
                     <Component
                         key={node.uiId || Math.random()}
-                        id={node.componentId}
+                        id={uniqueId}
                         meta={node}
                         metadata={metadata} // 전체 설계도를 넘겨 자식들을 찾게 함
                         data={rowData ? { ...rowData } : null} // 찾은 데이터(일기 5개)를 넘겨줌
