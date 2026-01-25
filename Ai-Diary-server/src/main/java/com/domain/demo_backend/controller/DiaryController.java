@@ -113,6 +113,7 @@ public class DiaryController {
         diaryRequest.setUserSqno(currentUser.getUserSqno());
         diaryRequest.setUserId(currentUser.getUserId());
         diaryRequest.setEmail(currentUser.getUsername());
+        diaryRequest.setAuthor(currentUser.getUserId());
 
         System.out.println("@@@ [안전하게 세팅된] diaryRequest: " + diaryRequest);
 

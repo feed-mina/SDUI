@@ -166,21 +166,21 @@ public class DiaryService {
         // 2.빌더를 사용해 다이어리를 만든다
         Diary diary = Diary.builder()
                 .user(user) // userSqno 대신 객체 자체를 넣어준다.
-                .title(diaryRequest.getTitle() != null ? diaryRequest.getTitle() : "Untitled")
+                .title(diaryRequest.getDiaryTitle() != null ? diaryRequest.getDiaryTitle() : "Untitled")
                 .author(diaryRequest.getAuthor() != null ? diaryRequest.getAuthor() : "Undefined")
                 .userId(safeUserId)
-                .content(diaryRequest.getContent() != null ? diaryRequest.getContent() : "")
+                .content(diaryRequest.getDiaryContent() != null ? diaryRequest.getDiaryContent() : "")
                 .tag1(diaryRequest.getTag1() != null ? diaryRequest.getTag1() : "")
                 .tag2(diaryRequest.getTag2() != null ? diaryRequest.getTag2() : "")
                 .tag3(diaryRequest.getTag3() != null ? diaryRequest.getTag3() : "")
-                .emotion(diaryRequest.getEmotion() != null ? diaryRequest.getEmotion() : 0)
+                .emotion(diaryRequest.getDiaryEmotion() != null ? diaryRequest.getDiaryEmotion() : 0)
                 .diaryStatus(diaryRequest.getDiaryStatus() != null ? diaryRequest.getDiaryStatus() : "true")
                 .diaryType(diaryRequest.getDiaryType() != null ? diaryRequest.getDiaryType() : "N")
                 .frstRegIp(ip != null ? ip : "127.0.0.1")
                 .selectedTimes(selectedTimesJson) // → DB에 저장할 수 있도록 문자열로 바꾸는 처리도 고려
-                .drugMorning(diaryRequest.getDrugMorning())
-                .drugLunch(diaryRequest.getDrugLunch())
-                .drugDinner(diaryRequest.getDrugDinner())
+                .drugMorning(diaryRequest.getDrugMorning() != null ? diaryRequest.getDrugMorning() : "")
+                .drugLunch(diaryRequest.getDrugLunch() != null ? diaryRequest.getDrugLunch() : "")
+                .drugDinner(diaryRequest.getDrugDinner() != null ? diaryRequest.getDrugDinner() : "")
                 .build();
 
 
