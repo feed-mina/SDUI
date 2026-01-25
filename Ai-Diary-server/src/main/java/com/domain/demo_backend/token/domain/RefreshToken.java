@@ -6,6 +6,7 @@ import lombok.Setter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.springframework.data.redis.core.RedisHash;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -13,6 +14,8 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED) // 보안을 위해서...
+// 20260125 Redis 로직 추가
+@RedisHash(value = "refreshToken", timeToLive = 60 * 60 * 3)
 public class RefreshToken {
 
     @Id

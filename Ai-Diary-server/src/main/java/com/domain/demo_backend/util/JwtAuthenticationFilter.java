@@ -1,10 +1,12 @@
 package com.domain.demo_backend.util;
 
+import com.domain.demo_backend.token.domain.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,16 +17,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
-
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
-
+    // 2026-01-25 RefreshTokenRepository 주입 성능개선
+    private final RefreshTokenRepository refreshTokenRepository;
 
 //    cloundfront 적용 후 프록시 설정으로 추가
     private static final List<String> EXCLUDE_URLS = List.of(
@@ -36,6 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return EXCLUDE_URLS.stream().anyMatch(path::startsWith);
     }
+
+
+
+    /*
+    * @@@ 2026-01-25 사용자가 요청을 보낼때마다 만료시간을 3시간 뒤로 미루는 (슬라이딩 만료) 방법 추가
+    * 필터 내에서 RefreshTokenRepository 주입받아 저장 > TTL 초기화
+    * */
+
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -57,6 +68,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 System.out.println("@@@@실제 userSqno : " + userSqno);
 
                 if (email != null) {
+                    /*
+                    * @@@ 2026-01-25 RefreshTokenRepository 주입받아 저장 > TTL 초기화
+                    * 슬라이딩 만료 최적화
+                    * */
+                    Date issuedAt = claims.getIssuedAt();
+                    long now = System.currentTimeMillis();
+                    long passedTime = now - issuedAt.getTime();
+
+                    // 2026-01-25 로그인(토큰 발행)한지 30분이 지났는지 확인
+                    if(passedTime > 1000L * 60 * 30){
+                        // 2026-01-25 Redis 갱신 (findById 후 save 할때 TTL 이 다시 3시간ㄴ으로 초기화)
+                        // 30분 이후 요청에 대해서만 Redis 에 접근
+                        refreshTokenRepository.findByEmail(email).ifPresent(existingToken -> {
+                            refreshTokenRepository.save(existingToken);
+                        });
+                    }
                     List<GrantedAuthority> authorities = List.of(() -> "ROLE_USER");
                     System.out.println("@@@@authorities: " + authorities);
                     CustomUserDetails userDetails = new CustomUserDetails(email, userSqno, userId, List.of(new SimpleGrantedAuthority("ROLE_USER")));

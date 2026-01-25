@@ -46,9 +46,13 @@ public class JwtUtil {
     // Access Token: 1시간
     private static final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60; // 1시간
 
+
+    /*
+    * @@@@ 2026-01-25 RefreshTokenRepository 주입받아 저장 > TTL 초기화
+    * */
     // Refresh Token: 7일
     private static final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24 * 7; // 7일
-
+//    private static final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 3; // 3시간
     private final UserRepository userRepository;
     public JwtUtil(UserRepository userRepository, RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
