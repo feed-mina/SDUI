@@ -1,5 +1,6 @@
 package com.domain.demo_backend.config;
 
+import com.domain.demo_backend.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.util.JwtAuthenticationFilter;
 import com.domain.demo_backend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +36,12 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
 
+    private final RefreshTokenRepository refreshTokenRepository;
+
     @Autowired
-    public SecurityConfig(JwtUtil jwtUtil) {
+    public SecurityConfig(JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
         this.jwtUtil = jwtUtil;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
 
@@ -53,7 +57,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
                 .csrf(csrf -> csrf.disable())  // CSRF 비활성화
@@ -64,7 +68,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new Http403ForbiddenEntryPoint()) //  403 Forbidden 반환 (Redirect 방지)
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, refreshTokenRepository), UsernamePasswordAuthenticationFilter.class)
                 .formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer.disable()) // 기본 로그인 폼 완전 비활성화
                 .logout(logout -> logout.disable()); // 로그아웃 비활성화 (API 방식 사용)
 
