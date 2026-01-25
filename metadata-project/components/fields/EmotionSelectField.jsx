@@ -1,51 +1,41 @@
 'use client';
-// src/components/fields/SelectField.js
+// src/components/fields/EmotionSelectField.js
 import React, { useState } from 'react';
 
-function SelectField({id, label, style, className, meta, onChange}) {
-    const [isDirect, setIsDirect] = useState(false); // 직접 입력 모드인지 확인
-    const options = ["naver.com", "gmail.com", "nate.com", "hanmail.net", "직접 입력"];
+function EmotionSelectField({id, style, className, meta, onChange}) {
 
-
-    const handleSelectChange = (e) => {
-        const val = e.target.value;
-        if (val === "직접 입력") {
-            setIsDirect(true);
-            onChange(id, ""); // 일단 비워둠
-        } else {
-            setIsDirect(false);
-            onChange(id, val); // 선택한 도메인 전달
-        }
-    };
-
-    const handleInputChange = (e) => {
-        onChange(id, e.target.value); // 직접 입력한 도메인 전달
-    };
+    const emotionItems = [
+        // { text: '오늘 감정은 어떤가요?',value: ''},
+        { text: "😁 기분이 좋아요", value: "1" },
+        { text: "😂 너무 웃겨요", value: "2" },
+        { text: "😫 어떡해야 할까요?!", value: "3" },
+        { text: "😒 불쾌하고 지루해요", value: "4" },
+        { text: "😤 어떻게 이럴 수가", value: "5" },
+        { text: "😡 화가 나요", value: "6" },
+        { text: "🤯 여기서 벗어나고 싶어요...", value: "7" },
+        { text: "💖 사랑이 넘쳐요", value: "8" },
+        { text: "🤕 몸 상태가 좋지 않아요", value: "9" },
+        { text: "💙 우울해요", value: "10" }
+    ];
 
     return (
         <>
-            <span style={{ fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{meta.labelText}</span>
+            {/*<span style={{ fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{meta.labelText}</span>*/}
             <select
                 id={id}
                 style={{...style, flex:1}}
                 className={className}
                 onChange={(e) => {
-                const val = e.target.value;
-                setIsDirect(val === "직접 입력");
-                onChange(id, val === "직접 입력" ? "" : val);
-            }}>
-                <option value="">이메일 선택</option>
-                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    const val = e.target.value;
+                    if (onChange) onChange(id, val);
+                }}
+                >
+                <option value=""> 오늘 나의 기분은?</option>
+                {emotionItems.map(emotionItems => <option key={emotionItems.value} value={emotionItems.value}>{emotionItems.text}</option>)}
             </select>
-            {isDirect && (
-                <input
-                    type="text"
-                    placeholder="도메인 입력"
-                    onChange={(e) => onChange(id, e.target.value)}
-                />
-            )}
+
         </>
     );
 }
 
-export default SelectField;
+export default EmotionSelectField;
