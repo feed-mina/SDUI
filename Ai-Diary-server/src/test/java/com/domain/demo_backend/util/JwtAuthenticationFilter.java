@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 2026-01-25 RefreshTokenRepository 주입 성능개선
     private final RefreshTokenRepository refreshTokenRepository;
 
-//    cloundfront 적용 후 프록시 설정으로 추가
+    //    cloundfront 적용 후 프록시 설정으로 추가
     private static final List<String> EXCLUDE_URLS = List.of(
             "/api/auth/login",
             "/api/kakao/login"
@@ -41,9 +41,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     /*
-    * @@@ 2026-01-25 사용자가 요청을 보낼때마다 만료시간을 3시간 뒤로 미루는 (슬라이딩 만료) 방법 추가
-    * 필터 내에서 RefreshTokenRepository 주입받아 저장 > TTL 초기화
-    * */
+     * @@@ 2026-01-25 사용자가 요청을 보낼때마다 만료시간을 3시간 뒤로 미루는 (슬라이딩 만료) 방법 추가
+     * 필터 내에서 RefreshTokenRepository 주입받아 저장 > TTL 초기화
+     * */
 
 
 
@@ -69,9 +69,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 if (email != null) {
                     /*
-                    * @@@ 2026-01-25 RefreshTokenRepository 주입받아 저장 > TTL 초기화
-                    * 슬라이딩 만료 최적화
-                    * */
+                     * @@@ 2026-01-25 RefreshTokenRepository 주입받아 저장 > TTL 초기화
+                     * 슬라이딩 만료 최적화
+                     * */
                     Date issuedAt = claims.getIssuedAt();
                     long now = System.currentTimeMillis();
                     long passedTime = now - issuedAt.getTime();
