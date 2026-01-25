@@ -6,6 +6,7 @@ import com.domain.demo_backend.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.token.domain.TokenResponse;
 import com.domain.demo_backend.user.domain.User;
 import com.domain.demo_backend.user.dto.*;
+import com.domain.demo_backend.util.CustomUserDetails;
 import com.domain.demo_backend.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -297,4 +299,27 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰 오류: " + e.getMessage());
         }
     }
+
+    /*
+@@@@ 2026-01-25 로그아웃 로직 추가, redis에서 리프레시 토큰 삭제, 쿠키 삭제
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        // 1. Redis에서 리프레시 토큰 삭제
+        if(userDetails != null){
+            refreshTokenRepository.deleteById(userDetails.getEmail());
+        }
+        // 2. 쿠키 삭제를 위한 설정 (Max-Age를 0으로 설정)
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite("None")
+                .maxAge(0)
+                .build();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body("로그아웃 성공");
+    }
+
+
+
 }
