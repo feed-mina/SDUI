@@ -1,15 +1,29 @@
 'use client';
 // src/components/fields/InputField.js
 
+import {useEffect, useState} from "react";
+
 function InputField({ id,pwType, showPassword, label, className, readOnly, isRequired, onChange, onAction, meta , data}) {
     // 1. label이 있을 때만 <label> 태그를 보여줍니다.
     // 2. id는 COMPONENT_ID가 들어오며, 이는 데이터 저장 키가 됩니다.
     // 3. className에는 DB에서 넘어온 CSS_CLASS 값이 적용됩니다.
-    console.log('id', id);
+    // console.log('id', id);
+     // 입력창 스스로 값을 관리하기 위해 상태(state)를 만든다. 초기값은 부모가 준 데이터(data[id])가 있으면 쓰고 없으면 빈 문자열이다.
+    const [localValue, setLocalValue] = useState(data?.[id] || "");
     const customClass = meta?.cssClass || "";
     const customPlaceholder = meta?.placeholder || "";
+    const serverValue = data?.[id];
+    useEffect(() => {
+        // 내 로컬 값과 서버 값이 다를 때만 업데이트 (타이핑 중 꼬임 방지)
+        if (serverValue !== undefined && serverValue !== localValue) {
+            setLocalValue(serverValue);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [serverValue]);
     const handleInputChange = (e) => {
-        onChange(e.target.id, e.target.value);
+        const newValue = e.target.value;
+        setLocalValue(newValue);
+        onChange(id, newValue);
     }
     // 20260117 enter 하면 작동
     const onKeyDown = (e) =>{
@@ -38,7 +52,7 @@ function InputField({ id,pwType, showPassword, label, className, readOnly, isReq
                 type={id.includes('pw') ? (pwType || 'password') : 'text'}
                 id={id}
                 name={id}
-                value={data ? data[id] || "" : ""}
+                value={localValue}
                 placeholder={customPlaceholder}
                 readOnly={readOnly}
                 required={isRequired}
