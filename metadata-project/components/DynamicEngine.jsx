@@ -8,6 +8,8 @@ import SelectField from "./fields/SelectField";
 import PasswordField from "@/components/fields/PasswordField";
 import Pagination from "@/components/Pagination";
 import TextAreaField from "@/components/fields/TextAreaField";
+import EmailSelectField from "./fields/EmailSelectField";
+import EmotionSelectField from "./fields/EmotionSelectField";
 
 const componentMap = {
     INPUT: InputField,
@@ -17,13 +19,16 @@ const componentMap = {
     SNS_BUTTON: ButtonField,
     LINK_BUTTON: ButtonField,
     IMAGE: ImageField,
+    EMAIL_SELECT: EmailSelectField,
+    EMOTION_SELECT: EmotionSelectField,
     SELECT: SelectField,
     GROUP: (props) => <div>{props.children}</div>,
     TEXTAREA : TextAreaField,
 };
 
 function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPassword}) {
-    console.log("현재 엔진이 들고 있는 전체 창고(pageData):", pageData);
+    // console.log("현재 엔진이 들고 있는 전체 창고(pageData):", pageData);
+
     // 1. groupid로 트리 구조 생성 함수
     const buildTree = (data, parentId = null, depth = 0) => {
         if (depth > 5) return [];
@@ -58,52 +63,79 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
     const renderNodes = (nodes,rowData = null, rowIndex = 0) =>{
         return nodes.map((node) =>{
 
+            // [중요 수정 1] ID 생성 로직 변경
+            // rowData가 있으면(리스트 반복 중) ID 뒤에 인덱스를 붙여 고유하게 만들고(예: title_0, title_1),
+            // rowData가 없으면(로그인 폼 등) 원래 ID를 그대로 사용합니다(예: email).
+            const cId = node.componentId;
+            const uniqueId = rowData ? `${cId}_${rowIndex}` : cId;
             const uId = node.uiId || Math.random();
-            const uniqueId = `${node.componentId}_${rowIndex}`;
-            const cId = node.componentId ;
+
             const rDataId = node.refDataId || "";
+
 
             const remoteData = (pageData && pageData[rDataId]) ? pageData[rDataId] : { status: "success", data: [] };
 
             const dataList = (Array.isArray(remoteData.data) && remoteData.data.length > 0)
-            ? remoteData.data : [null];
-           // 자식이 있다면 그룹 (GROUP)를 먼저 만든다.
-           if (node.children && node.children.length > 0){
-               const groupStyle = {
-                   display: "flex",
-                   flexDirection: node.groupDirection === "ROW" ? "row" : "column",
-                   width: "100%",
-                   gap: "10px",
-                   justifyContent: "flex-start",
-                   alignItems: "center",
-                   position:node.componentId ==="PW_SUB_GROUP" ? "relative" : "static",
-                   flexWrap: "nowrap",
+                ? remoteData.data : [null];
 
-               };
-               // return(<div key={`group-${uId}`} className={`group-${cId}`} style={groupStyle}>{renderNodes(node.children)} </div>);
+            // A. 자식이 있다면 그룹(GROUP)으로 처리
+            if (node.children && node.children.length > 0){
+                const groupStyle = {
+                    display: "flex",
+                    flexDirection: node.groupDirection === "ROW" ? "row" : "column",
+                    width: "100%",
+                    gap: "10px",
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                    position:node.componentId ==="PW_SUB_GROUP" ? "relative" : "static",
+                    flexWrap: "nowrap",
 
-               return dataList.map((rowData, index) => (
-                   <div key={`group-${uId}-${index}`} className={`group-${cId}`} style={groupStyle}>
-                       {/* 자식들에게 현재 줄의 데이터를 넘겨줍니다. */}
-                       {renderNodes(node.children, rowData)}
-                   </div>
-               ));
-        }
+                };
 
-            // DynamicEngine 내부 예시 (개념 설명)
-            // 자식이 없다면 실제 컴포넌트를 그립니다.
+                return dataList.map((row, index) => (
+                    <div key={`group-${uId}-${index}`} className={`group-${cId}`} style={groupStyle}>
+                        {/* 자식들에게 현재 줄의 데이터(row)를 넘겨줍니다. */}
+                        {renderNodes(node.children, row)}
+                    </div>
+                ));
+            }
+
+            // 자식은 없지만 타입이 GROUP인 경우 (빈 상자 방지)
+            // if (node.componentType === "GROUP" && node.refDataId) {
+            //     const listData = pageData[node.refDataId]?.data || [];
+            //     return listData.map((rowData) => (
+            //         <div key={rowData.diary_id} style={node.inlineStyle}>
+            //             {/* 자식 컴포넌트들을 돌며 rowData[field] 값을 매핑 */}
+            //         </div>
+            //     ));
+            // }
+
+
+
+            // [중요 수정 2] isVisible 처리 강화
+            // false(불리언)와 "FALSE"(문자열) 모두 처리하여 숨김 적용
+            const rawVisible = node.isVisible ?? node.is_visible ?? true;
+            if (rawVisible === false || String(rawVisible).toUpperCase() === "FALSE") {
+                console.log('rawVisible', rawVisible);
+                return null;
+            }
+
+            //  B.   자식이 없다면 실제 컴포넌트(INPUT, BUTTON 등) 그리기
             const typeKey = (node.componentType || node.component_type || "").toUpperCase();
             const Component = componentMap[typeKey];
 
+            // console.log(`컴포넌트[${node.componentId}]가 찾는 상자: "${rDataId}"`);
+            // console.log(`[검사] 컴포넌트: ${node.componentId}, 타입: ${node.componentType}, 찾는키: ${node.refDataId}`);
+            // console.log("엔진이 컴포넌트에 전달하는 데이터:", remoteData);
             if (typeKey === "DATA_SOURCE") return null;
             if (Component) {
-                // const finalData = rowData ? rowData : remoteData;
-                const finalData = rowData ? rowData : (pageData && pageData[rDataId]?.data?.[0] || pageData[rDataId]);
-                // console.log(`[배달 확인] ${node.componentId}에게 전달되는 데이터:`, finalData);
+                // rowData가 있으면 그것을 쓰고, 없으면 pageData에서 찾거나 빈값
+                //  const finalData = rowData ? rowData : (pageData && pageData[rDataId]?.data?.[0] || pageData[rDataId]);
 
+                // rowData가 있으면 넘겨주고, 없으면 null (로그인 폼은 null 받음 -> InputField 내부 로직 따름)
                 return (
                     <Component
-                        key={uniqueId}
+                        key={uniqueId}      // React 리렌더링용 고유 키
                         id={uniqueId}
                         meta={node}
                         metadata={metadata} // 전체 설계도를 넘겨 자식들을 찾게 함
@@ -113,7 +145,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                     />
 
                 );
-                }
+            }
 
 
             return <div key={uId} style={{ color: "red" }}>알 수 없는 타입: {typeKey}</div>;
@@ -141,47 +173,6 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
         </div>
     );
 
-    // return (
-    //     <div className="engine-container" style={containerStyle}>
-    //         {metadata.map((item) => {
-    //             // 어떤 이름으로 들어와도 값을 꺼낼 수 있게 방어 로직 추가
-    //             const cType = item.componentType || item.componentType || "";
-    //             const cId = item.componentId || item.componentId || "";
-    //             const rDataId = item.ref_data_id || item.refDataId || "";
-    //             const uId = item.uiId || item.uiId || Math.random();
-    //
-    //             const typeKey = cType.toUpperCase();
-    //             const Component = componentMap[typeKey];
-    //             console.log("cType: ", cType);
-    //             // pageData가 없거나 해당 ID의 데이터가 없을 때의 기본값
-    //             const remoteData = (pageData && pageData[rDataId])
-    //                 ? pageData[rDataId]
-    //                 : { status: "success", data: [] };
-    //
-    //             if (typeKey === "DATA_SOURCE") return null;
-    //
-    //             if (Component) {
-    //                 return (
-    //                     <Component
-    //                         key={uId}
-    //                         id={cId}
-    //                         meta={item}
-    //                         metadata={metadata}
-    //                         remoteData={remoteData}
-    //                         onChange={onChange}
-    //                         onAction={onAction}
-    //                     />
-    //                 );
-    //             }
-    //
-    //             return (
-    //                 <div  id={cId} key={uId} style={{ color: "red", border: "1px solid red", padding: "5px" }}>
-    //                     알 수 없는 타입: {cType || "타입없음"} (ID: {cId || "ID없음"})
-    //                 </div>
-    //             );
-    //         })}
-    //     </div>
-    // );
 }
 
 export default DynamicEngine;
