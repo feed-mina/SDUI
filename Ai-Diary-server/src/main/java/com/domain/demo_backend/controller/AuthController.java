@@ -73,10 +73,10 @@ public class AuthController {
                     .secure(true) // HTTPS 환경에선 반드시 true
                     .path("/")
                     .sameSite("None") // 크로스사이트 허용
-                    .maxAge(7 * 24 * 60 * 60) // 7일
+//                    .maxAge(7 * 24 * 60 * 60) // 7일
                     .build();
+                // @@@@ 2026-01-25 .maxAge 주석 -> refreshToken의 쿠키를 새션 동안만 유효한것으로 인식, 브라우저 창을 완전히 닫으면 쿠키가 자동 파기
 
-            // 로컬
             /**
              *
              ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
