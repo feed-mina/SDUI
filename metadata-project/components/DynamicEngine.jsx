@@ -10,6 +10,8 @@ import Pagination from "@/components/Pagination";
 import TextAreaField from "@/components/fields/TextAreaField";
 import EmailSelectField from "./fields/EmailSelectField";
 import EmotionSelectField from "./fields/EmotionSelectField";
+import RecordTimeComponent from "./fields/RecordTimeComponent";
+import React, {useMemo} from "react";
 
 const componentMap = {
     INPUT: InputField,
@@ -24,22 +26,25 @@ const componentMap = {
     SELECT: SelectField,
     GROUP: (props) => <div>{props.children}</div>,
     TEXTAREA : TextAreaField,
+    TIME_RECORD_WIDGET : RecordTimeComponent
 };
 
 function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPassword}) {
     // console.log("현재 엔진이 들고 있는 전체 창고(pageData):", pageData);
 
-    // 1. groupid로 트리 구조 생성 함수
+    // @@@2026-01-26 추가 트리 구조 생성을 메모제이션하여 성능을 최적화
+    const treeData = useMemo(() => {
     const buildTree = (data, parentId = null, depth = 0) => {
         if (depth > 5) return [];
-
         return data
             .filter(item => {
                 const itemParentId = item.parent_group_id || item.parentGroupId || null;
 
-                // 1. parentId가 null일 때: 실제 null이거나,
+                // parentId가 null일 때: 실제 null이거나,
                 //    데이터 전체를 뒤져봐도 해당 부모 ID를 가진 항목이 '컴포넌트'로 존재하지 않을 때 최상위로 간주
                 if (parentId === null) {
+                    console.log('data', data);
+
                     const parentExists = data.some(d => (d.group_id || d.groupId) === itemParentId);
                     return itemParentId === null || !parentExists;
                 }
@@ -59,27 +64,39 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                 };
             });
     };
+    return buildTree(metadata, null);
+}, [metadata]);
+    // 1. groupid로 트리 구조 생성 함수
+
     // 2, 계층 구조를 화면에 그리는 재귀함수
     const renderNodes = (nodes,rowData = null, rowIndex = 0) =>{
         return nodes.map((node) =>{
+            // @@@@ 2026-01-26 수정 : 보이는 여부 체크를 가장 먼저 해서 불필요한 로직 실행을 막는다
 
-            // [중요 수정 1] ID 생성 로직 변경
+            console.log('node: ', node);
+            // [중요 수정 2] isVisible 처리 강화
+            const rawVisible = node.isVisible ?? node.is_visible ?? true;
+            if (rawVisible === false || String(rawVisible).toUpperCase() === "FALSE") {
+                console.log('rawVisible', rawVisible);
+                return null;
+            }
+
             // rowData가 있으면(리스트 반복 중) ID 뒤에 인덱스를 붙여 고유하게 만들고(예: title_0, title_1),
             // rowData가 없으면(로그인 폼 등) 원래 ID를 그대로 사용합니다(예: email).
             const cId = node.componentId;
             const uniqueId = rowData ? `${cId}_${rowIndex}` : cId;
-            const uId = node.uiId || Math.random();
-
+            const uId = node.uiId|| cId  || Math.random();
             const rDataId = node.refDataId || "";
 
-
-            const remoteData = (pageData && pageData[rDataId]) ? pageData[rDataId] : { status: "success", data: [] };
-
-            const dataList = (Array.isArray(remoteData.data) && remoteData.data.length > 0)
-                ? remoteData.data : [null];
+            // @@@@ 2026-01-26 수정 : 그룹 노드 렌더링
 
             // A. 자식이 있다면 그룹(GROUP)으로 처리
             if (node.children && node.children.length > 0){
+
+                const remoteData = (pageData && pageData[rDataId]) ? pageData[rDataId] : { status: "success", data: [] };
+
+                const dataList = Array.isArray(remoteData.data) ? remoteData.data : [null];
+
                 const groupStyle = {
                     display: "flex",
                     flexDirection: node.groupDirection === "ROW" ? "row" : "column",
@@ -100,6 +117,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                 ));
             }
 
+
             // 자식은 없지만 타입이 GROUP인 경우 (빈 상자 방지)
             // if (node.componentType === "GROUP" && node.refDataId) {
             //     const listData = pageData[node.refDataId]?.data || [];
@@ -110,17 +128,8 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
             //     ));
             // }
 
-
-
-            // [중요 수정 2] isVisible 처리 강화
-            // false(불리언)와 "FALSE"(문자열) 모두 처리하여 숨김 적용
-            const rawVisible = node.isVisible ?? node.is_visible ?? true;
-            if (rawVisible === false || String(rawVisible).toUpperCase() === "FALSE") {
-                console.log('rawVisible', rawVisible);
-                return null;
-            }
-
-            //  B.   자식이 없다면 실제 컴포넌트(INPUT, BUTTON 등) 그리기
+            // 최상위 (parentId가 null인것) 부터 렌더링 시작
+            //  B.   개별 컴포넌트 렌더링 자식이 없다면 실제 컴포넌트(INPUT, BUTTON 등) 그리기
             const typeKey = (node.componentType || node.component_type || "").toUpperCase();
             const Component = componentMap[typeKey];
 
@@ -146,33 +155,15 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
 
                 );
             }
-
-
             return <div key={uId} style={{ color: "red" }}>알 수 없는 타입: {typeKey}</div>;
         });
     };
 
-
-    const containerStyle = {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        gap: "10px"
-    };
-    if (!metadata || metadata.length === 0) {
-        return <div style={containerStyle}>표시할 정보가 없습니다.</div>;
-    }
-
-    // 3, 최상위 (parentId가 null인것) 부터 렌더링 시작
-    const treeData = buildTree(metadata, null);
     return(
-        <div className="engine-container" style={containerStyle}>
+        <div className="engine-container"  style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {renderNodes(treeData)}
         </div>
     );
-
 }
 
 export default DynamicEngine;
