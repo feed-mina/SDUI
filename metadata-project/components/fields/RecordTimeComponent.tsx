@@ -52,7 +52,14 @@ const RecordTimeComponent = () => {
 
         return () => clearInterval(timer);
     }, [goalTime]);
-
+if(!goalTime){
+    return (
+        <div className="no-goal-container" onClick={() => window.location.href='/SET_TIME_PAGE'}>
+            <p>오늘의 약속 시간은 언제인가요?</p>
+            <button className="setup-button">시간 설정하기</button>
+        </div>
+    );
+}
     return (
         <div className="time-record-container">
             <div className="clock-display-box">
