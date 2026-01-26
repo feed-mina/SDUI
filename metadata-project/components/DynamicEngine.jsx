@@ -95,7 +95,9 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
 
                 const remoteData = (pageData && pageData[rDataId]) ? pageData[rDataId] : { status: "success", data: [] };
 
-                const dataList = Array.isArray(remoteData.data) ? remoteData.data : [null];
+                const dataList = (Array.isArray(remoteData.data) && remoteData.data.length > 0)
+                    ? remoteData.data
+                    : [null];
 
                 const groupStyle = {
                     display: "flex",

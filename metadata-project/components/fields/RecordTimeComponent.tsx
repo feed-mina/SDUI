@@ -24,7 +24,7 @@ const RecordTimeComponent = () => {
         queryKey: ['goalTime'],
         queryFn: async() => {
             const res = await axios.get('/api/goalTime');
-            return res.data.targetTime; // 예: "2026-01-26 10:00:00"
+            return res.data.targetTime ?? null; // 예: "2026-01-26 10:00:00"
         },
         staleTime: Infinity //  목표는 잘 안바뀌니까 계속 기억하기
     });
@@ -54,7 +54,7 @@ const RecordTimeComponent = () => {
     }, [goalTime]);
 if(!goalTime){
     return (
-        <div className="no-goal-container" onClick={() => window.location.href='/SET_TIME_PAGE'}>
+        <div className="no-goal-container" onClick={() => window.location.href='/view/SET_TIME_PAGE'}>
             <p>오늘의 약속 시간은 언제인가요?</p>
             <button className="setup-button">시간 설정하기</button>
         </div>
