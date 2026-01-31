@@ -11,6 +11,7 @@ import TextAreaField from "@/components/fields/TextAreaField";
 import EmailSelectField from "./fields/EmailSelectField";
 import EmotionSelectField from "./fields/EmotionSelectField";
 import RecordTimeComponent from "./fields/RecordTimeComponent";
+import DateTimePicker from "./fields/DateTimePicker";
 import React, {useMemo} from "react";
 
 const componentMap = {
@@ -26,7 +27,8 @@ const componentMap = {
     SELECT: SelectField,
     GROUP: (props) => <div>{props.children}</div>,
     TEXTAREA : TextAreaField,
-    TIME_RECORD_WIDGET : RecordTimeComponent
+    TIME_RECORD_WIDGET : RecordTimeComponent,
+    DATETIME_PICKER : DateTimePicker,
 };
 
 function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPassword}) {
@@ -43,7 +45,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                 // parentId가 null일 때: 실제 null이거나,
                 //    데이터 전체를 뒤져봐도 해당 부모 ID를 가진 항목이 '컴포넌트'로 존재하지 않을 때 최상위로 간주
                 if (parentId === null) {
-                    console.log('data', data);
+                    // console.log('data', data);
 
                     const parentExists = data.some(d => (d.group_id || d.groupId) === itemParentId);
                     return itemParentId === null || !parentExists;
@@ -73,7 +75,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
         return nodes.map((node) =>{
             // @@@@ 2026-01-26 수정 : 보이는 여부 체크를 가장 먼저 해서 불필요한 로직 실행을 막는다
 
-            console.log('node: ', node);
+            // console.log('node: ', node);
             // [중요 수정 2] isVisible 처리 강화
             const rawVisible = node.isVisible ?? node.is_visible ?? true;
             if (rawVisible === false || String(rawVisible).toUpperCase() === "FALSE") {
