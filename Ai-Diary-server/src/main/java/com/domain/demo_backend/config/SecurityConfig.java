@@ -63,7 +63,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())  // CSRF 비활성화
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .anyRequest().permitAll()
+                        .requestMatchers("/api/goalTime/**", "/api/diary/**", "/api/auth/logout" ,"/api/auth/editPassword", "/api/auth/non-user").authenticated()
+                        .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new Http403ForbiddenEntryPoint()) //  403 Forbidden 반환 (Redirect 방지)
