@@ -157,12 +157,22 @@ const RecordTimeComponent = () => {
             // 10분 전 여유시간 기준 계산
             const targetWithMargin = new Date(targetDate.getTime() - 10 * 60000);
 
-            const diff = targetWithMargin.getTime() - now.getTime();
+            const diff = targetWithMargin.getTime() - now.getTime();// 1. 전체 남은 분(Total Minutes) 계산
+            const totalMinutes = Math.floor(diff / (1000 * 60));
+
+            // 2. 시간(Hour)과 분(Minute)으로 분리
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
             if(diff <= 0){
                 setRemainTimeText("지각입니다 ㅠㅠ");
             } else{
                 const min = Math.floor(diff / 60000);
-                setRemainTimeText(`${min}분 남음`);
+                // 3. 화면 표시 포맷 (0시간일 때는 분만, 아니면 '0시간 0분' 형태)
+                if (hours > 0) {
+                    setRemainTimeText(`${hours}시간 ${minutes}분 남음`);
+                } else {
+                    setRemainTimeText(`${minutes}분 남음`);
+                }
             }
         }, 1000);
         return () => clearInterval(timer);
