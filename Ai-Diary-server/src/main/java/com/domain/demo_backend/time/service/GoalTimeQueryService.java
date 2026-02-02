@@ -80,14 +80,11 @@ public class GoalTimeQueryService {
         goal.setUserSqno(userSqno);
         goal.setTargetTime(targetTime);
         goal.setTodaysMessage(message);
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedTime = targetTime.format(formatter);
+        GoalSetting savedGoal = goalSettingRepository.save(goal);
 
         String cacheKey = "USER_GOAL:"+ userSqno;
-        redisTemplate.opsForValue().set(cacheKey, formattedTime, Duration.ofHours(3));
-
-        return goalSettingRepository.save(goal);
+        redisTemplate.delete(cacheKey);
+        return savedGoal;
     }
 
     // [리스트용] 목표 3개 조회
