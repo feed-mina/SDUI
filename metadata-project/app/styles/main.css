@@ -415,8 +415,7 @@ button:hover { transform: scale(1.05); }
     display: block; /* 블록 요소로 변경 */
     width: 80%;     /* 너비 설정 (너무 꽉 차면 안 예쁠 수 있어서 80%) */
     max-width: 300px; /* 최대 너비 제한 */
-    margin: 30px auto 0 auto; /* 상단 여백 30px, 좌우 auto(가운데 정렬) */
-
+    margin: 10px auto 0 auto; /* 상단 여백 30px, 좌우 auto(가운데 정렬) */
     padding: 15px;
     background: #00796b;
     color: white;
@@ -681,18 +680,7 @@ button:hover { transform: scale(1.05); }
 }
 
 /* 설정 완료 버튼 스타일 */
-.save-button {
-    width: 100%;
-    max-width: 300px;
-    padding: 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-}
+
 
 /* 취소 버튼 스타일 */
 .cancel-button {
@@ -914,6 +902,69 @@ button:hover { transform: scale(1.05); }
 .goal-list-popup-time {
     font-weight: bold;
     color: #333;
+}
+/* DateTimePicker.css */
+
+.wheel-wrapper {
+    /* 기존 스타일 유지 */
+    width: 60px;
+    height: 50px;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: y mandatory;
+
+    /* [추가] 배경색은 흰색으로 지정 */
+    background-color: white;
+
+    /* [핵심] 위/아래 안쪽으로 그림자를 주어 굴곡진 느낌 연출 */
+    box-shadow: inset 0px 10px 8px -5px rgba(0, 0, 0, 0.1),
+    inset 0px -10px 8px -5px rgba(0, 0, 0, 0.1);
+
+    /* [추가] 마우스를 올렸을 때 '손 모양' 대신 '위아래 화살표' 커서로 변경 */
+    cursor: ns-resize;
+}
+
+
+/* 입력 모드 스타일 */
+.input-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 100%; /* 부모 높이 채우기 */
+}
+
+.time-input {
+    width: 300px;
+    height: 40px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    border: 2px solid #0070f3;
+    border-radius: 8px;
+    outline: none;
+    color: #333;
+    margin-top: 10px;
+}
+
+/* 날짜 변경 영역 정리 */
+.date-change-area {
+    margin-top: 15px;
+    text-align: center;
+}
+.date-change-btn {
+    background: none;
+    border: none;
+    color: #0070f3;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+}
+.current-date-text {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #555;
 }
 
 

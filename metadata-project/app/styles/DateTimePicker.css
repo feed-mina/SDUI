@@ -73,3 +73,76 @@
 .quick-buttons button:active {
     background-color: #ced4da;
 }
+
+
+/*2026-02-02 캘린더 css 추가*/
+
+/* DateTimePicker.css 맨 아래에 추가 */
+
+/* --- 날짜 변경 영역 (모던 디자인) --- */
+
+/* 1. 전체 박스 스타일: 마치 입력창처럼 보이게 함 */
+.date-input-box {
+    margin-top: 20px; /* 위쪽 시간 영역과의 간격 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 좌우로 내용 배치 */
+
+    padding: 12px 16px; /* 내부 여백 */
+    background-color: #f8f9fa; /* 아주 연한 회색 배경 */
+    border: 1px solid #e9ecef; /* 은은한 테두리 */
+    border-radius: 12px; /* 둥근 모서리 (위쪽 시간 영역과 통일감) */
+
+    cursor: pointer; /* 마우스 올리면 손가락 모양 */
+    transition: all 0.2s ease; /* 부드러운 애니메이션 */
+}
+
+/* 마우스를 올렸을 때 효과 */
+.date-input-box:hover {
+    background-color: #e2e6ea; /* 배경색이 조금 진해짐 */
+    border-color: #ced4da; /* 테두리도 조금 진해짐 */
+}
+
+/* 마우스를 클릭하는 순간 효과 */
+.date-input-box:active {
+    transform: scale(0.98); /* 살짝 눌리는 느낌 */
+    background-color: #dbe0e5;
+}
+
+/* 2. 왼쪽 라벨 그룹 (아이콘 + 텍스트) */
+.date-label-group {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 아이콘과 텍스트 사이 간격 */
+    color: #495057; /* 진한 회색 텍스트 */
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.calendar-icon {
+    font-size: 18px; /* 아이콘 크기 */
+}
+
+/* 3. 오른쪽 날짜 값 텍스트 */
+.date-value-text {
+    margin: 0; /* p 태그 기본 여백 제거 */
+    font-size: 16px;
+    font-weight: bold;
+    color: #0070f3; /* 강조색 (파란색) 적용 */
+}
+
+.date-input-box {
+    /* 기존 속성 유지 */
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box; /* 패딩 때문에 박스가 넘치는 것을 방지 */
+}
