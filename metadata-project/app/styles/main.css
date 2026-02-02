@@ -1,3 +1,14 @@
+
+/* 2026-02-02 추가 RecordTimeComponent의 최상위 컨테이너에 적용 */
+.time-record-container {
+    position: sticky; /* 또는 fixed */
+    top: 0;
+    z-index: 100; /* 다른 요소들보다 위에 보이게 */
+    background-color: white; /* 배경이 투명하면 글자가 겹쳐 보일 수 있음 */
+    width: 100%;
+}
+
+
 /* =================================================================
    1. 전역 설정 (Global & Layout)
    ================================================================= */
@@ -966,5 +977,3 @@ button:hover { transform: scale(1.05); }
     font-size: 14px;
     color: #555;
 }
-
-
