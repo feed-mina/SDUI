@@ -27,7 +27,7 @@ public class GoalSetting {
     @Column(name = "recorded_time")
     private LocalDateTime recordedTime;
 
-    @Column(name = "todays_message")
+    @Column(name = "todays_message", nullable = true)
     private String todaysMessage;
 
     @Column(name = "status", length = 20)
