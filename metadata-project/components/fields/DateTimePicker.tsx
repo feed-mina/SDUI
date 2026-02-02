@@ -53,7 +53,6 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
     // 4. 초기화 useEffect (가드 패턴 적용)
     useEffect(() => {
         if (isInitialized.current) return;
-
         syncScrollToData(date);
         if (onChange && !data) {
             onChange(id, date.toISOString());
@@ -61,6 +60,15 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
         isInitialized.current = true;
     }, [date, onChange, id, data, syncScrollToData]);
 
+    // 입력 모드 -> 휠 모드로 전환될 때 스크롤 위치를 잡아주는 역할
+    useEffect(() => {
+        if (!isInputMode) {
+            // 휠이 화면에 그려진 직후 실행
+            setTimeout(() => {
+                syncScrollToData(date);
+            }, 0);
+        }
+    }, [isInputMode, date, syncScrollToData]);
     // 5. 공통 변경 알림 함수
     const notifyChange = (newDate: Date) => {
         if (onChange) {
@@ -133,6 +141,15 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
         setIsInputMode(false);
     };
 
+
+    // @@@@ 2026-02-02 추가 포커스 이동 처리 키보드 시간 : 분 입력
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        // 다음 포커스 요소 (relatedTarget)이 time-input클래스를 가졌다면 닫지 않음
+        if (e.relatedTarget && (e.relatedTarget as HTMLElement).classList.contains('time-input')) return;
+        handleInputConfirm();
+    };
+
+
     // 10. [밖으로 탈출 성공] 엔터키 핸들러
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') handleInputConfirm();
@@ -169,7 +186,7 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
                             value={inputValues.hour}
                             // [수정됨] 두 번째 인자로 'hour' 전달
                             onChange={(e) => handleInputChange(e, 'hour')}
-                            onBlur={handleInputConfirm}
+                            onBlur={handleBlur}
                             onKeyDown={handleKeyDown}
                             autoFocus
                             className="time-input"
@@ -180,7 +197,7 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
                             value={inputValues.minute}
                             // [수정됨] 두 번째 인자로 'minute' 전달
                             onChange={(e) => handleInputChange(e, 'minute')}
-                            onBlur={handleInputConfirm}
+                            onBlur={handleBlur}
                             onKeyDown={handleKeyDown}
                             className="time-input"
                         />
@@ -216,11 +233,16 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
                 설정 시간: {date.getHours()}시 {date.getMinutes()}분
             </p>
 
-            <div className="date-change-area">
-                <button className="date-change-btn" onClick={openCalendar}>
-                    📅 날짜 변경
-                </button>
-                <p className="current-date-text">{date.toLocaleDateString()}</p>
+            <div className="date-input-box" onClick={openCalendar}>
+                {/* 왼쪽: 아이콘과 라벨 */}
+                <div className="date-label-group">
+                    <span className="calendar-icon">📅</span>
+                    <span className="date-label">날짜 설정</span>
+                </div>
+                {/* 오른쪽: 현재 선택된 날짜 */}
+                <p className="date-value-text">
+                    {date.toLocaleDateString()}
+                </p>
             </div>
 
             {isOpen && (
