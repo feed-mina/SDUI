@@ -43,7 +43,7 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                 const sources = metadataList.filter((item:any) => item.componentType === "DATA_SOURCE" && item.actionType === "AUTO_FETCH");
 
                 const dataPromises = sources.map(async (source:any) => {
-                    console.log("지금 source에 들어 있는 모든 것 :", Object.keys(source));
+                    // console.log("지금 source에 들어 있는 모든 것 :", Object.keys(source));
                     console.log("DB에서 온 원본 소스:", source);
                         let apiUrl = source.dataApiUrl?.includes('/api/execute')
                             ? source.dataApiUrl
@@ -100,11 +100,12 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                                 res = await axios.post(apiUrl, { ...finalParams });
                             }
                             return { id: source.componentId, status: "success", data: res.data.data || res.data };
-
                 });
 
                 const results = await Promise.all(dataPromises);
                 const combinedData: any = {};
+                // @@@@ 2026-02-03 추가 임시변수 활용
+                let detectedTotalCount = 0;
 
                 results.forEach((res: any) => {
                     if (res && res.id) {
@@ -134,23 +135,21 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                         // 5. 페이지네이션 숫자(TotalCount) 똑똑하게 맞추기
                         if (res.id === "diary_list_source" && isOnlyMine) {
                             // '내 일기' 모드일 때는 보따리에 적힌 total(14)을 사용
-                            const total = rawResponse.total || 0;
-                            setTotalCount(total);
-                            console.log("내 일기 개수 적용:", total);
+                            detectedTotalCount = rawResponse.total || 0;
                         } else if (res.id === "diary_total_count" && !isOnlyMine) {
                             // '전체' 모드일 때는 전용 개수 쿼리의 결과(21)를 사용
-                            const total = unifiedList[0]?.total_count || rawResponse.total_count || 0;
-                            setTotalCount(total);
-                            console.log("전체 일기 개수 적용:total_count", total);
+                            detectedTotalCount = unifiedList[0]?.total_count || rawResponse.total_count || 0;
                         }
 
                         console.log(`[최종확인] ${res.id} 상자에 담긴 실제 데이터 개수:`, unifiedList.length);
                         console.log("최종 pageData:", combinedData);
-                        setPageData(combinedData);
                     }
                 });
                 console.log("진짜로 이름표가 붙은 창고:", combinedData);
+
+                // 2026-02-03 추가 상태 업데이트는 마지막에 몰아서 한번만 !
                 setPageData(combinedData);
+                setTotalCount(detectedTotalCount);
             } catch (error) {
                 console.error("에러 발생: ", error);
             } finally {
