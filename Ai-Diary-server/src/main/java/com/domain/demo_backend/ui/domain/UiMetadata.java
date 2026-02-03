@@ -90,6 +90,9 @@ public class UiMetadata {
     @Column(name = "parent_group_id", length = 50)
     private String parentGroupId;
 
+    @Column(name = "is_visible", length = 50)
+    private String isVisible;
+
     @PrePersist
     public void prePersist(){
         createdAt = LocalDateTime.now();
