@@ -36,6 +36,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
 
     // @@@2026-01-26 추가 트리 구조 생성을 메모제이션하여 성능을 최적화
     const treeData = useMemo(() => {
+        console.log("엔진이 받은 원본 metadata:", metadata); // 여기서 해당 항목의 is_visible을 확인!
     const buildTree = (data, parentId = null, depth = 0) => {
         if (depth > 5) return [];
         return data
@@ -76,13 +77,13 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
             // @@@@ 2026-01-26 수정 : 보이는 여부 체크를 가장 먼저 해서 불필요한 로직 실행을 막는다
 
             // console.log('node: ', node);
-            // [중요 수정 2] isVisible 처리 강화
-            const rawVisible = node.isVisible ?? node.is_visible ?? true;
-            if (rawVisible === false || String(rawVisible).toUpperCase() === "FALSE") {
-                console.log('rawVisible', rawVisible);
+            // 가시성 판단 isVisible 처리
+            const visibility = node.is_visible !== undefined ? node.is_visible : (node.isVisible !== undefined ? node.isVisible: true);
+            if (visibility === false || String(visibility).toLowerCase() === "false") {
+                // console.log(`[숨김 처리] ID: ${node.componentId}`);
                 return null;
             }
-
+            console.log('현재 그리는 노드:', node.componentId, '가시성:', visibility);
             // rowData가 있으면(리스트 반복 중) ID 뒤에 인덱스를 붙여 고유하게 만들고(예: title_0, title_1),
             // rowData가 없으면(로그인 폼 등) 원래 ID를 그대로 사용합니다(예: email).
             const cId = node.componentId;
