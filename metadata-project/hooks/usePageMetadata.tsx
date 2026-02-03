@@ -1,8 +1,20 @@
 import {useEffect, useState} from "react";
 import {useParams, useRouter} from "next/navigation";
 import axios from "@/api/axios";
+const getPayloadFromToken = (token: string) => {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        return null;
+    }
+};
 
-export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMine: boolean)=>{
+export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMine: boolean, diaryId?: string)=>{
     const router = useRouter(); // window.location.href 대신 사용
 
     const[metadata, setMetadata] = useState<any[]>([]);
@@ -22,6 +34,14 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
     };
 
     const isLoggedIn = !!getCookie("accessToken");
+    // usePageMetadata 내부
+    const token = getCookie("accessToken");
+    const payload = token ? getPayloadFromToken(token) : null;
+
+// 토큰 내 userId와 userSqno 추출
+    const currentUserId = payload?.userId || "";
+    const currentUserSqno = payload?.userSqno || "";
+
     useEffect(() => {
         // initializePage 로직
 
@@ -49,6 +69,18 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                         ? source.dataApiUrl
                         : (source.dataSqlKey ? `/api/execute/${source.dataSqlKey}` : null);
 
+                    // [추가] 상세 페이지일 경우 URL 뒤에 ID 붙이기
+                    if (screenId === "DIARY_DETAIL" && source.componentId === "detail_source" && diaryId) {
+                        // source.dataApiUrl이 "/viewDiaryItem" 이라면 -> "/viewDiaryItem/6"
+                        apiUrl = `${source.dataApiUrl}/${diaryId}`;
+                    } else if (source.dataApiUrl?.includes('/api/execute')) {
+                        // 기존 로직
+                        apiUrl = source.dataApiUrl;
+                    } else if (source.dataSqlKey) {
+                        // 기존 로직
+                        apiUrl = `/api/execute/${source.dataSqlKey}`;
+                    }
+
 
                     if (!apiUrl) {
                         console.warn(`[경고] ${source.componentId}에 연결된 SQL 키나 API 주소가 없습니다.`);
@@ -68,14 +100,13 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                     const finalParams = {
                         ...parsedParams,
                         pageSize,
-                        offset: calculatedOffset,
-                        page: currentPage - 1,
-                        pageNo : currentPage,
-                        filterId: isOnlyMine ? (formData["user_id"] || "본인ID") : "",
-                        userId: undefined,
-                        // userId: isOnlyMine ?(formData["user_id"] || "본인ID") : "",
-                        userSqno : parsedParams.userSqno || "9999"
-                    }
+                        offset: (currentPage - 1) * pageSize,
+                        // 내가 쓴 일기 모드일 때 토큰에서 뽑은 진짜 ID를 전달
+                        filterId: isOnlyMine ? currentUserId : "",
+
+                        userId: currentUserId || "guest",
+                        userSqno: isOnlyMine ? currentUserSqno : (parsedParams.userSqno || "9999")
+                    };
                     // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
 
                     console.log(`[요청] 모드:${isOnlyMine ? 'API' : 'SQL'}, URL:${apiUrl}`);
@@ -89,7 +120,11 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                     console.log(`[요청 헤더]`, headers);
 
                     let res;
-                    if (isOnlyMine && source.componentId === "diary_list_source") {
+
+                    if (screenId === "DIARY_DETAIL") {
+                        // 상세 조회는 GET 요청
+                        res = await axios.get(apiUrl, { params: finalParams, headers });
+                    } else if (isOnlyMine && source.componentId === "diary_list_source") {
                         // GET 요청: headers는 config 객체 안에 넣어야 함 (중요!)
                         res = await axios.get(apiUrl, {
                             params: finalParams,
@@ -157,7 +192,7 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
             }
         };
         initializePage();
-    }, [screenId, currentPage, isOnlyMine]);
+    }, [screenId, currentPage, isOnlyMine, diaryId]);
 
     return { metadata, pageData, loading, totalCount, isLoggedIn };
 
