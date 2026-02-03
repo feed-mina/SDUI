@@ -5,9 +5,19 @@ import axios from "@/api/axios";
 import {useRecordTime} from "@/hooks/useRecordTime";
 import {ArrivalButton} from "@/utils/ArrivalButton";
 import {dateFormatter} from "@/utils/dateFormatter";
+
+// 1. props 타입 정의 (data 안에 무엇이 들어있는지 명시)
+interface RecordTimeProps {
+    data: {
+        user_id?: string;
+        user_sqno?: string | number;
+        [key: string]: any; // 다른 데이터가 더 들어올 수도 있음을 허용
+    };
+    onChange?: (value: any) => void;
+}
 // 부모 블록 전체 화면을 관리하는 곳
-const RecordTimeComponent = () => {
-const {formatGoalDate, formatTimePretty, formatDateOnly } = dateFormatter();
+const RecordTimeComponent = ({ data, onChange }: RecordTimeProps) => {    console.log("  Record Time 컴포넌트가 받은 데이터:", data);
+    const {formatGoalDate, formatTimePretty, formatDateOnly } = dateFormatter();
     const {
         goalTime,
         goalList,
