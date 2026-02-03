@@ -72,7 +72,7 @@ public class Diary {
     private String diaryType;
 
     @Column(name="del_yn")
-    private String delYn;
+    private String delYn = "N";
 
     @Column(name="del_dt")
     private LocalDateTime delDt;
