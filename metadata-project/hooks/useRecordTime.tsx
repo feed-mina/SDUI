@@ -11,9 +11,12 @@ export const useRecordTime = () => {
     // 쿠키 확인 로직
     const getCookie = (name: string) => {
         if (typeof document === 'undefined') return null;
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop()?.split(';').shift();
+
+        // 정규식을 사용하면 훨씬 정확하고 깔끔하게 찾을 수 있습니다.
+        const matches = document.cookie.match(new RegExp(
+            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+        return matches ? decodeURIComponent(matches[1]) : null;
     };
 
     const isLoggedIn = !!getCookie("accessToken");
@@ -22,7 +25,7 @@ export const useRecordTime = () => {
     const {data : goalTime} = useQuery({
         queryKey: ['goalTime'],
         queryFn: async () => {
-            const res = await axios.get('/api/goalTime');
+            const res = await axios.get('/api/goalTime/getGoalTime');
             return res.data.goalTime?? null;
         },
         enabled: isLoggedIn, // 로그인 상태일때만 호출 (API 최적화)
@@ -57,15 +60,16 @@ export const useRecordTime = () => {
         });
 
     // 페이지 이동 핸들러
+// 핸들러 내부에서 실시간으로 쿠키를 다시 체크합니다.
     const handleLinkToSetup = () => {
-        if (!isLoggedIn){
-            alert('로그인이 필요한 서비스입니다. ')
-        } else{
-            // 로그인 이후에
-            window.location.href='/view/SET_TIME_PAGE';
-        }
-    }
+        const currentToken = getCookie("accessToken"); // 실행 시점에 다시 읽기
 
+        if (!currentToken) {
+            alert('로그인이 필요한 서비스입니다.');
+        } else {
+            window.location.href = '/view/SET_TIME_PAGE';
+        }
+    };
 
     // [도착버튼 핸들러] 도착 버튼 클릭시 상태 계산 (safe, success, fail)
     const handleArrival = useCallback(() => {
