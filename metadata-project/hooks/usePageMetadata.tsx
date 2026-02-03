@@ -45,61 +45,61 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                 const dataPromises = sources.map(async (source:any) => {
                     // console.log("지금 source에 들어 있는 모든 것 :", Object.keys(source));
                     console.log("DB에서 온 원본 소스:", source);
-                        let apiUrl = source.dataApiUrl?.includes('/api/execute')
-                            ? source.dataApiUrl
-                            : (source.dataSqlKey ? `/api/execute/${source.dataSqlKey}` : null);
+                    let apiUrl = source.dataApiUrl?.includes('/api/execute')
+                        ? source.dataApiUrl
+                        : (source.dataSqlKey ? `/api/execute/${source.dataSqlKey}` : null);
 
 
-                        if (!apiUrl) {
-                            console.warn(`[경고] ${source.componentId}에 연결된 SQL 키나 API 주소가 없습니다.`);
-                            return { id: source.componentId, data: [] };
-                        }
-                        // 내 일기 모드 일때 URL변경
-                        if (source.componentId === "diary_list_source" && isOnlyMine){
-                            apiUrl = "/api/diary/member-diaries";
-                        }
+                    if (!apiUrl) {
+                        console.warn(`[경고] ${source.componentId}에 연결된 SQL 키나 API 주소가 없습니다.`);
+                        return { id: source.componentId, data: [] };
+                    }
+                    // 내 일기 모드 일때 URL변경
+                    if (source.componentId === "diary_list_source" && isOnlyMine){
+                        apiUrl = "/api/diary/member-diaries";
+                    }
 
-                        const rawParams = source.dataParams || source.data_params || "{}";
-                        const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
-                        // dataParams가 문자열이면 객체로 바꾸고 없으면 빈 객체를 기본값으로 준다
+                    const rawParams = source.dataParams || source.data_params || "{}";
+                    const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
+                    // dataParams가 문자열이면 객체로 바꾸고 없으면 빈 객체를 기본값으로 준다
 
-                        const calculatedOffset = (currentPage - 1) * pageSize; // SQL용 (0, 5, 10...)
+                    const calculatedOffset = (currentPage - 1) * pageSize; // SQL용 (0, 5, 10...)
 
-                        const finalParams = {
-                            ...parsedParams,
-                            pageSize,
-                            offset: calculatedOffset,
-                            page: currentPage - 1,
-                            pageNo : currentPage,
-                            filterId: isOnlyMine ? (formData["user_id"] || "본인ID") : "",
-                            userId: undefined,
-                            // userId: isOnlyMine ?(formData["user_id"] || "본인ID") : "",
-                            userSqno : parsedParams.userSqno || "9999"
-                        }
-                        // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
+                    const finalParams = {
+                        ...parsedParams,
+                        pageSize,
+                        offset: calculatedOffset,
+                        page: currentPage - 1,
+                        pageNo : currentPage,
+                        filterId: isOnlyMine ? (formData["user_id"] || "본인ID") : "",
+                        userId: undefined,
+                        // userId: isOnlyMine ?(formData["user_id"] || "본인ID") : "",
+                        userSqno : parsedParams.userSqno || "9999"
+                    }
+                    // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
 
-                        console.log(`[요청] 모드:${isOnlyMine ? 'API' : 'SQL'}, URL:${apiUrl}`);
-                        const token = getCookie("accessToken");
+                    console.log(`[요청] 모드:${isOnlyMine ? 'API' : 'SQL'}, URL:${apiUrl}`);
+                    const token = getCookie("accessToken");
 
-                        const headers: any = {};
-                        if (isOnlyMine && token) {
-                            headers["Authorization"] = `Bearer ${token}`; // "Bearer " 뒤에 공백 필수!
-                        }
-                        // const res = await axios.post(apiUrl, {...finalParams});
-                        console.log(`[요청 헤더]`, headers);
+                    const headers: any = {};
+                    if (isOnlyMine && token) {
+                        headers["Authorization"] = `Bearer ${token}`; // "Bearer " 뒤에 공백 필수!
+                    }
+                    // const res = await axios.post(apiUrl, {...finalParams});
+                    console.log(`[요청 헤더]`, headers);
 
-                        let res;
-                            if (isOnlyMine && source.componentId === "diary_list_source") {
-                                // GET 요청: headers는 config 객체 안에 넣어야 함 (중요!)
-                                res = await axios.get(apiUrl, {
-                                    params: finalParams,
-                                    headers
-                                });
-                            } else {
-                                // POST 요청
-                                res = await axios.post(apiUrl, { ...finalParams });
-                            }
-                            return { id: source.componentId, status: "success", data: res.data.data || res.data };
+                    let res;
+                    if (isOnlyMine && source.componentId === "diary_list_source") {
+                        // GET 요청: headers는 config 객체 안에 넣어야 함 (중요!)
+                        res = await axios.get(apiUrl, {
+                            params: finalParams,
+                            headers
+                        });
+                    } else {
+                        // POST 요청
+                        res = await axios.post(apiUrl, { ...finalParams });
+                    }
+                    return { id: source.componentId, status: "success", data: res.data.data || res.data };
                 });
 
                 const results = await Promise.all(dataPromises);
