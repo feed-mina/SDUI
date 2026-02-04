@@ -161,7 +161,7 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                         const unifiedList = realList.map((item: any) => {
                             console.log("unifiedList item: ", item);
                             // 날짜 포맷팅 (YYYY-MM-DDTHH:mm... -> YYYY.MM.DD)
-                            const rawDate = item.regDt;
+                            const rawDate = item.regDt || item.reg_dt || item.date || "";
                             const formattedDate = rawDate.split('T')[0].replace(/-/g, '.');
 
                             return {

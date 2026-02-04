@@ -1,9 +1,9 @@
 // app/view/[screenId]/page.tsx
 'use client'; // 상태 관리와 이벤트를 위해 클라이언트 컴포넌트로 설정합니다.
 
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import axios from "@/api/axios";
-import { useParams, useRouter } from "next/navigation"; // Next.js 전용으로 변경
+import { useParams } from "next/navigation"; // Next.js 전용으로 변경
 import DynamicEngine from "@/components/DynamicEngine";
 import Pagination from "@/components/Pagination";
 import FilterToggle from "@/components/FilterToggle";
@@ -12,7 +12,6 @@ import { usePageActions } from "@/hooks/usePageActions";
 import Skeleton from "@/components/Skeleton";
 export default function CommonPage() {
     const {screenId} = useParams() as{ screenId :  string}; // 타입 캐스팅으로 에러 방지
-    const router = useRouter(); // window.location.href 대신 사용
 
 // 1. 상태 선언을 훅 호출보다 위로 올림 (중요!)
     const [currentPage, setCurrentPage] = useState(1);
