@@ -85,7 +85,7 @@ export const usePageActions = (metadata: any[]) => {
                     // 성공 처리
                     if(response.data.accessToken){
                         document.cookie = `accessToken=${response.data.accessToken}; path=/; max-age=3600`;
-                        router.push("/view/MAIN_PAGE");
+                        window.location.href = '/view/MAIN_PAGE'; // 전체 새로고침으로 데이터 강제 갱신
                     } else {
                         if(actionUrl && actionUrl.includes("addDiaryList")){
                             router.push("/view/DIARY_LIST");
