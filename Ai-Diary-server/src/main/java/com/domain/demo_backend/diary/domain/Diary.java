@@ -1,6 +1,7 @@
 package com.domain.demo_backend.diary.domain;
 
 import com.domain.demo_backend.user.domain.User;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,6 +32,7 @@ public class Diary {
     private String userId;
     // 실제 연관관계 필드(DB의  user_sqno 칼럼을 실제로 관리함)
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name="user_sqno")
     private User user;
 
