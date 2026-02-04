@@ -38,6 +38,7 @@ export const usePageActions = (metadata: any[]) => {
         if (actionType === "ROUTE_DETAIL") {
             // ID는 meta가 아니라 data(두 번째 인자)에 들어있습니다.
             if (data) {
+                console.log("상세 이동 데이터:", data);
                 const detailId = data.diary_id || data.diaryId;
                 if (detailId) {
                     router.push(`${actionUrl}/${detailId}`);

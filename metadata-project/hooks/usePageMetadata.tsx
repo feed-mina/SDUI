@@ -146,20 +146,34 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                     if (res && res.id) {
                         // 1. 백엔드가 준 보따리 풀기 (member-diaries는 res.data에 직접 데이터가 옴)
                         const rawResponse = res.data || {};
-
+                        let realList = [];
                         // 2. 진짜 알맹이(배열) 찾기
                         // list에 있으면 list를, data에 있으면 data를, 아니면 본체 자체가 배열인지 확인
-                        const realList = rawResponse.list || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
+                        if (rawResponse.diaryItem) {
+                            realList = [rawResponse.diaryItem]; // 객체 1개를 배열로 감싸기
+                        } else {
+                            // 리스트나 data로 주면 그걸 챙긴다.
+                            realList = rawResponse.list || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
+                        }
 
                         // 3. 엔진이 이해할 수 있게 이름표 갈아끼우기 (Alias 통일)
-                        const unifiedList = realList.map((item: any) => ({
-                            ...item,
-                            diary_id: item.diaryId || item.diary_id,
-                            user_id: item.userId || item.user_id || item.author || item.nickname || "알수없음",
-                            reg_dt: (item.regDt || item.reg_dt || item.date).replace(/-/g, '.'),
-                            title: item.title || "제목 없음",
-                            content: item.content || "내용 없음"
-                        }));
+                        // @@@@ 2026-02-04 추가 : 백앤드와 통일
+                        const unifiedList = realList.map((item: any) => {
+                            console.log("unifiedList item: ", item);
+                            // 날짜 포맷팅 (YYYY-MM-DDTHH:mm... -> YYYY.MM.DD)
+                            const rawDate = item.regDt;
+                            const formattedDate = rawDate.split('T')[0].replace(/-/g, '.');
+
+                            return {
+                                ...item,
+                                detail_title: item.title,       // 제목 연결
+                                detail_content: item.content,   // 내용 연결
+                                detail_date: formattedDate,     // 날짜 연결
+                                diary_id: item.diaryId || item.diary_id,
+                                user_id: item.userId || item.user_id,
+                                reg_dt: formattedDate
+                            };
+                        });
 
                         // 4. 창고에 저장
                         combinedData[res.id] = {

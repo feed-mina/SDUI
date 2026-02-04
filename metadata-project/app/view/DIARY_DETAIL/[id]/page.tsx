@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import DynamicEngine from "@/components/DynamicEngine";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
 import { usePageActions } from "@/hooks/usePageActions";
+import Skeleton from "@/components/Skeleton";
 
 export default function DiaryDetailPage() {
     const params = useParams();
@@ -16,7 +17,7 @@ export default function DiaryDetailPage() {
     // 여기서 pwType, showPassword도 같이 꺼냅니다.
     const { handleChange, handleAction, pwType, showPassword } = usePageActions(metadata);
 
-    if (loading) return <div>로딩중...</div>;
+    if (loading) return <Skeleton />;
 
     return (
         <div className="page-wrap diary-detail">

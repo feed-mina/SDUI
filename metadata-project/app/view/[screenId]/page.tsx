@@ -9,6 +9,7 @@ import Pagination from "@/components/Pagination";
 import FilterToggle from "@/components/FilterToggle";
 import {usePageMetadata} from "@/hooks/usePageMetadata";
 import { usePageActions } from "@/hooks/usePageActions";
+import Skeleton from "@/components/Skeleton";
 export default function CommonPage() {
     const {screenId} = useParams() as{ screenId :  string}; // 타입 캐스팅으로 에러 방지
     const router = useRouter(); // window.location.href 대신 사용
@@ -42,9 +43,10 @@ export default function CommonPage() {
         return true;
     });
 
-
-
-    if (loading) return <div>화면 정보를 읽어오는 중입니다...</div>;
+    // @@@@ 2026-02-04 스켈레톤 UI로 바꿈
+    if (loading) {
+        return <Skeleton />
+    }
 
     return (
         <div className={`page-wrap ${screenId}`}>

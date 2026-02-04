@@ -156,6 +156,21 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
 
             if (typeKey === "DATA_SOURCE") return null;
             if (Component) {
+                // 1. 기본 데이터 준비 (유저 정보 등)
+                let finalData = rowData ? { ...rowData } : {
+                    user_id: currentUserId,
+                    user_sqno: currentUserSqno
+                };
+                // [중요] 상세 페이지용: refDataId가 있으면 데이터를 찾아서 합쳐준다!
+                console.log('node.refDataId:', node.refDataId);
+                if (!rowData && node.refDataId && pageData && pageData[node.refDataId]) {
+                    // 상세데이터는 무조건 배열의 0번째에 있음
+                    const sourceData = pageData[node.refDataId].data?.[0];
+                    if (sourceData) {
+                        finalData = { ...finalData, ...sourceData };
+                    }
+                }
+
                 return (
                     <Component
                         key={uniqueId}
@@ -163,10 +178,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData , pwType, showPa
                         meta={node}
                         metadata={metadata}
                         // [수정됨] 이제 currentUserId가 정의되어 에러가 나지 않습니다.
-                        data={rowData ? { ...rowData } : {
-                            user_id: currentUserId,
-                            user_sqno: currentUserSqno
-                        }}
+                        data={{finalData}}
                         onChange={onChange}
                         onAction={onAction}
                     />
