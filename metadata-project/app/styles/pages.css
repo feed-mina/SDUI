@@ -1,0 +1,72 @@
+/*페이지별 css*/
+
+/* [DIARY_LIST] 카드 그리드 */
+.diaryListSection {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+
+.diary-post {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.diary-post:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+
+.diary-card-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+/* [LOGIN / SIGNUP] */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.page-wrap.LOGIN_PAGE {
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-gray);
+}
+
+.login_form {
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+    background: var(--background);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+/* 이메일 입력 그룹 */
+.email-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .email-container { flex-direction: column; align-items: stretch; }
+}
+/* [DIARY_WRITE / DETAIL] */
+.diaryInput, .diaryTextarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 1rem;
+}
+.detail-content {
+    line-height: 1.8;
+    font-size: 1.1rem;
+    white-space: pre-wrap;
+}
