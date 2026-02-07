@@ -42,7 +42,7 @@ public class DiaryRequest {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private String regDt;
     // 삭제 여부
-    private String delYn;
+    private String delYn = "N";
 
     private String diaryTitle;
     private String diaryContent;
