@@ -1,7 +1,6 @@
 import {useRouter} from "next/navigation";
 import axios from "@/api/axios";
-import React, {useState} from "react";
-
+import React, { useState, useCallback, useRef, useEffect } from "react";
 
 
 // @@@@ 2026-02-07 주석 추가
@@ -13,16 +12,22 @@ export const usePageActions = (metadata: any[]) => {
     const [showPassword, setShowPassword] = useState(false);
     const [pwType, setPwType] = useState("password");
 
-    const handleChange = (id: any, value : any) => {
-        setFormData((prev: any) => ({ ...prev, [id]: value }));
-    };
+    const formDataRef = useRef(formData);
+    useEffect(() => {
+        formDataRef.current = formData;
+    }, [formData]);
 
-    // [중요 수정] item(메타)과 data(실제 데이터)를 분리해서 받습니다.
-    const handleAction = async (meta: any, data?: any) => {
-        // console.log('버튼 눌림 Meta:', meta);
-        // console.log('버튼 눌림 Data:', data);
+    // useCallback으로 감싸서 함수가 새로 생성되는 것을 방지
+    const handleChange = useCallback((id: string, value: any) => {
+        setFormData((prev: any) => ({ ...prev, [id]: value }));
+    }, []); // 의존성 배열 비움
+
+    //  item(메타)과 data(실제 데이터)를 분리해서 받습니다.
+    // const handleAction = async (meta: any, data?: any) => {
+    const handleAction = useCallback(async (meta: any, data?: any) => {
 
         const { actionType, actionUrl } = meta;
+        const currentFormData = formDataRef.current; // 현재 시점의 데이터 꺼내기
 
         // 1. 비밀번호 토글
         if(actionType === "TOGGLE_PW"){
@@ -57,12 +62,12 @@ export const usePageActions = (metadata: any[]) => {
 
         // 4. 데이터 전송 로직 (SUBMIT)
         if(actionType === "SUBMIT"){
-            console.log("보낼 데이터:", formData);
+            console.log("usePageActions 실제 보낼 데이터:", currentFormData);
 
             // 필수 값 체크
             const requiredFields = metadata.filter(m => m.isRequired);
             for (const field of requiredFields as any[]){
-                const value = formData[field.componentId];
+                const value = currentFormData[field.componentId];
                 if(!value || value.trim() === ""){
                     alert(`${field.label_text || field.labelText} 필드는 필수입니다.`)
                     return;
@@ -71,11 +76,11 @@ export const usePageActions = (metadata: any[]) => {
 
             // URL 및 데이터 가공
             // const finalUrl = actionUrl || `/api/execute/${meta.dataSqlKey}`;
-            let submitData = { ...formData};
+            let submitData = { ...currentFormData};
 
             // 이메일 조합 로직
-            const emailId = formData["user_email"];
-            const emailDomain = formData["user_email_domain"];
+            const emailId = currentFormData["user_email"];
+            const emailDomain = currentFormData["user_email_domain"];
             if(emailId && emailDomain ) {
                 const fullEmail = `${emailId}@${emailDomain}`;
                 submitData = {...submitData, user_email: fullEmail};
@@ -105,7 +110,6 @@ export const usePageActions = (metadata: any[]) => {
                 alert(`오류가 발생했습니다.`);
             }
         }
-    };
-
+    } , [metadata, router]);
     return { formData, handleChange, handleAction, showPassword, pwType };
 };
