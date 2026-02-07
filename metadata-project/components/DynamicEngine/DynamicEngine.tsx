@@ -5,6 +5,9 @@ import { componentMap } from "./componentMap";
 import { useDynamicEngine } from "./useDynamicEngine";
 import { DynamicEngineProps, Metadata } from "./type";
 
+
+// @@@@ 2026-02-07 주석 추가
+// DynamicEngine 역할 : 분석된 구조를 바탕으로 실제 리액트 컴포넌트를 랜더링
 const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
     const { metadata, pageData, onChange, onAction, ...rest } = props;
     const { treeData, getComponentData } = useDynamicEngine(metadata, pageData);

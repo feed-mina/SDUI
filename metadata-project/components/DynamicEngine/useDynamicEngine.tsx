@@ -2,6 +2,10 @@
  import { useMemo } from "react";
  import { Metadata } from "@/components/DynamicEngine/type"
 
+
+
+ // @@@@ 2026-02-07 주석 추가
+ // useDynamicEngine 역할 : 메타데이터를 트리(부모-자식) 구조로 바꾸고 데이터를 매핑함
  export const useDynamicEngine = (metadata: Metadata[], pageData: any) => {
   // 트리 생성 로직
   const treeData = useMemo(() => {
