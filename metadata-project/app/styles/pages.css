@@ -125,8 +125,8 @@
 .login_form-input {
     width: 100%;
     height: 48px;
-    padding: 0 15px;
-    margin-bottom: 20px;
+    /*padding: 0 15px;*/
+    /*margin-bottom: 20px;*/
     border: 2px solid #eee;
     border-radius: 10px;
     font-size: 1rem;
@@ -991,7 +991,9 @@
 .group-DIARY_CARD {
     display: flex;
     flex-flow: column;
-    min-width: 500px;
+    /*min-width: 500px;*/
+    width: 100%; /* 부모 너비에 맞게 유동적으로 조절 */
+    max-width: 500px; /* PC처럼 넓은 화면에서도 500px까지만 커지도록 제한 */
     border: 2px solid #ddd;
     gap: 10px;
     justify-content: flex-start;
@@ -999,6 +1001,7 @@
     position: static;
     padding: 20px;
     border-radius: 16px;
+    box-sizing: border-box;
 }
 /* 리스트 상단 컨트롤 그룹 */
 .list-header-group {
