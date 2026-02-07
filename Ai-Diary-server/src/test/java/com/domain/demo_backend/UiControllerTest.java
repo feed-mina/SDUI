@@ -1,6 +1,5 @@
 package com.domain.demo_backend;
 
-import com.domain.demo_backend.controller.UiController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
