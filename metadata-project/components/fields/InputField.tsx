@@ -1,50 +1,53 @@
 'use client';
 
-import React, { useEffect, useState, memo } from "react";
+import React, { memo } from "react";
 
-// memo()로 감싸서 props가 변하지 않으면 리렌더링을 막는다
-const InputField = memo(({ id, meta, data, onChange, onAction, showPassword, ...rest }) => {
+// props의 타입을 정확하게 정의해주자. (object라고 퉁치면 안 돼)
+interface InputFieldProps {
+    id: string;
+    meta: any;
+    data: any;
+    onChange: (id: string, value: any) => void;
+    onAction?: (action: any) => void;
+    showPassword?: boolean;
+    pwType?: string; // rest에서 분리하기 위해 추가
+    [key: string]: any;
+}
+
+const InputField = memo(({ id, meta, data, onChange, onAction, showPassword,pwType, ...rest }: InputFieldProps) => {
+    // 1. 데이터를 매핑할 키 결정
     const targetKey = meta?.refDataId || meta?.ref_data_id || String(id || "");
-    const [localValue, setLocalValue] = useState(data?.[targetKey] || "");
-
-    useEffect(() => {
-        // 부모로부터 오는 데이터가 확실히 업데이트된 데이터(combinedData)라면 여기서 동기화가 일어남
-        const serverValue = data?.[targetKey] || "";
-        if (serverValue !== localValue) {
-            setLocalValue(serverValue);
-        }
-    }, [data, targetKey]); // localValue는 의존성에서 빼야 무한 루프 안 생겨
+    // 부모가 관리하는 formData와 서버 데이터를 합친 값이 직접 들어온다
+    const value = data?.[targetKey] || "";
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-        setLocalValue(newValue);
         if (onChange) {
+            // 부모의 formData를 즉시 업데이트함
             onChange(targetKey, newValue);
         }
     };
 
-
-    const onKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            // 메타데이터에 정의된 액션 타입이 SUBMIT일 경우에만 동작한다
-            if (onAction && meta?.actionType === "SUBMIT") {
-                onAction({
-                    actionType: "SUBMIT",
-                    actionUrl: meta.actionUrl,
-                    componentId: meta.componentId
-                });
-            }
+    const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && onAction && meta?.actionType === "SUBMIT") {
+            onAction({
+                actionType: "SUBMIT",
+                actionUrl: meta.actionUrl,
+                componentId: meta.componentId
+            });
         }
-    }
+    };
+
     return (
         <div className="inputfield">
             {meta?.labelText && <label htmlFor={targetKey}>{meta.labelText}</label>}
             <input
                 {...rest}
                 id={targetKey}
-                type={targetKey.includes('pw') ? (showPassword ? 'text' : 'password') : 'text'}
-                value={localValue}
+                type={targetKey.toLowerCase().includes('pw') ? (showPassword ? 'text' : 'password') : 'text'}
+                value={value} // 부모가 준 값을 직접 사용
                 onChange={handleInputChange}
+                onKeyDown={onKeyDown}
             />
         </div>
     );
