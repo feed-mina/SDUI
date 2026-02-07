@@ -20,7 +20,7 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
             if (!isVisible) return null;
 
             //  @@@@ id를 반드시 문자열(String)로 보장하여 .includes() 에러 방지
-            const rawId = node.uiId || node.componentId || Math.random().toString();
+            const rawId = node.componentId || node.component_id || node.uiId ;
             const uId = String(rawId);
 
             //  @@@@  그룹 또는 리피터 처리
@@ -69,7 +69,7 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
 
             return (
                 <Component
-                    key={uId}
+                    key={uId} // 고정된 ID를 사용하여 컴포넌트 재생성 방지
                     id={uId}
                     meta={node}
                     data={finalData}
