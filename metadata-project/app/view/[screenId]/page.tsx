@@ -10,6 +10,9 @@ import FilterToggle from "@/components/FilterToggle";
 import {usePageMetadata} from "@/hooks/usePageMetadata";
 import { usePageActions } from "@/hooks/usePageActions";
 import Skeleton from "@/components/Skeleton";
+
+// @@@@ 2026-02-07 주석 추가 :
+// CommonPage 역할 : 전체 화면의 구성, 메타데이터와 데이터를 가져와 엔진에 전달
 export default function CommonPage() {
     const {screenId} = useParams() as{ screenId :  string}; // 타입 캐스팅으로 에러 방지
 
@@ -21,8 +24,12 @@ export default function CommonPage() {
     // 2. 데이터 조회 관련 훅 호출
     const { metadata, pageData, loading, totalCount, isLoggedIn } = usePageMetadata(screenId, currentPage, isOnlyMine);
 
-    // 3. 사용자 액션 관련 훅 호출
-    const {handleChange, handleAction, showPassword, pwType} = usePageActions(metadata);
+    // 3. 사용자 액션 관련 훅 호출 , formData를 꺼내온다
+    const {formData, handleChange, handleAction, showPassword, pwType} = usePageActions(metadata);
+
+    // @@@@ 2026-02-07 추가 서버 데이터(pageData)와 사용자 입력 데이터(formData)를 합친다. 사용자 입력값이 있을 경우 formData를 우선하고 없으면 초기값을 쓴다
+
+    const combineData = {...pageData, ...formData};
 
     const handleToggleMine = () => {
         setIsOnlyMine(prev => !prev);
@@ -56,7 +63,7 @@ export default function CommonPage() {
                 metadata={filtedMetadata}
                 onChange={handleChange}
                 onAction={handleAction}
-                pageData={pageData}
+                pageData={combineData}
                 pwType={pwType}
                 showPassword={showPassword}
             />
