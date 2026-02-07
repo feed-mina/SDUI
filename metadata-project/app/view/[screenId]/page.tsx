@@ -1,7 +1,7 @@
 // app/view/[screenId]/page.tsx
 'use client'; // 상태 관리와 이벤트를 위해 클라이언트 컴포넌트로 설정합니다.
 
-import React, {  useState } from "react";
+import React, { useState, useMemo } from "react";
 import axios from "@/api/axios";
 import { useParams } from "next/navigation"; // Next.js 전용으로 변경
 import DynamicEngine from "@/components/DynamicEngine";
@@ -29,17 +29,22 @@ export default function CommonPage() {
 
     // @@@@ 2026-02-07 추가 서버 데이터(pageData)와 사용자 입력 데이터(formData)를 합친다. 사용자 입력값이 있을 경우 formData를 우선하고 없으면 초기값을 쓴다
 
-    const combineData = {...pageData, ...formData};
+    const combineData = useMemo(() => ({
+        ...pageData,
+        ...formData
+    }), [pageData, formData]);
 
     const handleToggleMine = () => {
         setIsOnlyMine(prev => !prev);
         setCurrentPage(1);
     };
 
-    const filtedMetadata = metadata.map((item: any) => {
-        if(item.componentId === "pw_toggle_btn"){
-            return { ...item, labelText: showPassword ? "숨기기" : "보이기" };
-        }
+    const filtedMetadata = useMemo(() => {
+        return metadata.map((item: any) => {
+            console.log("item: ", item);
+            if(item.componentId === "pw_toggle_btn"){
+                return { ...item, labelText: showPassword ? "숨기기" : "보이기" };
+            }
         return item;
     }).filter((item:any) => {
         if (item.componentId === "go_login_btn" || item.componentId === "go_tutorial_btn")
@@ -48,12 +53,12 @@ export default function CommonPage() {
             return isLoggedIn;
         return true;
     });
+    }, [metadata, showPassword, isLoggedIn]); // 의존성 배열 확인!
 
     // @@@@ 2026-02-04 스켈레톤 UI로 바꿈
     if (loading) {
         return <Skeleton />
     }
-
     return (
         <div className={`page-wrap ${screenId}`}>
             {screenId === "DIARY_LIST" && (
