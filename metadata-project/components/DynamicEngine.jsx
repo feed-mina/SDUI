@@ -198,7 +198,7 @@ function DynamicEngine({ metadata, onChange, onAction, pageData, pwType, showPas
     };
 
     return (
-        <div className="engine-container" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div className="engine-container">
             {renderNodes(treeData)}
         </div>
     );

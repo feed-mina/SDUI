@@ -62,9 +62,12 @@ code {
 }
 
 .engine-container {
-  width: 100%;
-  max-width: 400px; /* 로그인 폼의 최대 너비 제한 */
+  max-width: 400px !important; /* 인라인 스타일보다 더 높은 우선순위를 가짐 */
+  width: 100% !important;
   padding: 20px;
+  display: flex;
+  gap: 10px;
+
 }
 
 /* PC 버전: 가로 배치 */
