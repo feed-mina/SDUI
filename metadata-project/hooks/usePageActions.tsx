@@ -2,6 +2,10 @@ import {useRouter} from "next/navigation";
 import axios from "@/api/axios";
 import React, {useState} from "react";
 
+
+
+// @@@@ 2026-02-07 주석 추가
+// usePageActions 역할 : 사용자의 입력 (formData)와  클릭 이벤트 (handleAction)를 처리하는 훅
 // 인자 타입을 (meta, data) 두 개로 변경하는 것이 핵심입니다.
 export const usePageActions = (metadata: any[]) => {
     const router = useRouter();
