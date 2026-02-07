@@ -44,7 +44,7 @@ const TextField: React.FC<TextFieldProps> = ({ meta, data, value }) => {
     // 2. 없으면 data에서 targetKey로 찾음
     // 3. 그것도 없으면 빈 문자열
     let finalValue = value || (data && targetKey && data[targetKey]) || "";
-
+    console.log('TextField_finalValue', finalValue);
     // [날짜 변환 로직] key가 날짜 관련이면 포맷팅
     // (targetKey가 reg_dt 이거나 regDt일 경우 등 확장 가능)
     const isDateKey = targetKey === 'reg_dt' || targetKey === 'regDt';
