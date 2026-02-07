@@ -37,27 +37,18 @@
    return buildTree(metadata);
   }, [metadata]);
 
-  // 데이터 추출 로직 (중요: 여기서 상세 데이터를 제대로 바인딩함)
+  // 데이터 추출 로직
   const getComponentData = (node: Metadata, rowData: any) => {
-   if (rowData) return rowData; // 리스트/리피터의 경우
+   if (rowData) return rowData;
 
-   let finalData = {};
-   if (node.refDataId && pageData && pageData[node.refDataId]) {
-    const remote = pageData[node.refDataId];
-
-    // 데이터 구조 대응: .data 배열이면 첫 요소, 아니면 객체 통째로
-    if (remote.data && Array.isArray(remote.data)) {
-     finalData = remote.data[0] || {};
-    }
-    // 2. detail_source 객체 형태 처리
-    else if (remote.detail_source) {
-     finalData = remote.detail_source;
-    }   // detail_source 객체 형태 처리
-    else {
-     finalData = remote || {};
-    }
+   // ref_data_id가 있으면 특정 슬라이스를, 없으면 전체 pageData(formData 포함)를 넘겨준다.
+   const refId = node.refDataId || node.ref_data_id;
+   if (refId && pageData && pageData[refId]) {
+    const remote = pageData[refId];
+    return (remote.data && Array.isArray(remote.data)) ? (remote.data[0] || {}) : (remote.detail_source || remote || {});
    }
-   return finalData;
+
+   return pageData || {}; // 여기가 핵심이야. 데이터가 없으면 전체를 다 줘버려.
   };
 
   return { treeData, getComponentData };
