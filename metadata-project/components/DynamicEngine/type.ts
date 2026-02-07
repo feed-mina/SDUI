@@ -2,6 +2,7 @@
 
 export interface Metadata {
     componentId: string;
+    component_id: string;
     componentType: string;
     component_type?: string;
     parentGroupId?: string | null;
