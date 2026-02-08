@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from "react";
 import axios from "@/api/axios";
 import { useParams } from "next/navigation"; // Next.js 전용으로 변경
-import DynamicEngine from "@/components/DynamicEngine";
+import DynamicEngine, {Metadata} from "@/components/DynamicEngine";
 import Pagination from "@/components/Pagination";
 import FilterToggle from "@/components/FilterToggle";
 import {usePageMetadata} from "@/hooks/usePageMetadata";
@@ -39,21 +39,33 @@ export default function CommonPage() {
         setCurrentPage(1);
     };
 
+    // @@@@ 2026-02-08 추가 api 변경에 따라 트리구조에 따라 children 재귀적으로 랜더링
     const filtedMetadata = useMemo(() => {
-        return metadata.map((item: any) => {
-            console.log("item: ", item);
-            if(item.componentId === "pw_toggle_btn"){
-                return { ...item, labelText: showPassword ? "숨기기" : "보이기" };
-            }
-        return item;
-    }).filter((item:any) => {
-        if (item.componentId === "go_login_btn" || item.componentId === "go_tutorial_btn")
-            return !isLoggedIn;
-        if (item.componentId === "go_diary_btn" || item.componentId === "view_diary_list_btn")
-            return isLoggedIn;
-        return true;
-    });
-    }, [metadata, showPassword, isLoggedIn]); // 의존성 배열 확인!
+        // 트리 구조를 깊숙이 탐색하며 필터링 하는 함수
+        const filterRecursive = (items: any[]): any[] => {
+            return items
+                .map(item => ({
+                    ...item,
+                    //     자식이 있으면 자식들도 다시 이 함수(자신)을 태워서 필터링함
+                    children: item.children ? filterRecursive(item.children) : null,
+                    // 비밀번호 토글 텍스트 변경 로직도 여기서 처리하면 깔끔해
+                    labelText: item.componentId === "pw_toggle_btn" ? (showPassword ? "숨기기" : "보이기")
+                        : item.labelText
+                }))
+                .filter(item => {
+                    // 로그인 여부에 따른 버튼 노출 로직
+                    if (item.componentId === "go_login_btn" || item.componentId === "go_tutorial_btn") {
+                        return !isLoggedIn; // 로그인 안했을때 보임
+                    }
+                    if (item.componentId === "go_diary_btn" || item.componentId === "view_diary_list_btn") {
+                        return isLoggedIn;
+                    }
+                    return true; // 그 외 컴포넌트 (그룹, 이미지 등)은 유지
+                });
+        };
+        return filterRecursive(metadata);
+    }, [metadata, showPassword, isLoggedIn]);
+
 
     // @@@@ 2026-02-04 스켈레톤 UI로 바꿈
     if (loading) {
