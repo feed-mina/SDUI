@@ -235,6 +235,7 @@
 .page-wrap.MAIN_PAGE{
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 .diaryImg {
     border-radius: 3rem;
@@ -319,7 +320,9 @@
 }
 
 /* 시간 설정 페이지 컨테이너 */
-.set-time-container {
+.page-wrap.SET_TIME_PAGE,
+.group.SET_TIME_SECTION ,
+.group-SET_TIME_SECTION{
     display: flex;
     flex-direction: column;
     align-items: center;
