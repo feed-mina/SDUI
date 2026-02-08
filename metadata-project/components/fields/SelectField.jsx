@@ -27,7 +27,7 @@ function SelectField({id, label, style, className, meta, onChange}) {
             <span style={{ fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{meta.labelText}</span>
             <select
                 id={id}
-                style={{...style, flex:1}}
+                // style={{...style, flex:1}}
                 className={className}
                 onChange={(e) => {
                 const val = e.target.value;
@@ -39,6 +39,8 @@ function SelectField({id, label, style, className, meta, onChange}) {
             </select>
             {isDirect && (
                 <input
+                    id={id}
+                    className={className}
                     type="text"
                     placeholder="도메인 입력"
                     onChange={(e) => onChange(id, e.target.value)}
