@@ -76,14 +76,15 @@ export const usePageActions = (metadata: any[]) => {
 
             // URL 및 데이터 가공
             // const finalUrl = actionUrl || `/api/execute/${meta.dataSqlKey}`;
-            let submitData = { ...currentFormData};
 
-            // 이메일 조합 로직
-            const emailId = currentFormData["user_email"];
-            const emailDomain = currentFormData["user_email_domain"];
-            if(emailId && emailDomain ) {
-                const fullEmail = `${emailId}@${emailDomain}`;
-                submitData = {...submitData, user_email: fullEmail};
+            const {user_email, user_email_domain, ...resData} = currentFormData;
+            const submitData = { ...resData};
+
+            // @@@@ 2026-02-08 수정 이메일 조합 로직
+            if(user_email && user_email_domain ) {
+                const fullEmail = `${user_email}@${user_email_domain}`;
+                submitData.user_email = fullEmail;
+                // submitData = {...submitData, user_email: fullEmail};
             }
 
             console.log("서버로 보낼 최종 데이터:", submitData);
