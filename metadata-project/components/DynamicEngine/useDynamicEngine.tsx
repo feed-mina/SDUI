@@ -13,24 +13,26 @@
     if (depth > 5) return [];
     return data
         .filter(item => {
+        // @@@@ 2026-02=08 추가 백엔드 키값 componentId, parentGroupId에 맞게 수정
+         const itemParentId = item.parentGroupId || item.parent_group_id ||  null;
+         // const currentId = item.groupId || item.group_id || null;
 
-         const itemParentId = item.parent_group_id || item.parentGroupId || null;
-         const currentId = item.groupId || item.group_id || null;
-
-         // 부모 ID와 내 그룹 ID가 같으면 자식으로 간주하지 않음
-         if(parentId !== null && parentId === currentId) return false;
-
+         // @@@@ 2026-02-08 수정 최상위 노드 부모가 없거나 내 부모 ID가 전체 목록의 어떤 ID 와도 일치하지 않을때
          // 1. 최상위 노드 찾기: 부모 ID가 없거나, 부모 ID가 리스트에 존재하지 않을 때만 Root로 인정
          if (parentId === null) {
-          const parentExists = data.some(d => (d.group_id || d.groupId) === itemParentId);
+          const parentExists = data.some(d => (d.component_id || d.componentId) === itemParentId);
           return itemParentId === null || !parentExists;
          }
          return itemParentId === parentId;
         })
         .map(item => {
-         const currentId = item.group_id || item.groupId || null;
-         // 자식이 있다면 재귀적으로 트리를 구성
-         const children = currentId ? buildTree(data, currentId, depth + 1) : [];
+            // @@@@ 2026-02-08 내 ID를 추출할때 componentId를 우선 참조
+         const currentId = item.componentId || item.component_id ||item.groupId || item.group_id;
+         //  @@@@ 2026-02-08 만약 이미 자식(childeren)이 있다면 그걸 쓰고 없으면 재귀적으로 찾음 재귀적으로 트리를 구성
+         const children = (item.children && item.children.length > 0)
+             ? item.children
+             : (currentId? buildTree(data, currentId, depth + 1):[]);
+             // currentId ? buildTree(data, currentId, depth + 1) : [];
          return { ...item, children: children.length > 0 ? children : null };
         });
    };
@@ -39,16 +41,17 @@
 
   // 데이터 추출 로직
   const getComponentData = (node: Metadata, rowData: any) => {
+      // rowData (리피터에서 넘겨준 개별 아이템)가 있으면 최 우선
    if (rowData) return rowData;
-
-   // ref_data_id가 있으면 특정 슬라이스를, 없으면 전체 pageData(formData 포함)를 넘겨준다.
-   const refId = node.refDataId || node.ref_data_id;
+      const refId = node.refDataId || node.ref_data_id;
+// 특정 데이터 소스를 참조하는 경우
    if (refId && pageData && pageData[refId]) {
     const remote = pageData[refId];
-    return (remote.data && Array.isArray(remote.data)) ? (remote.data[0] || {}) : (remote.detail_source || remote || {});
+// @@@@ 2026-02-08 추가 리스트면 첫 번째 항목을 아니면 데이터 전체를 반환
+    return (Array.isArray(remote.data)) ? (remote.data[0] || {}) : (remote.data || remote );
    }
-
-   return pageData || {}; // 여기가 핵심이야. 데이터가 없으면 전체를 다 줘버려.
+// @@@@ 2026-02-09 MAIN_PAGE처럼 데이터 소스가 없는 경우 전체 pageData (또는 빈 객체)를 반환
+   return pageData || {};
   };
 
   return { treeData, getComponentData };
