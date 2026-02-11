@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {useParams, useRouter} from "next/navigation";
+import { useRouter} from "next/navigation";
 import axios from "@/api/axios";
 const getPayloadFromToken = (token: string) => {
     try {
@@ -13,7 +13,7 @@ const getPayloadFromToken = (token: string) => {
         return null;
     }
 };
-
+//  @@@@ usePageMetadata 역할 : 메타데이터가져오기 , 원본 데이터 가져오기 , 가져온 데이터를 pageData로 담아줌, 로딩중인지 전체 개수가 몇개인지 같은 페이지의 전역 상태를 관리
 export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMine: boolean, diaryId?: string)=>{
     const router = useRouter(); // window.location.href 대신 사용
 
@@ -60,7 +60,22 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                 const metadataList = uiRes.data.data || [];
                 setMetadata(metadataList);
 
-                const sources = metadataList.filter((item:any) => item.componentType === "DATA_SOURCE" && item.actionType === "AUTO_FETCH");
+                // 데이터 소스 탐색 전 평탄화 로직 추가
+                const getAllComponents = (items: any[]): any[] => {
+                    let res: any[] = [];
+                    items.forEach(item => {
+                        res.push(item);
+                        if (item.children) res = res.concat(getAllComponents(item.children));
+                    });
+                    return res;
+                };
+
+                const allComponents = getAllComponents(metadataList);
+                const sources = allComponents.filter((item:any) =>
+                    item.componentType === "DATA_SOURCE" && item.actionType === "AUTO_FETCH"
+                );
+
+                // const sources = metadataList.filter((item:any) => item.componentType === "DATA_SOURCE" && item.actionType === "AUTO_FETCH");
 
                 const dataPromises = sources.map(async (source:any) => {
                     // console.log("지금 source에 들어 있는 모든 것 :", Object.keys(source));
@@ -116,7 +131,6 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                     if (isOnlyMine && token) {
                         headers["Authorization"] = `Bearer ${token}`; // "Bearer " 뒤에 공백 필수!
                     }
-                    // const res = await axios.post(apiUrl, {...finalParams});
                     console.log(`[요청 헤더]`, headers);
 
                     let res;
@@ -133,6 +147,7 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                     } else {
                         // POST 요청
                         res = await axios.post(apiUrl, { ...finalParams });
+                        console.log("백엔드에서 날아온 생 데이터:", res.data);
                     }
                     return { id: source.componentId, status: "success", data: res.data.data || res.data };
                 });
@@ -143,50 +158,41 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                 let detectedTotalCount = 0;
 
                 results.forEach((res: any) => {
+
+
                     if (res && res.id) {
                         // 1. 백엔드가 준 보따리 풀기 (member-diaries는 res.data에 직접 데이터가 옴)
                         const rawResponse = res.data || {};
                         let realList = [];
-                        // 2. 진짜 알맹이(배열) 찾기
-                        // list에 있으면 list를, data에 있으면 data를, 아니면 본체 자체가 배열인지 확인
-                        if (rawResponse.diaryItem) {
-                            realList = [rawResponse.diaryItem]; // 객체 1개를 배열로 감싸기
+
+                        if (Array.isArray(rawResponse)) {
+                            realList = rawResponse;
+                        } else if (rawResponse.list && Array.isArray(rawResponse.list)) {
+                            realList = rawResponse.list;
+                        } else if (rawResponse.data && Array.isArray(rawResponse.data)) {
+                            realList = rawResponse.data;
+                        } else if (rawResponse.diaryItem) {
+                            realList = [rawResponse.diaryItem];
                         } else {
-                            // 리스트나 data로 주면 그걸 챙긴다.
-                            realList = rawResponse.list || rawResponse.data || (Array.isArray(rawResponse) ? rawResponse : []);
+                            // 단일 객체(예: total_count 객체)인 경우 배열로 감싸기
+                            realList = [rawResponse];
                         }
 
-                        // 3. 엔진이 이해할 수 있게 이름표 갈아끼우기 (Alias 통일)
-                        // @@@@ 2026-02-04 추가 : 백앤드와 통일
-                        const unifiedList = realList.map((item: any) => {
-                            console.log("unifiedList item: ", item);
-                            // 날짜 포맷팅 (YYYY-MM-DDTHH:mm... -> YYYY.MM.DD)
-                            const rawDate = item.regDt || item.reg_dt || item.date || "";
-                            const formattedDate = rawDate.split('T')[0].replace(/-/g, '.');
+                        // 2. 이름표 갈아끼우기 (기존 로직 유지하되 안전하게)
+                        const unifiedList = realList.map((item: any) => ({
+                            ...item,
+                            diary_id: item.diaryId || item.diary_id,
+                            user_id: item.userId || item.user_id,
+                            reg_dt: item.regDt || item.reg_dt || ""
+                        }));
 
-                            return {
-                                ...item,
-                                detail_title: item.title,       // 제목 연결
-                                detail_content: item.content,   // 내용 연결
-                                detail_date: formattedDate,     // 날짜 연결
-                                diary_id: item.diaryId || item.diary_id,
-                                user_id: item.userId || item.user_id,
-                                reg_dt: formattedDate
-                            };
-                        });
+                        combinedData[res.id] = unifiedList;
 
-                        // 4. 창고에 저장
-                        combinedData[res.id] = {
-                            status: res.status,
-                            data: unifiedList
-                        };
-
-                        // 5. 페이지네이션 숫자(TotalCount) 똑똑하게 맞추기
+                        // 4. TotalCount 추출 (가장 중요)
                         if (res.id === "diary_list_source" && isOnlyMine) {
-                            // '내 일기' 모드일 때는 보따리에 적힌 total(14)을 사용
-                            detectedTotalCount = rawResponse.total || 0;
+                            detectedTotalCount = rawResponse.total || rawResponse.totalCount || 0;
                         } else if (res.id === "diary_total_count" && !isOnlyMine) {
-                            // '전체' 모드일 때는 전용 개수 쿼리의 결과(21)를 사용
+                            // unifiedList[0]이 {total_count: 9}를 가지고 있을 것임
                             detectedTotalCount = unifiedList[0]?.total_count || rawResponse.total_count || 0;
                         }
 
