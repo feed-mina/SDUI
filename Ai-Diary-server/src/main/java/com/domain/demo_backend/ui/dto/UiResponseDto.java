@@ -35,6 +35,12 @@ public class UiResponseDto {
     private String actionType; // 클릭 등 이벤트 발생 시 액션타입
     private String actionUrl; // 액션 수행 URL
 
+
+    // 데이터
+    private String dataApiUrl;  // 이 필드가 있는지 확인!
+    private String dataSqlKey;
+    private String refDataId;
+
     // 트리 구조의 핵심 ㅣ 자식 노드 리스트
     @JsonInclude(JsonInclude.Include.NON_EMPTY) // 자식이 없을 때 필드 자체를 숨기고 싶다면 사용
     private List<UiResponseDto> children = new ArrayList<>();
@@ -52,6 +58,9 @@ public class UiResponseDto {
         this.cssClass = entity.getCssClass();
         this.actionType = entity.getActionType();
         this.actionUrl = entity.getActionUrl();
+        this.dataApiUrl = entity.getDataApiUrl();
+        this.dataSqlKey = entity.getDataSqlKey();
+        this.refDataId = entity.getRefDataId();
         // children은 트리 구성 로직에서 별도로 채워짐
     }
 }
