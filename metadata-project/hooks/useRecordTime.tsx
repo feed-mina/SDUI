@@ -3,10 +3,12 @@
 import {useCallback, useEffect, useState} from "react";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import axios from "@/api/axios";
+import {useRouter} from "next/navigation";
 
 export const useRecordTime = () => {
     const [remainTimeText, setRemainTimeText] = useState('');
     const queryClient = useQueryClient();
+    const router = useRouter(); // window.location.href 대신 사용
 
     // 쿠키 확인 로직
     const getCookie = (name: string) => {
@@ -29,7 +31,8 @@ export const useRecordTime = () => {
             return res.data.goalTime?? null;
         },
         enabled: isLoggedIn, // 로그인 상태일때만 호출 (API 최적화)
-        staleTime: Infinity
+        staleTime: 1000 * 60 * 5, // @@@@ 2026-02-08 추가 Infinity 대신 5분으로 변경.
+        // staleTime: Infinity
     });
 
 
@@ -67,7 +70,8 @@ export const useRecordTime = () => {
         if (!currentToken) {
             alert('로그인이 필요한 서비스입니다.');
         } else {
-            window.location.href = '/view/SET_TIME_PAGE';
+            router.push('/view/SET_TIME_PAGE');
+            // window.location.href = '/view/SET_TIME_PAGE';
         }
     };
 
@@ -130,5 +134,5 @@ export const useRecordTime = () => {
         return () => clearInterval(timer);
     }, [goalTime]);
 
-    return { isLoggedIn, goalTime, goalList, remainTimeText, arrivalMutation, handleLinkToSetup, handleArrival };
+    return { isLoggedIn, goalTime, goalList, remainTimeText, arrivalMutation, handleLinkToSetup,router, handleArrival };
 };
