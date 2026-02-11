@@ -1,7 +1,7 @@
 // app/view/[screenId]/page.tsx
 'use client'; // 상태 관리와 이벤트를 위해 클라이언트 컴포넌트로 설정합니다.
 
-import React, { useState, useMemo } from "react";
+import React, { use, useState, useMemo } from "react";
 import axios from "@/api/axios";
 import { useParams } from "next/navigation"; // Next.js 전용으로 변경
 import DynamicEngine, {Metadata} from "@/components/DynamicEngine";
@@ -13,8 +13,12 @@ import Skeleton from "@/components/Skeleton";
 
 // @@@@ 2026-02-07 주석 추가 :
 // CommonPage 역할 : 전체 화면의 구성, 메타데이터와 데이터를 가져와 엔진에 전달
-export default function CommonPage() {
-    const {screenId} = useParams() as{ screenId :  string}; // 타입 캐스팅으로 에러 방지
+export default function CommonPage({ params: paramsPromise }: { params: Promise<{ screenId: string }> }) {
+
+    // Next.js 15에서는 params를 unwrapping 해야 합니다.
+    const params = use(paramsPromise);
+    const screenId = params.screenId;
+    // const {screenId} = useParams() as{ screenId :  string}; // 타입 캐스팅으로 에러 방지
 
 // 1. 상태 선언을 훅 호출보다 위로 올림 (중요!)
     const [currentPage, setCurrentPage] = useState(1);

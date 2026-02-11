@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { SCREEN_MAP, DEFAULT_SCREEN_ID } from '@/components/constants/screenMap';
 import { useQuery } from "@tanstack/react-query";
 
+// @@@@ MetadataProvider 역할 : URL에서 직접 screenId를 추출하거나 매핑 테이블 활용, React Query 도입
 interface MetadataContextType {
     menuTree: any[];
     isLoading: boolean;

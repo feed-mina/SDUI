@@ -14,6 +14,12 @@ interface DateTimePickerProps {
 const ITEM_HEIGHT = 50;
 
 const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
+   const getInitialDate = (inputData: any) => {
+       if (!inputData) return new Date();
+       const d = new Date(inputData);
+       return isNaN(d.getTime()) ? new Date() : d;
+       // 유효하지 않는 날짜면 현재 시간 사용
+   }
     // 1. 상태 관리
     const {
         date,
@@ -22,7 +28,7 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
         closeCalendar,
         handleDateChange,
         updateTime
-    } = useCalendar(data ? new Date(data) : new Date());
+    } = useCalendar(getInitialDate(data));
 
     // 2. Refs
     const hourRef = useRef<HTMLDivElement>(null);
@@ -52,10 +58,18 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
 
     // 4. 초기화 useEffect (가드 패턴 적용)
     useEffect(() => {
+        // @@@@ 20260-02-08 주석 추가 : 이미 초기화되었거나 데이터가 이미 존재한다면 부모에게 다시 알릴 필요 없음
         if (isInitialized.current) return;
         syncScrollToData(date);
+
+        // @@@@ 20260-02-08 주석 추가 : data가 없을때만 즉 신규 입력일때만 초기값을 부모에게 알림
+        // 만약 부모가 넘겨준 data가 있다면 onChange를 호출하지 않음
         if (onChange && !data) {
-            onChange(id, date.toISOString());
+            // @@@@ 20260-02-08 주석 추가 : data가 유효한지 체크하는 방어코드 추가
+            if (!isNaN(date.getTime())){
+                onChange(id, date.toISOString());
+
+            }
         }
         isInitialized.current = true;
     }, [date, onChange, id, data, syncScrollToData]);
@@ -71,7 +85,7 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
     }, [isInputMode, date, syncScrollToData]);
     // 5. 공통 변경 알림 함수
     const notifyChange = (newDate: Date) => {
-        if (onChange) {
+        if (onChange && !isNaN(newDate.getTime())) {
             onChange(id, newDate.toISOString());
         };
     }

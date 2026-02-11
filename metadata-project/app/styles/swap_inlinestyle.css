@@ -93,3 +93,34 @@
         color: #7f8c8d;
     }
 }
+
+.setup-button{
+    color: #007B65;
+    border-radius: 25px;
+    padding : 10px;
+    margin-bottom: 10px;
+    border: 2px solid #007B65;
+}
+
+#messageInput{
+    border: 2px solid #007B65;
+    border-radius: 5px;
+    flex: 1;
+    padding: 10px;
+}
+
+
+/* 메모 입력창 레이아웃 (부모 컴포넌트에서 정의하거나 추가) */
+.inputfield {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    padding: 0 15px;
+}
+
+.inputfield label {
+    margin-right: 15px; /* 글자와 인풋창 사이 간격 확보 */
+    white-space: nowrap;
+    font-weight: bold;
+}
+

@@ -8,11 +8,10 @@ import "./styles/swap_inlinestyle.css" // 5. @@@@ 2026-02-07
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider"; // 방금 만든 방 가져오기
 import RecordTimeComponent from "@/components/fields/RecordTimeComponent"
 import {MetadataProvider} from "@/components/MetadataProvider";
-import Header from "@/components/Header";
 
 //  @@@@ 2026-02-08 수정 MetadataProvider 적용
 // layout.tsx 에 있는 컴포넌트들이 undefined 에러 없이 데이터를 안정적으로 받아오게 하는 API 흐름 설계
-
+// @@@@ layout 역할 :  프론트앤드 전체 레이아웃 구조
 export default function RootLayout({ children }: Readonly<{
     children: React.ReactNode;
 }>) {
