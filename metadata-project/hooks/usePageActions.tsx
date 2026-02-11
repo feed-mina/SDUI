@@ -1,12 +1,14 @@
 import {useRouter} from "next/navigation";
 import axios from "@/api/axios";
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 // @@@@ 2026-02-07 주석 추가
 // usePageActions 역할 : 사용자의 입력 (formData)와  클릭 이벤트 (handleAction)를 처리하는 훅
 // 인자 타입을 (meta, data) 두 개로 변경하는 것이 핵심입니다.
 export const usePageActions = (metadata: any[]) => {
+    const queryClient = useQueryClient();
     const router = useRouter();
     const [formData, setFormData] = useState<any>({});
     const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +18,7 @@ export const usePageActions = (metadata: any[]) => {
     useEffect(() => {
         formDataRef.current = formData;
     }, [formData]);
+
 
     // useCallback으로 감싸서 함수가 새로 생성되는 것을 방지
     const handleChange = useCallback((id: string, value: any) => {
@@ -91,12 +94,20 @@ export const usePageActions = (metadata: any[]) => {
 
             try{
                 const response = await axios.post(actionUrl, submitData);
+                // @@@@ 2026-02-08 추가 SET_TIME_PAGE 페이지의 Action  Handler
 
                 if(response.status === 200 || response.status === 201){
+                    //  목표 시간 저장 관련 API일 경우 쿼리 무효화 실행
+                    if (actionUrl.includes("/api/goalTime/save")) {
+                        await queryClient.invalidateQueries({ queryKey: ['goalTime'] });
+                        await queryClient.invalidateQueries({ queryKey: ['goalList'] });
+                    }
+
                     // 성공 처리
                     if(response.data.accessToken){
                         document.cookie = `accessToken=${response.data.accessToken}; path=/; max-age=3600`;
-                        window.location.href = '/view/MAIN_PAGE'; // 전체 새로고침으로 데이터 강제 갱신
+                        router.push("/view/MAIN_PAGE"); // 전체 새로고침으로 데이터 강제 갱신
+                        router.refresh(); // 서버 컴포넌트 상태 갱신
                     } else {
                         if(actionUrl && actionUrl.includes("addDiaryList")){
                             router.push("/view/DIARY_LIST");
@@ -111,6 +122,6 @@ export const usePageActions = (metadata: any[]) => {
                 alert(`오류가 발생했습니다.`);
             }
         }
-    } , [metadata, router]);
+    } , [metadata, router, queryClient]);
     return { formData, handleChange, handleAction, showPassword, pwType };
 };
