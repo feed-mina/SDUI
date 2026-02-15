@@ -1,12 +1,10 @@
 package com.domain.demo_backend.helper;
 
-import com.domain.demo_backend.util.CustomUserDetails;
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.math.BigInteger;
 
 public class UserInfoHelper {
     // 현재 로그인된 사용자의 정보를 가져온다. @return MemberInfo 현재 사용자의 정보를 가져오는 객체
