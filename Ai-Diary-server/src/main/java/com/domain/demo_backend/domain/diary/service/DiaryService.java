@@ -1,19 +1,17 @@
-package com.domain.demo_backend.service;
+package com.domain.demo_backend.domain.diary.service;
 
 import com.domain.demo_backend.diary.domain.Diary;
 import com.domain.demo_backend.diary.domain.DiaryRepository;
 import com.domain.demo_backend.diary.dto.DiaryRequest;
 import com.domain.demo_backend.diary.dto.DiaryResponse;
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.user.domain.User;
 import com.domain.demo_backend.user.domain.UserRepository;
-import com.domain.demo_backend.util.CustomUserDetails;
 import com.domain.demo_backend.util.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import jakarta.servlet.http.HttpServletRequest;
-import io.jsonwebtoken.Claims;
 import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

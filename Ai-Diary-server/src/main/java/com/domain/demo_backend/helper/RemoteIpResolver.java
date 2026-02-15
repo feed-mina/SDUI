@@ -1,5 +1,6 @@
 package com.domain.demo_backend.helper;
 
+import com.domain.demo_backend.global.config.RemoteIp;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;

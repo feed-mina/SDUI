@@ -1,7 +1,7 @@
 import {useRouter} from "next/navigation";
-import axios from "@/api/axios";
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import axios from "@/services/axios";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {useQueryClient} from "@tanstack/react-query";
 
 
 // @@@@ 2026-02-07 주석 추가

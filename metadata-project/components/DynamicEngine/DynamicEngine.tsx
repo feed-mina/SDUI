@@ -1,9 +1,9 @@
 // @@@@ 2026-02-07 변경 DynamicEngine 훅,렌더링,컴포넌트 부분 따로 분리
 'use client';
 import React from "react";
-import { componentMap } from "./componentMap";
-import { useDynamicEngine } from "./useDynamicEngine";
-import { DynamicEngineProps, Metadata } from "./type";
+import {componentMap} from "./componentMap";
+import {useDynamicEngine} from "./useDynamicEngine";
+import {DynamicEngineProps, Metadata} from "./type";
 
 // @@@@ 2026-02-07 주석 추가
 // DynamicEngine 역할 : 분석된 구조를 바탕으로 실제 리액트 컴포넌트를 랜더링

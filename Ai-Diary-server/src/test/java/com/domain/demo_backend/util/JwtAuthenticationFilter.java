@@ -1,5 +1,6 @@
 package com.domain.demo_backend.util;
 
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.token.domain.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 

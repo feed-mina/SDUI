@@ -2,7 +2,7 @@
 
 import React from "react";
 // DynamicEngine 폴더에 만든 타입을 가져와서 쓰자
-import { Metadata } from "../DynamicEngine/type";
+import {Metadata} from "../DynamicEngine/type";
 
 interface TextAreaFieldProps {
     id: string;

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import '../../app/styles/DateTimePicker.css';
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from 'react-datepicker';
-import { useCalendar } from '../../hooks/useCalendar';
+import {useCalendar} from '../../hooks/useCalendar';
 
 interface DateTimePickerProps {
     id: string;

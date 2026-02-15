@@ -1,4 +1,4 @@
-package com.domain.demo_backend.controller;
+package com.domain.demo_backend.domain.time.controller;
 
 
 import org.springframework.web.bind.annotation.GetMapping;

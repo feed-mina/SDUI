@@ -1,8 +1,7 @@
- // 2026-02-07 추가 데이터 가공 및 트리 생성 로직
- import { useMemo } from "react";
- import { Metadata } from "@/components/DynamicEngine/type"
+// 2026-02-07 추가 데이터 가공 및 트리 생성 로직
+import {Metadata} from "@/components/DynamicEngine/type"
 
- // @@@@ 2026-02-07 주석 추가
+// @@@@ 2026-02-07 주석 추가
  // useDynamicEngine 역할 : 메타데이터를 트리(부모-자식) 구조로 바꾸고 데이터를 매핑함, 데이터바인딩 (pageData에서 필드로 연결)
  export const useDynamicEngine = (metadata: Metadata[], pageData: any) => {
 

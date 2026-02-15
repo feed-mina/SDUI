@@ -1,4 +1,4 @@
-package com.domain.demo_backend.helper;
+package com.domain.demo_backend.domain.user.service;
 
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import org.springframework.http.HttpStatus;

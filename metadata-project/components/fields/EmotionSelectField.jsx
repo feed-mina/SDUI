@@ -1,6 +1,6 @@
 'use client';
 // src/components/fields/EmotionSelectField.js
-import React, { useState } from 'react';
+import React from 'react';
 
 function EmotionSelectField({id, style, className, meta, onChange}) {
 

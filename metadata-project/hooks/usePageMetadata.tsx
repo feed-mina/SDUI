@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
-import { useRouter} from "next/navigation";
-import axios from "@/api/axios";
+import {useRouter} from "next/navigation";
+import axios from "@/services/axios";
+
 const getPayloadFromToken = (token: string) => {
     try {
         const base64Url = token.split('.')[1];

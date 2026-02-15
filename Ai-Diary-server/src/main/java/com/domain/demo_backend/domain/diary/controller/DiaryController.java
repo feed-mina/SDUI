@@ -1,12 +1,12 @@
-package com.domain.demo_backend.controller;
+package com.domain.demo_backend.domain.diary.controller;
 
 import com.domain.demo_backend.diary.domain.Diary;
 import com.domain.demo_backend.diary.dto.DiaryRequest;
 import com.domain.demo_backend.diary.dto.DiaryResponse;
-import com.domain.demo_backend.helper.UserInfoHelper;
-import com.domain.demo_backend.service.DiaryService;
+import com.domain.demo_backend.domain.diary.service.DiaryService;
+import com.domain.demo_backend.domain.user.service.UserInfoHelper;
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.service.KakaoService;
-import com.domain.demo_backend.util.CustomUserDetails;
 import com.domain.demo_backend.util.JwtUtil;
 import com.github.pagehelper.PageInfo;
 import io.jsonwebtoken.Claims;
@@ -17,13 +17,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigInteger;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/diary")

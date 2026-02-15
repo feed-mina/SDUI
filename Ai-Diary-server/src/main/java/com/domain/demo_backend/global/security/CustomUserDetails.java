@@ -1,4 +1,4 @@
-package com.domain.demo_backend.util;
+package com.domain.demo_backend.global.security;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,7 +7,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 
-import java.math.BigInteger;
 import java.util.Collection;
 
 

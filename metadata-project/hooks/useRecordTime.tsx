@@ -2,7 +2,7 @@
 
 import {useCallback, useEffect, useState} from "react";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import axios from "@/api/axios";
+import axios from "@/services/axios";
 import {useRouter} from "next/navigation";
 
 // @@@@ useRecordTime 역할 : reactQurey 로 목표시간데이터, 리스트, 도착시간 부분 백앤드와 연결 관리

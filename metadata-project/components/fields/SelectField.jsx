@@ -1,6 +1,6 @@
 'use client';
 // src/components/fields/SelectField.js
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 
 function SelectField({id, label, style, className, meta, onChange}) {
     const [isDirect, setIsDirect] = useState(false); // 직접 입력 모드인지 확인

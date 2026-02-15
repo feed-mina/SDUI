@@ -1,14 +1,12 @@
 // app/view/[screenId]/page.tsx
 'use client'; // 상태 관리와 이벤트를 위해 클라이언트 컴포넌트로 설정합니다.
 
-import React, { use, useState, useMemo } from "react";
-import axios from "@/api/axios";
-import { useParams } from "next/navigation"; // Next.js 전용으로 변경
-import DynamicEngine, {Metadata} from "@/components/DynamicEngine";
+import React, {use, useMemo, useState} from "react";
+import DynamicEngine from "@/components/DynamicEngine";
 import Pagination from "@/components/Pagination";
 import FilterToggle from "@/components/FilterToggle";
 import {usePageMetadata} from "@/hooks/usePageMetadata";
-import { usePageActions } from "@/hooks/usePageActions";
+import {usePageActions} from "@/hooks/usePageActions";
 import Skeleton from "@/components/Skeleton";
 
 // @@@@ 2026-02-07 주석 추가 :

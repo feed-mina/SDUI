@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from "react";
+import React, {memo} from "react";
 
 // props의 타입을 정확하게 정의해주자. (object라고 퉁치면 안 돼)
 interface InputFieldProps {

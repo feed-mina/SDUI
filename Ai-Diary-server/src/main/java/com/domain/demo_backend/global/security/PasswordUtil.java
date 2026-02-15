@@ -1,4 +1,4 @@
-package com.domain.demo_backend.util;
+package com.domain.demo_backend.global.security;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 

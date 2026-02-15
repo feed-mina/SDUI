@@ -1,9 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useMemo } from "react";
-import { usePathname } from 'next/navigation';
-import { SCREEN_MAP, DEFAULT_SCREEN_ID } from '@/components/constants/screenMap';
-import { useQuery } from "@tanstack/react-query";
+import React, {createContext, useContext, useMemo} from "react";
+import {usePathname} from 'next/navigation';
+import {DEFAULT_SCREEN_ID, SCREEN_MAP} from '@/components/constants/screenMap';
+import {useQuery} from "@tanstack/react-query";
 
 // @@@@ MetadataProvider 역할 : URL에서 직접 screenId를 추출하거나 매핑 테이블 활용, React Query 도입
 interface MetadataContextType {

@@ -1,4 +1,4 @@
-package com.domain.demo_backend.util;
+package com.domain.demo_backend.infra;
 
 import org.springframework.stereotype.Component;
 

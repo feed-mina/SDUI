@@ -1,6 +1,6 @@
 'use client';
 
-import React , {useState} from 'react';
+import React, {useState} from 'react';
 
 // 타입을 정의한다
 interface PasswordFieldProps {

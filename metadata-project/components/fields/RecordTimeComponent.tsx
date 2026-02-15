@@ -1,9 +1,7 @@
 'use client';
-import {memo, useCallback, useEffect, useState} from "react";
-import {useQuery,useMutation, useQueryClient} from "@tanstack/react-query";
-import axios from "@/api/axios";
+import {useState} from "react";
 import {useRecordTime} from "@/hooks/useRecordTime";
-import {ArrivalButton} from "@/utils/ArrivalButton";
+import {ArrivalButton} from "@/components/fields/ArrivalButton";
 import {dateFormatter} from "@/utils/dateFormatter";
 
 // 1. props 타입 정의 (data 안에 무엇이 들어있는지 명시)

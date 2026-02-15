@@ -1,4 +1,4 @@
-package com.domain.demo_backend.helper;
+package com.domain.demo_backend.global.config;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
