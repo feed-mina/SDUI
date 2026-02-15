@@ -726,6 +726,11 @@
     width: 100%;
 }
 
+.group-TITLE_AUTHOR_GROUP{
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
 /* 2. PC 화면 설정 (768px 이상) */
 @media (min-width: 768px) {
     .diaryListSection {

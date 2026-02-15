@@ -38,21 +38,43 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
                 };
                 // @@@@ 리피터(데이터 목록을 반복해서 그림)
                 if (isRepeater) {
-                    //   const list = pageData[refId].data;
-                    const list = pageData[refId];
+                    const list = pageData?.[refId];
+
+                    // 2. 데이터가 없거나 배열이 아니면 아무것도 그리지 않고 탈출 (이게 핵심!)
+                    if (!list || !Array.isArray(list)) {
+                        console.warn(`[DynamicEngine] ${refId} 에 해당하는 리스트 데이터가 없거나 배열이 아닙니다.`, list);
+                        return null;
+                    }
                     console.log('DynamicEngine list', list);
 
-                    return list.map((item: any, idx: number) => (
-                        <div key={`${uId}-${idx}`} className={`group-${node.componentId}`} style={groupStyle}>
-                            {renderNodes(node.children!, item)}
-                        </div>
-                    ));
 
+                    return list.map((item: any, idx: number) => {
+                        // 액션이 있는 경우 클릭 핸들러 생성
+                        const hasAction = node.actionType ;
+                        const handleClick = hasAction ? () => onAction(node, item) : undefined;
+
+                        return (
+                            <div
+                                key={`${uId}-${idx}`}
+                                className={`group-${node.componentId}`}
+                                style={{ ...groupStyle, cursor: hasAction ? 'pointer' : 'default' }}
+                                onClick={handleClick} // 이 부분이 핵심!
+                            >
+                                {renderNodes(node.children!, item)}
+                            </div>
+                        );
+                    });
                 }
 
                 // @@@@ 단순 레이아웃 그룹 (부모가 준 rowData를 자식에게 전달)
+                const hasGroupAction = node.actionType ;
                 return (
-                    <div key={uId} className={`group-${node.componentId}`} style={groupStyle}>
+                    <div
+                        key={uId}
+                        className={`group-${node.componentId}`}
+                        style={{ ...groupStyle, cursor: hasGroupAction ? 'pointer' : 'default' }}
+                        onClick={hasGroupAction ? () => onAction(node, rowData) : undefined}
+                    >
                         {renderNodes(node.children, rowData)}
                     </div>
                 );

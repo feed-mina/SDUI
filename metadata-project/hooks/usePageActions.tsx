@@ -48,8 +48,10 @@ export const usePageActions = (metadata: any[]) => {
 
         // 3. 상세 페이지 이동 (리스트 클릭 시)
         if (actionType === "ROUTE_DETAIL") {
-            // ID는 meta가 아니라 data(두 번째 인자)에 들어있습니다.
-            if (data) {
+            if (!data) {
+                console.error("데이터가 없으면 상세 페이지로 갈 수 없어.");
+                return;
+            }
                 console.log("상세 이동 데이터:", data);
                 const detailId = data.diary_id || data.diaryId;
                 if (detailId) {
@@ -57,9 +59,6 @@ export const usePageActions = (metadata: any[]) => {
                 } else {
                     console.warn("이동할 ID(diary_id)가 데이터에 없습니다.", data);
                 }
-            } else {
-                console.warn("상세 이동을 위한 데이터가 전달되지 않았습니다.");
-            }
             return;
         }
 
