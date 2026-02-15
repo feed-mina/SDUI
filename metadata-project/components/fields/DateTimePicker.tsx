@@ -13,13 +13,13 @@ interface DateTimePickerProps {
 
 const ITEM_HEIGHT = 50;
 
-const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
-   const getInitialDate = (inputData: any) => {
-       if (!inputData) return new Date();
-       const d = new Date(inputData);
-       return isNaN(d.getTime()) ? new Date() : d;
-       // 유효하지 않는 날짜면 현재 시간 사용
-   }
+const DateTimePicker = ({id, onChange, data}: DateTimePickerProps) => {
+    const getInitialDate = (inputData: any) => {
+        if (!inputData) return new Date();
+        const d = new Date(inputData);
+        return isNaN(d.getTime()) ? new Date() : d;
+        // 유효하지 않는 날짜면 현재 시간 사용
+    }
     // 1. 상태 관리
     const {
         date,
@@ -38,11 +38,11 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
 
     // 2-1. 키보드 입력 모드 상태
     const [isInputMode, setIsInputMode] = useState(false);
-    const [inputValues, setInputValues] = useState({ hour: '00', minute: '00' });
+    const [inputValues, setInputValues] = useState({hour: '00', minute: '00'});
 
     // Constants
-    const hours = Array.from({ length: 24 }, (_, i) => i);
-    const minutes = Array.from({ length: 60 }, (_, i) => i);
+    const hours = Array.from({length: 24}, (_, i) => i);
+    const minutes = Array.from({length: 60}, (_, i) => i);
 
     // 3. UI 동기화 함수
     const syncScrollToData = useCallback((targetDate: Date) => {
@@ -50,8 +50,8 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
             const h = targetDate.getHours();
             const m = targetDate.getMinutes();
             setTimeout(() => {
-                if (hourRef.current) hourRef.current.scrollTo({ top: h * ITEM_HEIGHT, behavior: 'smooth' });
-                if (minuteRef.current) minuteRef.current.scrollTo({ top: m * ITEM_HEIGHT, behavior: 'smooth' });
+                if (hourRef.current) hourRef.current.scrollTo({top: h * ITEM_HEIGHT, behavior: 'smooth'});
+                if (minuteRef.current) minuteRef.current.scrollTo({top: m * ITEM_HEIGHT, behavior: 'smooth'});
             }, 50);
         }
     }, []);
@@ -66,7 +66,7 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
         // 만약 부모가 넘겨준 data가 있다면 onChange를 호출하지 않음
         if (onChange && !data) {
             // @@@@ 20260-02-08 주석 추가 : data가 유효한지 체크하는 방어코드 추가
-            if (!isNaN(date.getTime())){
+            if (!isNaN(date.getTime())) {
                 onChange(id, date.toISOString());
 
             }
@@ -87,7 +87,8 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
     const notifyChange = (newDate: Date) => {
         if (onChange && !isNaN(newDate.getTime())) {
             onChange(id, newDate.toISOString());
-        };
+        }
+        ;
     }
 
     // 6. 스크롤 핸들러
@@ -101,7 +102,7 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
             const scrollTop = ref.scrollTop;
             const value = Math.round(scrollTop / ITEM_HEIGHT);
 
-            ref.scrollTo({ top: value * ITEM_HEIGHT, behavior: 'smooth' });
+            ref.scrollTo({top: value * ITEM_HEIGHT, behavior: 'smooth'});
 
             const newDate = new Date(date);
             if (type === 'hour') {
@@ -243,7 +244,7 @@ const DateTimePicker = ({ id, onChange, data }: DateTimePickerProps) => {
                 <button type="button" onClick={() => addMinutes(60)}>+1시간</button>
             </div>
 
-            <p className="debug-text" style={{marginTop:'10px', color:'#666'}}>
+            <p className="debug-text" style={{marginTop: '10px', color: '#666'}}>
                 설정 시간: {date.getHours()}시 {date.getMinutes()}분
             </p>
 

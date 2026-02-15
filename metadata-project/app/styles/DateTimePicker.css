@@ -7,7 +7,7 @@
     background: #fff;
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     /* 필요하면 width: 100% */
 }
 
@@ -36,7 +36,12 @@
     border-radius: 8px;
     text-align: center;
 }
-.wheel-wrapper::-webkit-scrollbar { display: none; } /* 크롬 스크롤 숨김 */
+
+.wheel-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+/* 크롬 스크롤 숨김 */
 
 .wheel-item {
     height: 50px; /* JS 상수의 ITEM_HEIGHT와 같아야 함 */
@@ -47,7 +52,11 @@
     scroll-snap-align: center; /* 가스크롤이 멈출 때 아이템 중앙에 오도록 자석 효과 */
 }
 
-.spacer { height: 50px; } /* 위아래 여백 */
+.spacer {
+    height: 50px;
+}
+
+/* 위아래 여백 */
 /* 시:분 사이의 콜론 */
 .colon {
     font-size: 24px;
@@ -55,6 +64,7 @@
     margin: 0 5px;
     padding-bottom: 4px; /* 시각적 보정 */
 }
+
 .quick-buttons {
     display: flex;
     gap: 8px;

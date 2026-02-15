@@ -1,4 +1,4 @@
-package com.domain.demo_backend.ui.domain;
+package com.domain.demo_backend.domain.ui.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,6 +1,7 @@
 import type {NextConfig} from "next";
 
-const nextConfig: NextConfig = {async rewrites() {
+const nextConfig: NextConfig = {
+    async rewrites() {
         return [
             {
                 source: '/api/:path*', // 브라우저에서 /api로 시작하는 요청을 보내면

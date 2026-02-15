@@ -10,7 +10,7 @@ interface UseTimeWheelProps {
     id: string;
 }
 
-export const useTimeWheel = ({ date, updateTimeOnly, onChange, id }: UseTimeWheelProps) => {
+export const useTimeWheel = ({date, updateTimeOnly, onChange, id}: UseTimeWheelProps) => {
     // 1. Refs (DOM 접근용)
     const hourRef = useRef<HTMLDivElement>(null);
     const minuteRef = useRef<HTMLDivElement>(null);
@@ -19,7 +19,7 @@ export const useTimeWheel = ({ date, updateTimeOnly, onChange, id }: UseTimeWhee
 
     // 2. 입력 모드 상태 (UI 전용)
     const [isInputMode, setIsInputMode] = useState(false);
-    const [inputValues, setInputValues] = useState({ hour: '00', minute: '00' });
+    const [inputValues, setInputValues] = useState({hour: '00', minute: '00'});
 
     // 3. 부모에게 변경 알림 (공통)
     const notifyChange = useCallback((newDate: Date) => {
@@ -35,8 +35,8 @@ export const useTimeWheel = ({ date, updateTimeOnly, onChange, id }: UseTimeWhee
 
         // 약간의 지연을 주어 UI 렌더링 후 이동
         setTimeout(() => {
-            if (hourRef.current) hourRef.current.scrollTo({ top: h * ITEM_HEIGHT, behavior: 'smooth' });
-            if (minuteRef.current) minuteRef.current.scrollTo({ top: m * ITEM_HEIGHT, behavior: 'smooth' });
+            if (hourRef.current) hourRef.current.scrollTo({top: h * ITEM_HEIGHT, behavior: 'smooth'});
+            if (minuteRef.current) minuteRef.current.scrollTo({top: m * ITEM_HEIGHT, behavior: 'smooth'});
         }, 50);
     }, []);
 
@@ -70,7 +70,7 @@ export const useTimeWheel = ({ date, updateTimeOnly, onChange, id }: UseTimeWhee
             const scrollTop = ref.scrollTop;
             const value = Math.round(scrollTop / ITEM_HEIGHT);
 
-            ref.scrollTo({ top: value * ITEM_HEIGHT, behavior: 'smooth' });
+            ref.scrollTo({top: value * ITEM_HEIGHT, behavior: 'smooth'});
 
             const newDate = new Date(date);
             if (type === 'hour') newDate.setHours(value);
@@ -94,7 +94,7 @@ export const useTimeWheel = ({ date, updateTimeOnly, onChange, id }: UseTimeWhee
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'hour' | 'minute') => {
         const val = e.target.value;
         if (!/^\d{0,2}$/.test(val)) return;
-        setInputValues(prev => ({ ...prev, [type]: val }));
+        setInputValues(prev => ({...prev, [type]: val}));
     };
 
     // 입력 확정 및 종료

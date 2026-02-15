@@ -8,47 +8,47 @@ import {DynamicEngineProps, Metadata} from "./type";
 // @@@@ 2026-02-07 주석 추가
 // DynamicEngine 역할 : 분석된 구조를 바탕으로 실제 리액트 컴포넌트를 랜더링
 const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
-    const { metadata, pageData, onChange, onAction, ...rest } = props;
-    const { treeData, getComponentData } = useDynamicEngine(metadata, pageData);
+    const {metadata, pageData, onChange, onAction, ...rest} = props;
+    const {treeData, getComponentData} = useDynamicEngine(metadata, pageData);
 
     const renderNodes = (nodes: Metadata[], rowData: any = null) => {
 
         if (!nodes) return null;
-            return nodes.map((node) => {
-                const isVisible = node.isVisible !== false && node.isVisible !== "false" &&
-                     node.is_visible !== false && node.is_visible !== "false";
-                // @@@@  가시성 판단 (isVisible이 false면 렌더링 안 함)
-                if (!isVisible) return null;
-                // @@@@ id를 반드시 문자열(String)로 보장하여 .includes() 에러 방지
-                const rawId = node.componentId || node.component_id || node.uiId ;
-                const uId = String(rawId);
+        return nodes.map((node) => {
+            const isVisible = node.isVisible !== false && node.isVisible !== "false" &&
+                node.is_visible !== false && node.is_visible !== "false";
+            // @@@@  가시성 판단 (isVisible이 false면 렌더링 안 함)
+            if (!isVisible) return null;
+            // @@@@ id를 반드시 문자열(String)로 보장하여 .includes() 에러 방지
+            const rawId = node.componentId || node.component_id || node.uiId;
+            const uId = String(rawId);
 
-                // //  @@@@  그룹 또는 리피터 처리
-                if (node.children && node.children.length > 0) {
-                        const refId = node.refDataId || node.ref_data_id;
-                        // @@@@  데이터가 진짜 '배열'이고, '리스트'를 그려야 하는 컴포넌트일 때만 map 실행
-                        const isRepeater = refId
+            // //  @@@@  그룹 또는 리피터 처리
+            if (node.children && node.children.length > 0) {
+                const refId = node.refDataId || node.ref_data_id;
+                // @@@@  데이터가 진짜 '배열'이고, '리스트'를 그려야 하는 컴포넌트일 때만 map 실행
+                const isRepeater = refId
 
-                    const groupStyle: React.CSSProperties = {
-                        display: "flex",
-                        flexDirection: node.groupDirection === "ROW" ? "row" : "column",
-                        width: "100%",
-                        gap: "10px",
-                        alignItems: "center"
-                    };
-                        // @@@@ 리피터(데이터 목록을 반복해서 그림)
-                        if (isRepeater) {
-                         //   const list = pageData[refId].data;
-                            const list = pageData[refId];
-                            console.log('DynamicEngine list', list);
+                const groupStyle: React.CSSProperties = {
+                    display: "flex",
+                    flexDirection: node.groupDirection === "ROW" ? "row" : "column",
+                    width: "100%",
+                    gap: "10px",
+                    alignItems: "center"
+                };
+                // @@@@ 리피터(데이터 목록을 반복해서 그림)
+                if (isRepeater) {
+                    //   const list = pageData[refId].data;
+                    const list = pageData[refId];
+                    console.log('DynamicEngine list', list);
 
-                                    return list.map((item: any, idx: number) => (
-                                        <div key={`${uId}-${idx}`} className={`group-${node.componentId}`} style={groupStyle}>
-                                            {renderNodes(node.children!, item)}
-                                        </div>
-                                    ));
+                    return list.map((item: any, idx: number) => (
+                        <div key={`${uId}-${idx}`} className={`group-${node.componentId}`} style={groupStyle}>
+                            {renderNodes(node.children!, item)}
+                        </div>
+                    ));
 
-                                }
+                }
 
                 // @@@@ 단순 레이아웃 그룹 (부모가 준 rowData를 자식에게 전달)
                 return (

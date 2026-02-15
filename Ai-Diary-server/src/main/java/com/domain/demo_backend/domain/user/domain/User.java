@@ -1,4 +1,4 @@
-package com.domain.demo_backend.user.domain;
+package com.domain.demo_backend.domain.user.domain;
 
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -60,7 +60,7 @@ public class User {
     private LocalDateTime withdrawAt;
 
     // DB업데이트 시 SQL을 직접 지정하고 싶을때 Repository에서 사용
-    @Column(name="verification_expired_at")
+    @Column(name = "verification_expired_at")
     private LocalDateTime verificationExpiredAt;
 
 
@@ -84,7 +84,7 @@ public class User {
         this.socialType = socialType;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.verificationCode= verificationCode;
+        this.verificationCode = verificationCode;
         this.withdrawAt = withdrawAt;
         this.sleepUsingType = sleepUsingType;
         this.drugUsingType = drugUsingType;

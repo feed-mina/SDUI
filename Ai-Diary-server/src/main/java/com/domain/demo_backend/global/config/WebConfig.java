@@ -1,6 +1,6 @@
-package com.domain.demo_backend.config;
+package com.domain.demo_backend.global.config;
 
-import com.domain.demo_backend.helper.RemoteIpResolver;
+import com.domain.demo_backend.global.common.util.RemoteIpResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

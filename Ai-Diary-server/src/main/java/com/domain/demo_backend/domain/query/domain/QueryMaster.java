@@ -1,4 +1,4 @@
-package com.domain.demo_backend.query.domain;
+package com.domain.demo_backend.domain.query.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,20 +17,20 @@ import java.time.LocalDateTime;
 public class QueryMaster {
 
     @Id
-    @Column(name="sql_key")
+    @Column(name = "sql_key")
     private String sqlKey; // 쿼리 식별자
 
-    @Column(name="query_text", nullable = false)
+    @Column(name = "query_text", nullable = false)
     private String queryText; // 실제 실행할 SQL 문장
 
-    @Column(name="return_type")
+    @Column(name = "return_type")
     private String returnType; // SINGLE, MULTI 등
 
     private String description;
 
-    @Column(name="created_at", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name="updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

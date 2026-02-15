@@ -1,13 +1,12 @@
-package com.domain.demo_backend.controller;
+package com.domain.demo_backend.domain.user.controller;
 
+import com.domain.demo_backend.domain.user.service.AuthService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
-import com.domain.demo_backend.service.AuthService;
-import com.domain.demo_backend.token.domain.RefreshToken;
-import com.domain.demo_backend.token.domain.RefreshTokenRepository;
-import com.domain.demo_backend.token.domain.TokenResponse;
-import com.domain.demo_backend.user.domain.User;
-import com.domain.demo_backend.user.dto.*;
-import com.domain.demo_backend.util.JwtUtil;
+import com.domain.demo_backend.domain.token.domain.RefreshToken;
+import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
+import com.domain.demo_backend.domain.token.domain.TokenResponse;
+import com.domain.demo_backend.domain.user.domain.User;
+import com.domain.demo_backend.global.security.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,18 +32,11 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @Tag(name = "회원 권한 로직 컨트롤러", description = "로그인, 회원가입 (-- 로그아웃, 회원탈퇴, 회원가입, 비밀번호 변경, 이메일 인증/재인증 , 회원탈퇴")
 public class AuthController {
-    @PostConstruct
-    public void init() {
-        System.out.println(" refreshTokenRepository: " + refreshTokenRepository);
-    }
-
-
     private final Logger log = LoggerFactory.getLogger(AuthController.class);
+    private final AuthService authService;
     private Map<String, String> emailVerificationMap = new HashMap<>();
     private JwtUtil jwtUtil;
-    private final AuthService authService;
     private User user;
-
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
@@ -56,6 +48,11 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+    @PostConstruct
+    public void init() {
+        System.out.println(" refreshTokenRepository: " + refreshTokenRepository);
+    }
+
     @Operation(summary = "회원 로그인", description = "id와 password와 haspassword가 일치하다면 로그인, 아니면 팝업 경고창이 뜬다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일반 회원 로그인 성공"),
@@ -64,7 +61,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody com.domain.demo_backend.domain.user.dto.LoginRequest loginRequest) {
         TokenResponse tokenResponse = authService.login(loginRequest);
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
@@ -90,7 +87,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> register(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest) {
         log.info("registerRequest: " + registerRequest);
         authService.register(registerRequest);
         log.info("register service logic OK");
@@ -106,7 +103,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/signup")
-    public  ResponseEntity<?>  sendVerificationCode(@RequestBody RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
+    public ResponseEntity<?> sendVerificationCode(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
 
         log.info("유효성 평가 ");
 //        authService.beforesendVerificationCode(registerRequest);
@@ -135,7 +132,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @GetMapping("/signUp")
-    public  ResponseEntity<?>  sendVerificationCodeByGet(@RequestBody RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
+    public ResponseEntity<?> sendVerificationCodeByGet(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
 
         log.info("get 테스트 회원가입 하기 위해 인증코드 전송 ");
         String email = registerRequest.getEmail();
@@ -158,7 +155,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/verify-code")
-    public ResponseEntity<String> verifyCode(@RequestBody RegisterRequest request){
+    public ResponseEntity<String> verifyCode(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest request) {
         if (request.getEmail() == null || request.getCode() == null) {
             return ResponseEntity.badRequest().body("이메일 또는 인증 코드가 누락되었습니다.");
         }
@@ -179,7 +176,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/resend-code")
-    public ResponseEntity<String> resendVerificationCode(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> resendVerificationCode(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest request) {
         try {
             authService.resendVerification(request.getEmail());
             return ResponseEntity.ok(" 새 인증코드가 이메일로 전송되었습니다!");
@@ -197,7 +194,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/non-user")
-    public ResponseEntity<String> nonUser(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> nonUser(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest) {
         log.info("회원탈퇴 요청 진입: " + registerRequest);
         log.info("회원탈퇴 진입");
         if (registerRequest.getEmail() == null || registerRequest.getEmail().isEmpty()) {
@@ -225,7 +222,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/editPassword")
-    public ResponseEntity<?> editPassword(@RequestBody PasswordDto passwordDto) {
+    public ResponseEntity<?> editPassword(@RequestBody com.domain.demo_backend.domain.user.dto.PasswordDto passwordDto) {
         log.info("비밀변호 변경 요청 진입: " + passwordDto);
         log.info("비밀변호 변경 진입");
         if (passwordDto.getEmail() == null || passwordDto.getEmail().isEmpty()) {
@@ -258,8 +255,8 @@ public class AuthController {
             String email = claims.getSubject();
             //  2. DB에 저장된 리프레시 토큰과 비교
             log.info("@@@@@ DB에 저장된 리프레시 토큰과 비교");
-        RefreshToken saved = refreshTokenRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("DB에 토큰이 없어요"));
+            RefreshToken saved = refreshTokenRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("DB에 토큰이 없어요"));
 
             if (!saved.getRefreshToken().equals(refreshToken)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("리프레시 토큰이 유효하지 않아요");
@@ -284,7 +281,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
         // 1. Redis에서 리프레시 토큰 삭제
-        if(userDetails != null){
+        if (userDetails != null) {
             refreshTokenRepository.deleteById(userDetails.getEmail());
         }
         // 2. 쿠키 삭제를 위한 설정 (Max-Age를 0으로 설정)
@@ -297,7 +294,6 @@ public class AuthController {
                 .build();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body("로그아웃 성공");
     }
-
 
 
 }

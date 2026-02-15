@@ -5,7 +5,7 @@ interface FilterToggleProps {
     onToggle: () => void;
 }
 
-const FilterToggle: React.FC<FilterToggleProps> = ({ isOnlyMine, onToggle }) => {
+const FilterToggle: React.FC<FilterToggleProps> = ({isOnlyMine, onToggle}) => {
     return (
         /* 인라인 스타일 삭제, 클래스명 부여 */
         <div className="filter-toggle-container">

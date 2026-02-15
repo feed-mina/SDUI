@@ -24,16 +24,16 @@ function SelectField({id, label, style, className, meta, onChange}) {
 
     return (
         <>
-            <span style={{ fontWeight: 'bold', minWidth: '20px', textAlign: 'center' }}>{meta.labelText}</span>
+            <span style={{fontWeight: 'bold', minWidth: '20px', textAlign: 'center'}}>{meta.labelText}</span>
             <select
                 id={id}
                 // style={{...style, flex:1}}
                 className={className}
                 onChange={(e) => {
-                const val = e.target.value;
-                setIsDirect(val === "직접 입력");
-                onChange(id, val === "직접 입력" ? "" : val);
-            }}>
+                    const val = e.target.value;
+                    setIsDirect(val === "직접 입력");
+                    onChange(id, val === "직접 입력" ? "" : val);
+                }}>
                 <option value="">이메일 선택</option>
                 {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
             </select>

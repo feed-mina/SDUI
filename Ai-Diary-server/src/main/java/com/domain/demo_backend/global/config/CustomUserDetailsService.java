@@ -1,8 +1,8 @@
-package com.domain.demo_backend.config;
+package com.domain.demo_backend.global.config;
 
 import com.domain.demo_backend.global.security.CustomUserDetails;
-import com.domain.demo_backend.user.domain.User;
-import com.domain.demo_backend.user.domain.UserRepository;
+import com.domain.demo_backend.domain.user.domain.User;
+import com.domain.demo_backend.domain.user.domain.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

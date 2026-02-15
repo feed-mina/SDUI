@@ -14,9 +14,11 @@ interface RecordTimeProps {
     };
     onChange?: (value: any) => void;
 }
+
 // 부모 블록 전체 화면을 관리하는 곳
-const RecordTimeComponent = ({ data, onChange }: RecordTimeProps) => {    console.log("  Record Time 컴포넌트가 받은 데이터:", data);
-    const {formatGoalDate, formatTimePretty, formatDateOnly } = dateFormatter();
+const RecordTimeComponent = ({data, onChange}: RecordTimeProps) => {
+    console.log("  Record Time 컴포넌트가 받은 데이터:", data);
+    const {formatGoalDate, formatTimePretty, formatDateOnly} = dateFormatter();
     const {
         goalTime,
         goalList,
@@ -27,14 +29,14 @@ const RecordTimeComponent = ({ data, onChange }: RecordTimeProps) => {    consol
     const [isListOpen, setIsListOpen] = useState(false); // 팝업 열림/닫힘
 
     // 목표시간이 없을때 화면
-if(!goalTime){
-    return (
-        <div className="no-goal-container" onClick={handleLinkToSetup} style={{cursor: 'pointer'}}>
-            <p>오늘의 약속 시간은 언제인가요?</p>
-            <button className="setup-button">시간 설정하기</button>
-        </div>
-    );
-}
+    if (!goalTime) {
+        return (
+            <div className="no-goal-container" onClick={handleLinkToSetup} style={{cursor: 'pointer'}}>
+                <p>오늘의 약속 시간은 언제인가요?</p>
+                <button className="setup-button">시간 설정하기</button>
+            </div>
+        );
+    }
 
 // 목표 시간이 있을때
     return (
@@ -54,7 +56,7 @@ if(!goalTime){
                 </div>
 
                 <div className="arrival-button-container">
-                    <ArrivalButton onClick={handleArrival} />
+                    <ArrivalButton onClick={handleArrival}/>
                 </div>
             </div>
 
@@ -82,7 +84,12 @@ if(!goalTime){
                     <div className="goal-list-popup">
                         <ul className="goal-list-popup-ul">
                             {goalList.map((time: string, index: number) => (
-                                <li className="goal-list-popup-li" key={index} style={{ padding: '5px 0', borderBottom: index < goalList.length - 1 ? '1px solid #eee' : 'none', fontSize: '14px', color: '#555' }}>
+                                <li className="goal-list-popup-li" key={index} style={{
+                                    padding: '5px 0',
+                                    borderBottom: index < goalList.length - 1 ? '1px solid #eee' : 'none',
+                                    fontSize: '14px',
+                                    color: '#555'
+                                }}>
                                     <span>🗓️</span>
                                     <div className="goal-list-content">
                                         <span className="goal-list-popup-date">

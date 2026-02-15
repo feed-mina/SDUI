@@ -14,7 +14,7 @@ interface InputFieldProps {
     [key: string]: any;
 }
 
-const InputField = memo(({ id, meta, data, onChange, onAction, showPassword,pwType, ...rest }: InputFieldProps) => {
+const InputField = memo(({id, meta, data, onChange, onAction, showPassword, pwType, ...rest}: InputFieldProps) => {
     // 1. 데이터를 매핑할 키 결정
     const targetKey = meta?.refDataId || meta?.ref_data_id || String(id || "");
     // 부모가 관리하는 formData와 서버 데이터를 합친 값이 직접 들어온다

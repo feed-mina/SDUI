@@ -1,4 +1,6 @@
-package com.domain.demo_backend.util;
+package com.domain.demo_backend.global.common;
+
+import com.domain.demo_backend.global.common.ApiResponseDto;
 
 public class ApiResponseCode {
 

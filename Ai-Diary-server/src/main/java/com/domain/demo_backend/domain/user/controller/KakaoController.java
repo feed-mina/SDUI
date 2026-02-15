@@ -1,12 +1,12 @@
-package com.domain.demo_backend.controller;
+package com.domain.demo_backend.domain.user.controller;
 
 
-import com.domain.demo_backend.service.KakaoService;
-import com.domain.demo_backend.token.domain.RefreshTokenRepository;
-import com.domain.demo_backend.token.domain.TokenResponse;
-import com.domain.demo_backend.user.dto.KakaoAuthRequest;
-import com.domain.demo_backend.user.dto.KakaoUserInfo;
-import com.domain.demo_backend.util.JwtUtil;
+import com.domain.demo_backend.domain.user.service.KakaoService;
+import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
+import com.domain.demo_backend.domain.token.domain.TokenResponse;
+import com.domain.demo_backend.domain.user.dto.KakaoAuthRequest;
+import com.domain.demo_backend.domain.user.dto.KakaoUserInfo;
+import com.domain.demo_backend.global.security.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,16 +24,24 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Map;
+
 @RestController
 @RequestMapping("/api/kakao")
 @Tag(name = " 카카오 로그인 컨트롤러", description = "카카오 로그인, 나에게 보내기 ")
 public class KakaoController {
-    private final Logger log = LoggerFactory.getLogger(KakaoController.class);
+    private static final String KAKAO_URL = "https://kapi.kakao.com/v2/api/talk/memo/default/send";
     // application.properties 에 있는 값 불러오기
-
+    private final Logger log = LoggerFactory.getLogger(KakaoController.class);
     private final RefreshTokenRepository refreshTokenRepository;
     private final KakaoService kakaoService;
     private final JwtUtil jwtUtil;
+    @Value("${KAKAO_CLIENT_ID}")
+    private String clientId;
+
+    @Value("${KAKAO_REDIRECT_URI}")
+    private String redirectUri;
+
+    private String accessToken;
 
     // 생성자 주입
     @Autowired
@@ -43,34 +51,25 @@ public class KakaoController {
         this.jwtUtil = jwtUtil;
     }
 
-    @Value("${KAKAO_CLIENT_ID}")
-    private String clientId;
-
-    @Value("${KAKAO_REDIRECT_URI}")
-    private String redirectUri;
-
-    private String accessToken;
-
-    private static final String KAKAO_URL = "https://kapi.kakao.com/v2/api/talk/memo/default/send";
     @PostMapping("/login")
     public ResponseEntity<?> kakaoLogin(@RequestBody KakaoAuthRequest kakaoAuthRequest) {
 
         try {
-        // 로그로 디버그 정보 출력
+            // 로그로 디버그 정보 출력
             log.info("카카오 로그인 시도");
-        log.info("KAKAOCONTROLLER-kakao login");
-        log.info("KAKAOCONTROLLER-client_id : " + clientId);
-        log.info("KAKAOCONTROLLER-redirectUri : " + redirectUri);
+            log.info("KAKAOCONTROLLER-kakao login");
+            log.info("KAKAOCONTROLLER-client_id : " + clientId);
+            log.info("KAKAOCONTROLLER-redirectUri : " + redirectUri);
 
-        // 1. 받은 AccessToken으로 카카오에서 사용자 정보를 가져와
-        KakaoUserInfo kakaoUserInfo = kakaoService.getKakaoUserInfo(kakaoAuthRequest.getAccessToken());
+            // 1. 받은 AccessToken으로 카카오에서 사용자 정보를 가져와
+            KakaoUserInfo kakaoUserInfo = kakaoService.getKakaoUserInfo(kakaoAuthRequest.getAccessToken());
 
-        // 2. 사용자 정보를 이용해 DB에 회원가입 또는 조회를 진행해
-        // JWT 토큰을 발급받아
+            // 2. 사용자 정보를 이용해 DB에 회원가입 또는 조회를 진행해
+            // JWT 토큰을 발급받아
 //        String jwtToken = kakaoService.registerKakaoUser(kakaoUserInfo, kakaoAuthRequest.getAccessToken());
             TokenResponse tokenResponse = kakaoService.registerKakaoUser(kakaoUserInfo, kakaoAuthRequest.getAccessToken());
 
-        // 3. JWT 토큰을 클라이언트에 응답으로 보내줘
+            // 3. JWT 토큰을 클라이언트에 응답으로 보내줘
 //        KakaoAuthResponse response = new KakaoAuthResponse(kakaoUserInfo, jwtToken);
             ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
                     .httpOnly(true)
@@ -118,7 +117,7 @@ public class KakaoController {
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Map> tokenResponse  = restTemplate.exchange(
+        ResponseEntity<Map> tokenResponse = restTemplate.exchange(
                 "https://kauth.kakao.com/oauth/token",
                 HttpMethod.POST,
                 request,
@@ -176,7 +175,7 @@ public class KakaoController {
         String kakaoAccessToken = (String) data.get("kakaoAccessToken");
         log.info("KAKAOCONTROLLER-📩 Kakao AccessToken from body: {}", kakaoAccessToken);
         //  JWT 검증
-          String jwtToken = authorization.substring(7);
+        String jwtToken = authorization.substring(7);
         log.info("KAKAOCONTROLLER- Extracted Access Token: {}", jwtToken);
 
         log.error("@@@@@jwtToken", jwtToken);

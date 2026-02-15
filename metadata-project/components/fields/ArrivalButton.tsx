@@ -6,7 +6,7 @@ interface ButtonProps {
     onClick: () => void;
 }
 
-export const ArrivalButton = memo(({ onClick }: ButtonProps) => {
+export const ArrivalButton = memo(({onClick}: ButtonProps) => {
     // console.log("버튼은 안 움직이고 가만히 있는다");
     return (
         <button className="arrival-button" onClick={onClick}>

@@ -1,4 +1,6 @@
-package com.domain.demo_backend.helper;
+package com.domain.demo_backend.global.error;
+
+import com.domain.demo_backend.global.error.ErrorCode;
 
 public class ErrorResponse {
     private final int status;
@@ -11,7 +13,15 @@ public class ErrorResponse {
         this.message = errorCode.getMessage();
     }
 
-    public int getStatus() { return status; }
-    public String getCode() { return code; }
-    public String getMessage() { return message; }
+    public int getStatus() {
+        return status;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

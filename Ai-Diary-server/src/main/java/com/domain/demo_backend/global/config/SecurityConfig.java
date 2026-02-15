@@ -1,8 +1,8 @@
-package com.domain.demo_backend.config;
+package com.domain.demo_backend.global.config;
 
-import com.domain.demo_backend.token.domain.RefreshTokenRepository;
-import com.domain.demo_backend.util.JwtAuthenticationFilter;
-import com.domain.demo_backend.util.JwtUtil;
+import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
+import com.domain.demo_backend.global.security.JwtAuthenticationFilter;
+import com.domain.demo_backend.global.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,12 +27,10 @@ import java.util.List;
 
 public class SecurityConfig {
 
+    private final JwtUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
-
-    private final JwtUtil jwtUtil;
-
-    private final RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
     public SecurityConfig(JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
@@ -59,7 +57,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())  // CSRF 비활성화
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/goalTime/**", "/api/diary/**", "/api/auth/logout" ,"/api/auth/editPassword", "/api/auth/non-user").authenticated()
+                        .requestMatchers("/api/goalTime/**", "/api/diary/**", "/api/auth/logout", "/api/auth/editPassword", "/api/auth/non-user").authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
@@ -76,9 +74,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:8080",
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080",
                 "http://web-2025-version1.s3-website.ap-northeast-2.amazonaws.com",
-                "https://justsaying.co.kr","http://justsaying.co.kr"));
+                "https://justsaying.co.kr", "http://justsaying.co.kr"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true);

@@ -1,4 +1,4 @@
-package com.domain.demo_backend.helper;
+package com.domain.demo_backend.global.error;
 
 public enum ErrorCode {
     // Auth
@@ -19,7 +19,15 @@ public enum ErrorCode {
         this.message = message;
     }
 
-    public int getStatus() { return status; }
-    public String getCode() { return code; }
-    public String getMessage() { return message; }
+    public int getStatus() {
+        return status;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

@@ -1,4 +1,4 @@
-package com.domain.demo_backend.time.domain;
+package com.domain.demo_backend.domain.time.domain;
 
 import lombok.Data;
 

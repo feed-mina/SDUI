@@ -1,6 +1,6 @@
-package com.domain.demo_backend.diary.domain;
+package com.domain.demo_backend.domain.diary.domain;
 
-import com.domain.demo_backend.user.domain.User;
+import com.domain.demo_backend.domain.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

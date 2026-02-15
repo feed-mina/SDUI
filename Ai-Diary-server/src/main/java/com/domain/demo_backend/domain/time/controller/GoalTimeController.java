@@ -1,9 +1,9 @@
-package com.domain.demo_backend.time.controller;
+package com.domain.demo_backend.domain.time.controller;
 
 
 import com.domain.demo_backend.global.security.CustomUserDetails;
-import com.domain.demo_backend.time.domain.GoalArrivalRequest;
-import com.domain.demo_backend.time.service.GoalTimeQueryService;
+import com.domain.demo_backend.domain.time.domain.GoalArrivalRequest;
+import com.domain.demo_backend.domain.time.service.GoalTimeQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,16 +29,16 @@ public class GoalTimeController {
     private final GoalTimeQueryService goalTimeQueryService;
 
     @GetMapping("/getGoalTime")
-    public ResponseEntity<Map<String, String>> getGoalTime(@AuthenticationPrincipal CustomUserDetails userDetails){
-        Long userSqno= (userDetails != null) ? userDetails.getUserSqno() : null;
+    public ResponseEntity<Map<String, String>> getGoalTime(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userSqno = (userDetails != null) ? userDetails.getUserSqno() : null;
         String targetTime = goalTimeQueryService.getGoalTime(userSqno);
         System.out.println("@@@ targetTime: " + targetTime);
-        if(targetTime == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(Map.of("goalTime", targetTime != null? targetTime : ""));
+        if (targetTime == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(Map.of("goalTime", targetTime != null ? targetTime : ""));
     }
 
     @PostMapping("/save")
-    public ResponseEntity<String> saveGoalTime(@RequestBody Map<String, String> body, @AuthenticationPrincipal CustomUserDetails userDetails){
+    public ResponseEntity<String> saveGoalTime(@RequestBody Map<String, String> body, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         // 1. 로그인 체크
         if (userDetails == null) {
@@ -59,8 +59,8 @@ public class GoalTimeController {
             // 2. withZoneSameInstant로 한국시간 (Asia/Seoul)로 변환 ( UTC -> KST)
             // 3. toLacalDateTime 으로 최종 변환
             finalTargetTime = ZonedDateTime.parse(targetTimeStr)
-                                .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
-                                .toLocalDateTime();
+                    .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
+                    .toLocalDateTime();
         } catch (Exception e) {
             // [시도 2] 실패 시 공백으로 구분된 경우: "2026-01-31 07:52:00"
             // 문자열을 LocalDateTime 으로 변환 (형식이 '2026-01-30T22:00' 인 경우)
@@ -86,9 +86,9 @@ public class GoalTimeController {
     }
 
     @PostMapping("/arrival")
-    public ResponseEntity<String> recordArrival(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody GoalArrivalRequest requestBody){
+    public ResponseEntity<String> recordArrival(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody GoalArrivalRequest requestBody) {
         Long userSqno = (userDetails != null) ? userDetails.getUserSqno() : null;
-        if(userSqno == null){
+        if (userSqno == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
         String status = requestBody.getStatus();

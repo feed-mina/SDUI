@@ -25,5 +25,5 @@ export const componentMap: Record<string, React.FC<any>> = {
     TEXTAREA: TextAreaField,
     TIME_RECORD_WIDGET: RecordTimeComponent,
     DATETIME_PICKER: DateTimePicker,
-    GROUP: ({ children }) => <>{children}</>,
+    GROUP: ({children}) => <>{children}</>,
 };

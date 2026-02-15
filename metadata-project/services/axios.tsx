@@ -39,7 +39,7 @@ api.interceptors.response.use(
     (response) => response,
     async (error: AxiosError<ErrorResponse>) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-        const { response } = error;
+        const {response} = error;
 
         // CASE 1: 토큰 만료 (401) 시 재발급 시도
         if (response?.status === 401 && !originalRequest._retry) {
@@ -47,7 +47,7 @@ api.interceptors.response.use(
 
             try {
                 // 주의: 인스턴스(api)가 아닌 생 axios를 써야 무한 루프를 방지함
-                await axios.post('http://localhost:8080/api/auth/refresh', {}, { withCredentials: true });
+                await axios.post('http://localhost:8080/api/auth/refresh', {}, {withCredentials: true});
 
                 // 재발급 성공 시 기존 요청 다시 보냄
                 return api(originalRequest);
@@ -60,7 +60,7 @@ api.interceptors.response.use(
 
         // CASE 2: 401이 아니거나 재발급 실패 후의 비즈니스 에러 처리
         if (response?.data) {
-            const { code, message } = response.data;
+            const {code, message} = response.data;
 
             switch (code) {
                 case 'AUTH_001': // 로그인 실패

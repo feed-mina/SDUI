@@ -1,4 +1,4 @@
-package com.domain.demo_backend.ui.domain;
+package com.domain.demo_backend.domain.ui.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,18 +34,18 @@ public class UiMetadata {
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder;
 
-    @Column(name="is_required")
+    @Column(name = "is_required")
     private Boolean isRequired = false;
 
-    @Column(name="is_readonly")
+    @Column(name = "is_readonly")
     private Boolean isReadonly = true;
 
-    @Column(name="default_value")
+    @Column(name = "default_value")
     private String defaultValue;
 
     private String placeholder;
 
-    @Column(name="created_at" , updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "css_class", length = 100)
@@ -94,7 +94,7 @@ public class UiMetadata {
     private String isVisible;
 
     @PrePersist
-    public void prePersist(){
+    public void prePersist() {
         createdAt = LocalDateTime.now();
     }
 

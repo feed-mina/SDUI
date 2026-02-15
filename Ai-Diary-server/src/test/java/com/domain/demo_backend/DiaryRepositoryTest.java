@@ -1,15 +1,9 @@
 package com.domain.demo_backend;
 
-import com.domain.demo_backend.diary.domain.Diary;
-import com.domain.demo_backend.diary.domain.DiaryRepository;
-import com.domain.demo_backend.user.domain.User;
-import com.domain.demo_backend.user.domain.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +23,7 @@ public class DiaryRepositoryTest {
 
     @Test
     @DisplayName("일기 저장 및 조회 테스트")
-    public void diary_create_test(){
+    public void diary_create_test() {
         // 1.Given 사용자 준비 : 외래키 제약조건 때문
         User user = User.builder()
                 .email("test@test.com")
@@ -66,7 +60,7 @@ public class DiaryRepositoryTest {
 
     @Test
     @DisplayName("다이어리 페이징 및 최신순 정렬 테스트")
-    public void diary_paging_test(){
+    public void diary_paging_test() {
         // 1. Given :사용자 준비
         User user = User.builder()
                 .email("paging@test.com")
@@ -75,7 +69,7 @@ public class DiaryRepositoryTest {
         userRepository.save(user);
 
         // 2. Given : 다이어리 3개 저장(제목에 번호를 붙어서 구분)
-        for(int i = 1; i <= 3; i++){
+        for (int i = 1; i <= 3; i++) {
             diaryRepository.save(Diary.builder()
                     .user(user)
                     .title("일기 " + i)
@@ -86,7 +80,7 @@ public class DiaryRepositoryTest {
 
         // 3. When : 첫번째 페이지에서 2개인 조회 요청 (0번 페이지, 크기 2)
         Pageable pageable = PageRequest.of(0, 2);
-        Page<Diary> diaryPage = diaryRepository.findByUserAndDelYnOrderByRegDtDesc(user,"N", pageable);
+        Page<Diary> diaryPage = diaryRepository.findByUserAndDelYnOrderByRegDtDesc(user, "N", pageable);
 
         // 4   Then : 검증
         // 1) 한 페이지 크기가 2인지 확인

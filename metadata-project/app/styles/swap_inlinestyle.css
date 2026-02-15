@@ -64,10 +64,6 @@
 }
 
 
-
-
-
-
 /* 화면 너비가 480px 이하일 때만 아래 규칙을 적용한다 */
 @media (max-width: 480px) {
     /* 1. 부모 헤더: 가로에서 세로 정렬로 변경 */
@@ -82,9 +78,9 @@
     .diaryTitle {
         white-space: normal; /* 한 줄 제한 해제 */
         text-overflow: clip; /* '...' 제거 (필요하면 유지 가능) */
-        overflow: visible;   /* 잘린 글자 보이기 */
+        overflow: visible; /* 잘린 글자 보이기 */
         word-break: break-all; /* 영문 등이 길어도 강제 줄바꿈 */
-        font-size: 16px;     /* 모바일에 맞게 글자 크기 조정 */
+        font-size: 16px; /* 모바일에 맞게 글자 크기 조정 */
     }
 
     /* 3. 작성자 및 날짜: 글자 크기를 살짝 줄여서 가독성 높이기 */
@@ -94,15 +90,15 @@
     }
 }
 
-.setup-button{
+.setup-button {
     color: #007B65;
     border-radius: 25px;
-    padding : 10px;
+    padding: 10px;
     margin-bottom: 10px;
     border: 2px solid #007B65;
 }
 
-#messageInput{
+#messageInput {
     border: 2px solid #007B65;
     border-radius: 5px;
     flex: 1;

@@ -14,7 +14,7 @@ interface MetadataContextType {
 
 const MetadataContext = createContext<MetadataContextType | undefined>(undefined);
 
-export function MetadataProvider({ children }: { children: React.ReactNode }) {
+export function MetadataProvider({children}: { children: React.ReactNode }) {
     const pathname = usePathname();
 
     // 경로에 따른 screenId 결정 (렌더링 시점에 바로 계산), 경로 매핑 개선 - URL에서 직접 screenId를 추출하거나 매핑 테이블 활용
@@ -26,7 +26,7 @@ export function MetadataProvider({ children }: { children: React.ReactNode }) {
     }, [pathname]);
 
     //  React Query 도입
-    const { data, isLoading } = useQuery({
+    const {data, isLoading} = useQuery({
         queryKey: ['metadata', screenId],
         queryFn: async () => {
             const res = await fetch(`/api/ui/${screenId}`);

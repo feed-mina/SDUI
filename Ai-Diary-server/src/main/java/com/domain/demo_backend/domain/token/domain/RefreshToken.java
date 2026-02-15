@@ -1,4 +1,4 @@
-package com.domain.demo_backend.token.domain;
+package com.domain.demo_backend.domain.token.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

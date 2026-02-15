@@ -1,4 +1,4 @@
-package com.domain.demo_backend.diary.dto;
+package com.domain.demo_backend.domain.diary.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;

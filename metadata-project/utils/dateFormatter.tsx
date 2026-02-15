@@ -16,8 +16,8 @@ export const dateFormatter = () => {
     };
 
 // [유틸] time포맷함수 (오전/오후 HH:MM)
-    const formatTimePretty = (dateStr : string) => {
-        if(!dateStr) return "";
+    const formatTimePretty = (dateStr: string) => {
+        if (!dateStr) return "";
         const originalDate = new Date(dateStr);
         // 목표시간 보다 10분 일찍 보인다
         const displayDate = new Date(originalDate.getTime() - 10 * 60000);
@@ -29,9 +29,9 @@ export const dateFormatter = () => {
         return `${ampm} ${displayHours}:${displayMinutes}`;
     };
 // [유틸] 날짜만 보여주는함수 (YYYY-MM-DD)
-    const formatDateOnly = (dateStr: string) =>{
-        if(!dateStr) return "";
+    const formatDateOnly = (dateStr: string) => {
+        if (!dateStr) return "";
         return dateStr.split("T")[0];
     }
-    return { formatGoalDate, formatTimePretty, formatDateOnly };
+    return {formatGoalDate, formatTimePretty, formatDateOnly};
 };

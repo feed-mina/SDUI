@@ -20,7 +20,7 @@ public class UiControllerTest {
 
     @Test
     @DisplayName("로그인 페이지 메타데이터를 성공적으로 가져오는 테스트")
-    void getLoginUiMetadataTest() throws Exception{
+    void getLoginUiMetadataTest() throws Exception {
         mockMvc.perform(get("/api/ui/LOGIN_PAGE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success")) // 응답구조확인
@@ -29,7 +29,7 @@ public class UiControllerTest {
     }
 
     @DisplayName("레디스 캐싱을 포함한 UI메타데이터 조회 테스트")
-    void getUiMetaWithCacheTest() throws Exception{
+    void getUiMetaWithCacheTest() throws Exception {
         // 첫번째 호출 : DB에서 가져와서 레디스에 저장
         mockMvc.perform(get("/api/ui/LOGIN_PAGE"))
                 .andExpect(status().isOk())

@@ -1,4 +1,4 @@
-package com.domain.demo_backend.util;
+package com.domain.demo_backend.global.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,11 +11,12 @@ public class ApiResponse<T> {
     private String message; // 에러시 전달할 메시지
 
     // 성공 응답을 만드는 정ㅈ거 메서드
-    public static <T> ApiResponse<T> success(T data){
+    public static <T> ApiResponse<T> success(T data) {
         return new ApiResponse<>("success", data, null);
     }
+
     // 실패 응답을 만드는 정적 메서드
-    public static <T> ApiResponse<T> error(String message){
+    public static <T> ApiResponse<T> error(String message) {
         return new ApiResponse<>("error", null, message);
     }
 }

@@ -1,9 +1,9 @@
 // @@@@ 2026-02-07 추가
 // 동적 ui 렌더링 > 빅오 값으로 로직 변경 (트리구조에서 부모가 있을때 자식 조회, 아니면 말단노드 조회)
 
-package com.domain.demo_backend.ui.dto;
+package com.domain.demo_backend.domain.ui.dto;
 
-import com.domain.demo_backend.ui.domain.UiMetadata;
+import com.domain.demo_backend.domain.ui.domain.UiMetadata;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

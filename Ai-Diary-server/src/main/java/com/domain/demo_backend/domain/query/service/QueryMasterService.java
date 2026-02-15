@@ -1,7 +1,7 @@
-package com.domain.demo_backend.query.service;
+package com.domain.demo_backend.domain.query.service;
 
-import com.domain.demo_backend.query.domain.QueryMaster;
-import com.domain.demo_backend.query.repository.QueryMasterRepository;
+import com.domain.demo_backend.domain.query.domain.QueryMaster;
+import com.domain.demo_backend.domain.query.repository.QueryMasterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -17,13 +17,13 @@ public class QueryMasterService {
         this.redisTemplate = redisTemplate;
     }
 
-    public QueryMaster getQueryInfo(String sqlKey){
+    public QueryMaster getQueryInfo(String sqlKey) {
         // DB에서 해당 키의 전체 정보를 찾아서 반환한다.
         // 필요하다면 여기에서 Redis에 객체 자체를 저장하는 로직 추가 하기
         return queryMasterRepository.findBySqlKey(sqlKey).orElseThrow(() -> new RuntimeException("등록되지 않은  sql_key입니다: " + sqlKey));
     }
 
-    public String getQuery(String sqlKey){
+    public String getQuery(String sqlKey) {
         // 먼저 Redis에서 해당 키의 SQL이 있는지 확인
         String cachedQuery = redisTemplate.opsForValue().get("SQL:" + sqlKey);
         if (cachedQuery != null) {

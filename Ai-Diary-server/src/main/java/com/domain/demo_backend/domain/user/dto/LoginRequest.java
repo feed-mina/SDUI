@@ -1,4 +1,4 @@
-package com.domain.demo_backend.user.dto;
+package com.domain.demo_backend.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginRequest {
-//    private String userId;
+    //    private String userId;
     @JsonProperty("user_pw")
     private String password;
 //    private String hashedPassword;

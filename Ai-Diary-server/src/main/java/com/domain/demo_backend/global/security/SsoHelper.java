@@ -1,6 +1,6 @@
 package com.domain.demo_backend.global.security;
 
-import com.domain.demo_backend.util.JwtUtil;
+import com.domain.demo_backend.global.security.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,7 +21,6 @@ public class SsoHelper {
         }
 
     }
-
 
 
     // 자동로그인 관련 유틸

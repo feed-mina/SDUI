@@ -17,7 +17,7 @@ export interface Metadata {
     cssClass?: string;
     inlineStyle?: any;
     actionType?: string;
-    placeholder ?: string;
+    placeholder?: string;
     uiId?: string;
     labelText?: string;
     isReadonly?: boolean | string;

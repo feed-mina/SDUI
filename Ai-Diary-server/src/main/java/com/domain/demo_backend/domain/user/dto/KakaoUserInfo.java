@@ -1,4 +1,4 @@
-package com.domain.demo_backend.user.dto;
+package com.domain.demo_backend.domain.user.dto;
 
 import com.domain.demo_backend.global.security.PasswordUtil;
 import lombok.*;

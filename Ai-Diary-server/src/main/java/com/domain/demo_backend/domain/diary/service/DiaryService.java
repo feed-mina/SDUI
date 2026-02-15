@@ -1,13 +1,13 @@
 package com.domain.demo_backend.domain.diary.service;
 
-import com.domain.demo_backend.diary.domain.Diary;
-import com.domain.demo_backend.diary.domain.DiaryRepository;
-import com.domain.demo_backend.diary.dto.DiaryRequest;
-import com.domain.demo_backend.diary.dto.DiaryResponse;
+import com.domain.demo_backend.domain.diary.domain.Diary;
+import com.domain.demo_backend.domain.diary.domain.DiaryRepository;
+import com.domain.demo_backend.domain.diary.dto.DiaryRequest;
+import com.domain.demo_backend.domain.diary.dto.DiaryResponse;
 import com.domain.demo_backend.global.security.CustomUserDetails;
-import com.domain.demo_backend.user.domain.User;
-import com.domain.demo_backend.user.domain.UserRepository;
-import com.domain.demo_backend.util.JwtUtil;
+import com.domain.demo_backend.domain.user.domain.User;
+import com.domain.demo_backend.domain.user.domain.UserRepository;
+import com.domain.demo_backend.global.security.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
@@ -29,14 +29,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class DiaryService {
+    private final JwtUtil jwtUtil;
     @Autowired
     private DiaryRepository diaryRepository;
     private UserRepository userRepository;
 
-    private final JwtUtil jwtUtil;
 
-
-    public DiaryService(DiaryRepository diaryRepository, UserRepository userRepository,JwtUtil jwtUtil) {
+    public DiaryService(DiaryRepository diaryRepository, UserRepository userRepository, JwtUtil jwtUtil) {
         this.diaryRepository = diaryRepository;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
@@ -52,9 +51,9 @@ public class DiaryService {
         int offset = (pageNo - 1) * pageSize; //  OFFSET 미리 계산
         System.out.println("@@@offset: " + offset);
         try {
-           // 일기 목록 가져오기
+            // 일기 목록 가져오기
 //            diaryResponseList = diaryRepository.selectDiaryList(userId, pageSize, offset) ;
-            diaries = diaryRepository.findByDiaryListCustom(userId, pageSize, offset) ;
+            diaries = diaryRepository.findByDiaryListCustom(userId, pageSize, offset);
 //            System.out.println("@@@1--diaries:: " + diaries);
             // 2. 엔티티 목록을 DTO(DiaryResponse) 목록으로 변환한다.
             List<DiaryResponse> diaryResponseList = diaries.stream()
@@ -72,26 +71,27 @@ public class DiaryService {
             throw new RuntimeException("일기를 조회하는 도중 오류가 발생했습니다.", e);
         }
     }
-     public Set<DiaryResponse> findDiaryById(DiaryRequest diaryReq) {
+
+    public Set<DiaryResponse> findDiaryById(DiaryRequest diaryReq) {
 
         System.out.println("@@@@@@findDiaryById 서비스 로직 진입 diaryReq:: " + diaryReq);
 
         System.out.println("@@@findDiaryItemById sql시작" + diaryReq);
         // 1. diaryReq 에서 필요한 값을 꺼내서 변수에 담는다.
-         String userId = diaryReq.getUserId();
-         int pageSize = 10; // 만약 요청이 없다면 임시로 10개
-         int offset = 0; // 첫 페이지부터
+        String userId = diaryReq.getUserId();
+        int pageSize = 10; // 만약 요청이 없다면 임시로 10개
+        int offset = 0; // 첫 페이지부터
 //     return diaryMapper.selectDiaryItem(diaryReq)
-         return diaryRepository.findByDiaryListCustom(userId, pageSize, offset) // 1. List를 받는다
-                 .stream()                                               // 2. 하나씩 꺼낸다 .map(this::convertToDto)
-                 .map(diary -> {
-                     // Diary 엔티티를 DiaryResponse로 바꾸는 과정이 필요
-                     DiaryResponse res = new DiaryResponse();
-                     res.setDiaryId(BigInteger.valueOf(diary.getDiaryId()));
-                     res.setTitle(diary.getTitle());
-                     return res;
-                 }) // 3. 모양을 바꾼다
-                 .collect(Collectors.toSet());
+        return diaryRepository.findByDiaryListCustom(userId, pageSize, offset) // 1. List를 받는다
+                .stream()                                               // 2. 하나씩 꺼낸다 .map(this::convertToDto)
+                .map(diary -> {
+                    // Diary 엔티티를 DiaryResponse로 바꾸는 과정이 필요
+                    DiaryResponse res = new DiaryResponse();
+                    res.setDiaryId(BigInteger.valueOf(diary.getDiaryId()));
+                    res.setTitle(diary.getTitle());
+                    return res;
+                }) // 3. 모양을 바꾼다
+                .collect(Collectors.toSet());
 
     }
 
@@ -120,7 +120,7 @@ public class DiaryService {
         }
         try {
             // 일기 조회
-            Optional<Diary> diary= diaryRepository.findByDiaryIdAndUserIdAndDelYn(diaryId, userId,"N");
+            Optional<Diary> diary = diaryRepository.findByDiaryIdAndUserIdAndDelYn(diaryId, userId, "N");
 
             //  조회된 데이터가 없을 경우 예외 처리 추가
             if (diary == null) {
@@ -153,13 +153,13 @@ public class DiaryService {
         }
 
         // 1. 먼저 DB에서 유저를 찾는다.
-        User user = userRepository.findByUserSqno(diaryRequest.getUserSqno()).orElseThrow(()-> new IllegalArgumentException("존재하지 않은 사용자입니다."));
+        User user = userRepository.findByUserSqno(diaryRequest.getUserSqno()).orElseThrow(() -> new IllegalArgumentException("존재하지 않은 사용자입니다."));
         // 안전한 ID 만들기 (User 엔티티 활용)
-                String safeUserId = user.getUserId(); // 1순위: DB에 저장된 ID
-                if (safeUserId == null || safeUserId.isEmpty()) {
-                    // 2순위: DB ID가 없으면 이메일(@앞부분)을 ID처럼 사용
-                    safeUserId = user.getEmail().split("@")[0];
-                }
+        String safeUserId = user.getUserId(); // 1순위: DB에 저장된 ID
+        if (safeUserId == null || safeUserId.isEmpty()) {
+            // 2순위: DB ID가 없으면 이메일(@앞부분)을 ID처럼 사용
+            safeUserId = user.getEmail().split("@")[0];
+        }
         // 2.빌더를 사용해 다이어리를 만든다
         Diary diary = Diary.builder()
                 .user(user) // userSqno 대신 객체 자체를 넣어준다.
@@ -187,6 +187,7 @@ public class DiaryService {
 //        diaryRepository.insertDiary(diary);
         diaryRepository.save(diary);
     }
+
     public PageInfo<DiaryResponse> selectMemberDiaryList(Authentication authentication, int pageNo, int pageSize) {
         // 1. 현재 로그인한 사용자 정보 가져오기
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -195,7 +196,7 @@ public class DiaryService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
 
         // 3. 페이징 설정 및 해당 유저의 데이터만 조회
-        Pageable pageable = PageRequest.of(pageNo -1, pageSize);
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
         List<Diary> diaries = diaryRepository.findMemberDiaryList(user.getUserSqno(), "N", pageable);
         int totalCount = diaryRepository.countByUserAndDelYn(user, "N");
         // 4. DTO 변환 및 결과 반환

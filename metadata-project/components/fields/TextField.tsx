@@ -17,7 +17,7 @@ interface TextFieldProps {
     value?: string;
 }
 
-const TextField: React.FC<TextFieldProps> = ({ meta, data, value }) => {
+const TextField: React.FC<TextFieldProps> = ({meta, data, value}) => {
     let parsedStyle = {};
     try {
         if (meta.inlineStyle) {

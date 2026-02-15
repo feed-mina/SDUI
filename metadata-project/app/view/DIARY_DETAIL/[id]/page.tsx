@@ -11,12 +11,12 @@ export default function DiaryDetailPage() {
     const screenId = "DIARY_DETAIL";
 
     // 인자 4개 전달 (위에서 훅을 수정했으므로 에러 사라짐)
-    const { metadata, pageData } = usePageMetadata(screenId, 1, false, diaryId);
+    const {metadata, pageData} = usePageMetadata(screenId, 1, false, diaryId);
     console.log("metadata_page:", metadata);
     console.log("pageData:", pageData);
 
     // 여기서 pwType, showPassword도 같이 꺼냅니다.
-    const { handleChange, handleAction, pwType, showPassword } = usePageActions(metadata);
+    const {handleChange, handleAction, pwType, showPassword} = usePageActions(metadata);
 
     console.log("diaryIdpage_pageData:", pageData);
     console.log("diaryIdpage_metadata:", metadata);

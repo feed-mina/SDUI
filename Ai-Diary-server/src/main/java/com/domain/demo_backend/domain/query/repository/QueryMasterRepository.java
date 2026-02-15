@@ -1,6 +1,6 @@
-package com.domain.demo_backend.query.repository;
+package com.domain.demo_backend.domain.query.repository;
 
-import com.domain.demo_backend.query.domain.QueryMaster;
+import com.domain.demo_backend.domain.query.domain.QueryMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

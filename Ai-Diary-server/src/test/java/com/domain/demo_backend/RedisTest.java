@@ -18,7 +18,7 @@ public class RedisTest {
     private RedisTemplate<String, String> redisTemplate;
 
     @Test
-    void redisConnectionTest(){
+    void redisConnectionTest() {
         // 1. 저장할 데이터 정의
         String key = "test:connection";
         String value = "Good!";

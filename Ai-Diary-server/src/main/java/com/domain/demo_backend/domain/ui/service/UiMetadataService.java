@@ -1,7 +1,7 @@
 package com.domain.demo_backend.domain.ui.service;
 
-import com.domain.demo_backend.ui.domain.UiMetadata;
-import com.domain.demo_backend.ui.domain.UiMetadataRepository;
+import com.domain.demo_backend.domain.ui.domain.UiMetadata;
+import com.domain.demo_backend.domain.ui.domain.UiMetadataRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,14 +21,15 @@ public class UiMetadataService {
         this.objectMapper = objectMapper;
     }
 
-    public List<UiMetadata> getMetadataWithCache(String screenId){
+    public List<UiMetadata> getMetadataWithCache(String screenId) {
         String cacheKey = "ui:metadata:" + screenId;
-        try{
+        try {
             // 1. 레디스에서 먼저 찾아본다
             String cacheData = redisTemplate.opsForValue().get(cacheKey);
-            if(cacheData != null){
+            if (cacheData != null) {
                 // 역 직렬화 : JSON 문자열 => List<UiMetadata>
-                return objectMapper.readValue(cacheData, new TypeReference<List<UiMetadata>>() {});
+                return objectMapper.readValue(cacheData, new TypeReference<List<UiMetadata>>() {
+                });
             }
 
             // 2. 레디스에 없으면 DB에서 가져온다.
@@ -40,11 +41,13 @@ public class UiMetadataService {
             redisTemplate.opsForValue().set(cacheKey, jsonMetadata, Duration.ofHours(1)); // 1시간동안 유지
 
             return metadataList;
-        }  catch (Exception e) {
+        } catch (Exception e) {
             // 에러 발생시 안전하게 DB에서 직접 가져온다.
             return uiMetadataRepository.findByScreenIdOrderBySortOrderAsc(screenId);
 
         }
-    };
+    }
+
+    ;
 
 }

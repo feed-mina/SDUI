@@ -11,7 +11,7 @@ import Skeleton from "@/components/Skeleton";
 
 // @@@@ 2026-02-07 주석 추가 :
 // CommonPage 역할 : 전체 화면의 구성, 메타데이터와 데이터를 가져와 엔진에 전달
-export default function CommonPage({ params: paramsPromise }: { params: Promise<{ screenId: string }> }) {
+export default function CommonPage({params: paramsPromise}: { params: Promise<{ screenId: string }> }) {
 
     // Next.js 15에서는 params를 unwrapping 해야 합니다.
     const params = use(paramsPromise);
@@ -24,7 +24,7 @@ export default function CommonPage({ params: paramsPromise }: { params: Promise<
 
     // 훅 호출
     // 2. 데이터 조회 관련 훅 호출
-    const { metadata, pageData, loading, totalCount, isLoggedIn } = usePageMetadata(screenId, currentPage, isOnlyMine);
+    const {metadata, pageData, loading, totalCount, isLoggedIn} = usePageMetadata(screenId, currentPage, isOnlyMine);
 
     // 3. 사용자 액션 관련 훅 호출 , formData를 꺼내온다
     const {formData, handleChange, handleAction, showPassword, pwType} = usePageActions(metadata);
@@ -71,12 +71,12 @@ export default function CommonPage({ params: paramsPromise }: { params: Promise<
 
     // @@@@ 2026-02-04 스켈레톤 UI로 바꿈
     if (loading) {
-        return <Skeleton />
+        return <Skeleton/>
     }
     return (
         <div className={`page-wrap ${screenId}`}>
             {screenId === "DIARY_LIST" && (
-                <FilterToggle isOnlyMine={isOnlyMine} onToggle={handleToggleMine} />
+                <FilterToggle isOnlyMine={isOnlyMine} onToggle={handleToggleMine}/>
             )}
             <DynamicEngine
                 metadata={filtedMetadata}
@@ -87,7 +87,7 @@ export default function CommonPage({ params: paramsPromise }: { params: Promise<
                 showPassword={showPassword}
             />
 
-            {screenId === "DIARY_LIST"  && (
+            {screenId === "DIARY_LIST" && (
                 <Pagination
                     totalCount={totalCount}
                     pageSize={5}

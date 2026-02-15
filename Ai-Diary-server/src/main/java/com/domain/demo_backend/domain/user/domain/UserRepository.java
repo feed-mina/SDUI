@@ -1,15 +1,19 @@
-package com.domain.demo_backend.user.domain;
+package com.domain.demo_backend.domain.user.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-// 여기서 JPA가 쿼리를 만든다 !
+    // 여기서 JPA가 쿼리를 만든다 !
     Optional<User> findByEmail(String email);
+
     Optional<User> findByPhone(String phone);
+
     Optional<User> findByUsername(String username);
+
     Optional<User> findByUserSqno(Long userSqno);
 
     // 2026.01.11 update 관련ㄹ 메서드들은 더티 체킹을 사용한다.

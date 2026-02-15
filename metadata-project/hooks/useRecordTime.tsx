@@ -25,11 +25,11 @@ export const useRecordTime = () => {
     const isLoggedIn = !!getCookie("accessToken");
 
     // [API] 목표시간 데이터 가져오기 React Query
-    const {data : goalTime} = useQuery({
+    const {data: goalTime} = useQuery({
         queryKey: ['goalTime'],
         queryFn: async () => {
             const res = await axios.get('/api/goalTime/getGoalTime');
-            return res.data.goalTime?? null;
+            return res.data.goalTime ?? null;
         },
         enabled: isLoggedIn, // 로그인 상태일때만 호출 (API 최적화)
         staleTime: 1000 * 60 * 5, // @@@@ 2026-02-08 추가 Infinity 대신 5분으로 변경.
@@ -38,7 +38,7 @@ export const useRecordTime = () => {
 
 
     // [API] 목표시간 리스트 가져오기 useQuery
-    const {data : goalList} = useQuery({
+    const {data: goalList} = useQuery({
         queryKey: ['goalList'],
         queryFn: async () => {
             const res = await axios.get('/api/goalTime/getGoalList');
@@ -50,18 +50,18 @@ export const useRecordTime = () => {
 
     // [API] 도착처리 (Mutation)
     const arrivalMutation = useMutation({
-        mutationFn: async(status: string) => {
+        mutationFn: async (status: string) => {
             return await axios.post('/api/goalTime/arrival', {
                 status: status,
-                recordTime : new Date()
+                recordTime: new Date()
             });
         },
-        onSuccess: ()=>{
+        onSuccess: () => {
             // 데이터 갱신을 위해 쿼리 무효화
             queryClient.invalidateQueries({queryKey: ['goalTime']});
             queryClient.invalidateQueries({queryKey: ['goalList']});
-            },
-        });
+        },
+    });
 
     // 페이지 이동 핸들러
 // 핸들러 내부에서 실시간으로 쿠키를 다시 체크합니다.
@@ -78,7 +78,7 @@ export const useRecordTime = () => {
 
     // [도착버튼 핸들러] 도착 버튼 클릭시 상태 계산 (safe, success, fail)
     const handleArrival = useCallback(() => {
-        if(!goalTime) return;
+        if (!goalTime) return;
         const now = new Date();
         const target = new Date(goalTime);
         const diffMs = target.getTime() - now.getTime();
@@ -86,26 +86,25 @@ export const useRecordTime = () => {
 
         let status = "fail";
 
-        if (diffMin < 0){
+        if (diffMin < 0) {
             // 목표 시간 지남 -> 지각 (fail)
             status = "fail";
-        } else if (diffMin <= 10){
+        } else if (diffMin <= 10) {
             // 10분 전 ~ 목표시간 사이 -> 간신히 성공 (safe)
             status = "safe";
-        } else{
+        } else {
             // 10분보다 더 많이 남음 -> 여유있게 성공 (success)
             status = "success";
         }
-        if(confirm(`현재 상태 ${status.toUpperCase()}\n도착 기록을 보내시겠습니까?`)){
+        if (confirm(`현재 상태 ${status.toUpperCase()}\n도착 기록을 보내시겠습니까?`)) {
             arrivalMutation.mutate(status);
         }
     }, [goalTime, arrivalMutation]);
 
 
-
     // [로직]  타이머 계산 로직 1초마다 실행 (useEffect)
-    useEffect(()=>{
-        if(!goalTime) return;
+    useEffect(() => {
+        if (!goalTime) return;
         const targetDate = new Date(goalTime);
         const timer = setInterval(() => {
             const now = new Date();
@@ -120,9 +119,9 @@ export const useRecordTime = () => {
             // 2. 시간(Hour)과 분(Minute)으로 분리
             const hours = Math.floor(totalMinutes / 60);
             const minutes = totalMinutes % 60;
-            if(diff <= 0){
+            if (diff <= 0) {
                 setRemainTimeText("지각입니다 ㅠㅠ");
-            } else{
+            } else {
                 const min = Math.floor(diff / 60000);
                 // 3. 화면 표시 포맷 (0시간일 때는 분만, 아니면 '0시간 0분' 형태)
                 if (hours > 0) {
@@ -135,5 +134,5 @@ export const useRecordTime = () => {
         return () => clearInterval(timer);
     }, [goalTime]);
 
-    return { isLoggedIn, goalTime, goalList, remainTimeText, arrivalMutation, handleLinkToSetup,router, handleArrival };
+    return {isLoggedIn, goalTime, goalList, remainTimeText, arrivalMutation, handleLinkToSetup, router, handleArrival};
 };

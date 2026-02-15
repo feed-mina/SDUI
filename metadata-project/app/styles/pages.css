@@ -63,6 +63,7 @@
     align-items: center;
     height: 100vh;
 }
+
 .page-wrap.LOGIN_PAGE {
     align-items: center;
     justify-content: center;
@@ -75,8 +76,9 @@
     padding: 2rem;
     background: var(--background);
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
+
 /* 이메일 입력 그룹 */
 .email-container {
     display: flex;
@@ -85,7 +87,10 @@
 }
 
 @media (max-width: 768px) {
-    .email-container { flex-direction: column; align-items: stretch; }
+    .email-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
 
@@ -208,39 +213,53 @@
         flex-direction: row; /* PC에서는 가로 정렬 가능 */
         justify-content: space-around;
     }
+
     .login_form_button {
         width: 22rem;
         font-size: 2em;
     }
+
     .kakao-button {
         padding-bottom: 10rem; /* PC 특화 여백 */
     }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-    .login_form { width: 80%; padding: 2rem; }
+    .login_form {
+        width: 80%;
+        padding: 2rem;
+    }
 }
 
 @media (max-width: 767px) {
-    .login_form { width: 90%; }
+    .login_form {
+        width: 90%;
+    }
+
     .login_form_button {
         padding: 10px 20px;
         font-size: 1em;
     }
-    .kakaoLoginImg { width: 11rem; height: 3rem; }
+
+    .kakaoLoginImg {
+        width: 11rem;
+        height: 3rem;
+    }
 }
 
 
 /*MAIN_PAGE 메인페이지 */
-.page-wrap.MAIN_PAGE{
+.page-wrap.MAIN_PAGE {
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 .diaryImg {
     border-radius: 3rem;
     margin-bottom: 70px;
 }
+
 .diary-nav1, .diary-nav2 {
     display: block;
     width: 100%;
@@ -321,8 +340,8 @@
 
 /* 시간 설정 페이지 컨테이너 */
 .page-wrap.SET_TIME_PAGE,
-.group.SET_TIME_SECTION ,
-.group-SET_TIME_SECTION{
+.group.SET_TIME_SECTION,
+.group-SET_TIME_SECTION {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -386,9 +405,6 @@
 }
 
 /* 도착 완료 버튼 */
-
-
-
 
 
 /* 상단 시계 영역 컨테이너 (Flex) */
@@ -496,6 +512,7 @@
     line-height: 1;
     padding: 0 5px;
 }
+
 /* 팝업 박스 */
 .goal-list-popup {
     position: absolute;
@@ -552,6 +569,7 @@
     font-weight: bold;
     color: #333;
 }
+
 /* DateTimePicker.css */
 
 .wheel-wrapper {
@@ -587,7 +605,7 @@
 
 .time-input {
     /*width: 300px;*/
-    width: 60px;  /* 너비를 명시적으로 고정 */
+    width: 60px; /* 너비를 명시적으로 고정 */
     height: 40px;
     font-size: 24px;
     font-weight: bold;
@@ -604,6 +622,7 @@
     margin-top: 15px;
     text-align: center;
 }
+
 .date-change-btn {
     background: none;
     border: none;
@@ -612,6 +631,7 @@
     cursor: pointer;
     font-size: 16px;
 }
+
 .current-date-text {
     margin-top: 5px;
     font-size: 14px;
@@ -667,7 +687,6 @@
 }
 
 
-
 /* =================================================================
   다이어리 리스트 (Diary List)
    ================================================================= */
@@ -679,6 +698,7 @@
     width: 100%;
     padding: 20px;
 }
+
 /* 필터 토글 위치 */
 .filter-toggle-container {
     width: 100%;
@@ -696,6 +716,7 @@
     width: 100%;
     max-width: 600px; /* 리스트 폭 제한 */
 }
+
 /* 페이지네이션 중앙 정렬 */
 .pagination-container {
     display: flex;
@@ -704,6 +725,7 @@
     margin-top: 30px;
     width: 100%;
 }
+
 /* 2. PC 화면 설정 (768px 이상) */
 @media (min-width: 768px) {
     .diaryListSection {
@@ -751,7 +773,9 @@
     min-height: 100px;
 }
 
-.diary-post:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.diary-post:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
 
 .diary-card-header {
     display: flex;
@@ -770,7 +794,7 @@
     padding: 20px;
     margin-bottom: 15px;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
     transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
@@ -780,7 +804,7 @@
 
 .diary-post:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
     border-color: #a0c4ff;
 }
 
@@ -817,11 +841,13 @@
     margin-left: auto !important; /* 이 코드가 핵심: 남는 공간을 다 차지해서 오른쪽으로 밀어냄 */
     white-space: nowrap;
 }
+
 /* [추가 팁] 그리드 안에서 글자가 사라지는 문제 해결용 */
 /* 카드가 들어갈 공간의 최소 크기를 0으로 지정해야 글자가 튀어나오지 않음 */
 .diaryListSection > div {
     min-width: 0;
 }
+
 /* 글쓰기 버튼 스타일  */
 .write-btn {
     background-color: #4A90E2;
@@ -834,6 +860,7 @@
     width: 100%;
     margin-bottom: 20px;
 }
+
 .write-btn:hover {
     background-color: #357abd;
 }
@@ -951,6 +978,7 @@
 .emotion-item.active .emotion-label {
     color: #ffffff;
 }
+
 /* DIARY-DETAIL 상세 페이지 타이틀 */
 .detail-title {
     font-size: 24px;
@@ -992,6 +1020,7 @@
     font-weight: bold;
     cursor: pointer;
 }
+
 .list-btn:hover {
     background: #ddd;
 }
@@ -1011,6 +1040,7 @@
     border-radius: 16px;
     box-sizing: border-box;
 }
+
 /* 리스트 상단 컨트롤 그룹 */
 .list-header-group {
     display: flex;
@@ -1068,15 +1098,25 @@
 
 /* 회전 애니메이션 정의 */
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* 깜빡임 애니메이션 정의 */
 @keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
 }
 
 /* =================================================================
@@ -1112,4 +1152,7 @@
     background-color: #4a90e2;
     color: white;
 }
-.editButton.warning { background-color: #ff5733; }
+
+.editButton.warning {
+    background-color: #ff5733;
+}

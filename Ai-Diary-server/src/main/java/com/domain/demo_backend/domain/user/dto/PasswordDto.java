@@ -1,4 +1,4 @@
-package com.domain.demo_backend.user.dto;
+package com.domain.demo_backend.domain.user.dto;
 
 import lombok.Data;
 

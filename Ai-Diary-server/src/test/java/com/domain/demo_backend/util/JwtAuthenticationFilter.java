@@ -1,7 +1,7 @@
 package com.domain.demo_backend.util;
 
 import com.domain.demo_backend.global.security.CustomUserDetails;
-import com.domain.demo_backend.token.domain.RefreshTokenRepository;
+import com.domain.demo_backend.global.security.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,15 +23,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JwtUtil jwtUtil;
-    // 2026-01-25 RefreshTokenRepository 주입 성능개선
-    private final RefreshTokenRepository refreshTokenRepository;
-
     //    cloundfront 적용 후 프록시 설정으로 추가
     private static final List<String> EXCLUDE_URLS = List.of(
             "/api/auth/login",
             "/api/kakao/login"
     );
+    private final JwtUtil jwtUtil;
+    // 2026-01-25 RefreshTokenRepository 주입 성능개선
+    private final com.domain.demo_backend.domain.token.domain.RefreshTokenRepository refreshTokenRepository;
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
@@ -44,7 +44,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @@@ 2026-01-25 사용자가 요청을 보낼때마다 만료시간을 3시간 뒤로 미루는 (슬라이딩 만료) 방법 추가
      * 필터 내에서 RefreshTokenRepository 주입받아 저장 > TTL 초기화
      * */
-
 
 
     @Override
@@ -64,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = claims.getSubject();
                 System.out.println("@@@@email : " + email);
                 String userId = claims.get("userId", String.class);
-                Long userSqno =claims.get("userSqno", Long.class);
+                Long userSqno = claims.get("userSqno", Long.class);
                 System.out.println("@@@@실제 userSqno : " + userSqno);
 
                 if (email != null) {
@@ -77,7 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     long passedTime = now - issuedAt.getTime();
 
                     // 2026-01-25 로그인(토큰 발행)한지 30분이 지났는지 확인
-                    if(passedTime > 1000L * 60 * 30){
+                    if (passedTime > 1000L * 60 * 30) {
                         // 2026-01-25 Redis 갱신 (findById 후 save 할때 TTL 이 다시 3시간ㄴ으로 초기화)
                         // 30분 이후 요청에 대해서만 Redis 에 접근
                         refreshTokenRepository.findByEmail(email).ifPresent(existingToken -> {

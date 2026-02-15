@@ -1,4 +1,6 @@
-package com.domain.demo_backend.helper;
+package com.domain.demo_backend.global.error;
+
+import com.domain.demo_backend.global.error.ErrorCode;
 
 public class BusinessException extends RuntimeException {
     private final ErrorCode errorCode;

@@ -1,6 +1,6 @@
-package com.domain.demo_backend.diary.domain;
+package com.domain.demo_backend.domain.diary.domain;
 
-import com.domain.demo_backend.user.domain.User;
+import com.domain.demo_backend.domain.user.domain.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="diary")
+@Table(name = "diary")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,12 +30,12 @@ public class Diary {
     // 실제 연관관계 필드(DB의  user_sqno 칼럼을 실제로 관리함)
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @JoinColumn(name="user_sqno")
+    @JoinColumn(name = "user_sqno")
     private User user;
 
     // 숫자 PK 값만 따로 확인하고 싶은 경우
     // insertable=false, updatable=false를 넣어야 중복 매핑 에러가 사라진다.
-    @Column(name="user_sqno", insertable=false, updatable=false)
+    @Column(name = "user_sqno", insertable = false, updatable = false)
     private Long userSqno;
 
 //    @JsonProperty("tags")
@@ -49,62 +49,62 @@ public class Diary {
     private String username;
     private String sbsceDt;
 
-    @Column(name="last_updt_dt")
+    @Column(name = "last_updt_dt")
     private String lastUpdtDt;
 
     private LocalDateTime regDt;
     private String diaryStatus;
 
-    @Column(name="frst_reg_ip")
+    @Column(name = "frst_reg_ip")
     private String frstRegIp;
 
-    @Column(name="frst_rgst_usps_sqno")
+    @Column(name = "frst_rgst_usps_sqno")
     private BigInteger frstRgstUspsSqno;
 
     private String author; // 작성자 추가
     private Integer emotion; // 감정지수 추가
 
-    @Column(name="updt_dt")
+    @Column(name = "updt_dt")
     private LocalDateTime updtDt;
 
-    @Column(name="diary_type")
+    @Column(name = "diary_type")
     private String diaryType;
 
-    @Column(name="del_yn")
+    @Column(name = "del_yn")
     private String delYn = "N";
 
-    @Column(name="del_dt")
+    @Column(name = "del_dt")
     private LocalDateTime delDt;
 
-    @Column(name="frst_dt")
+    @Column(name = "frst_dt")
     private LocalDateTime frstRegDt;
 
-    @Column(name="role_cd")
+    @Column(name = "role_cd")
     private String roleCd;
 
-    @Column(name="role_nm")
+    @Column(name = "role_nm")
     private String roleNm;
 
-    @Column(name="last_updt_ip")
+    @Column(name = "last_updt_ip")
     private String lastUpdtIp;
 
-    @Column(name="last_updt_usps_sqno")
+    @Column(name = "last_updt_usps_sqno")
     private BigInteger lastUpdtUspsSqno;
 
-    @Column(name="selected_times")
+    @Column(name = "selected_times")
     private String selectedTimes;
 
-    @Column(name="drug_morning")
+    @Column(name = "drug_morning")
     private String drugMorning;
 
-    @Column(name="drug_lunch")
+    @Column(name = "drug_lunch")
     private String drugLunch;
 
-    @Column(name="drug_dinner")
+    @Column(name = "drug_dinner")
     private String drugDinner;
 
     @PrePersist
-    public void prePersist(){
+    public void prePersist() {
         this.regDt = LocalDateTime.now();
         this.updtDt = LocalDateTime.now();
     }

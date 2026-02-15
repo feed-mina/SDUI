@@ -1,4 +1,4 @@
-package com.domain.demo_backend.helper;
+package com.domain.demo_backend.global.common.util;
 
 import com.domain.demo_backend.global.config.RemoteIp;
 import jakarta.servlet.http.HttpServletRequest;

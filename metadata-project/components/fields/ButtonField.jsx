@@ -1,5 +1,6 @@
 'use client';
-function ButtonField({ meta, onAction }) {
+
+function ButtonField({meta, onAction}) {
     return (
         <button
             className={meta.cssClass}

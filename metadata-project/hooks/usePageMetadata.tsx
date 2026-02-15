@@ -6,7 +6,7 @@ const getPayloadFromToken = (token: string) => {
     try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
         return JSON.parse(jsonPayload);
@@ -15,10 +15,10 @@ const getPayloadFromToken = (token: string) => {
     }
 };
 //  @@@@ usePageMetadata 역할 : 메타데이터가져오기 , 원본 데이터 가져오기 , 가져온 데이터를 pageData로 담아줌, 로딩중인지 전체 개수가 몇개인지 같은 페이지의 전역 상태를 관리
-export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMine: boolean, diaryId?: string)=>{
+export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMine: boolean, diaryId?: string) => {
     const router = useRouter(); // window.location.href 대신 사용
 
-    const[metadata, setMetadata] = useState<any[]>([]);
+    const [metadata, setMetadata] = useState<any[]>([]);
     const [formData, setFormData] = useState<any>({});
     const [totalCount, setTotalCount] = useState(0);
 
@@ -27,7 +27,7 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
     const pageSize = 5; // 한 페이지당 보여줄 개수
 
     // --- 쿠키 및 로그인 로직 (기존 코드 유지) ---
-    const getCookie = (name:string) => {
+    const getCookie = (name: string) => {
         if (typeof document === "undefined") return null; // 서버 사이드 에러 방지
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -72,13 +72,13 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                 };
 
                 const allComponents = getAllComponents(metadataList);
-                const sources = allComponents.filter((item:any) =>
+                const sources = allComponents.filter((item: any) =>
                     item.componentType === "DATA_SOURCE" && item.actionType === "AUTO_FETCH"
                 );
 
                 // const sources = metadataList.filter((item:any) => item.componentType === "DATA_SOURCE" && item.actionType === "AUTO_FETCH");
 
-                const dataPromises = sources.map(async (source:any) => {
+                const dataPromises = sources.map(async (source: any) => {
                     // console.log("지금 source에 들어 있는 모든 것 :", Object.keys(source));
                     console.log("DB에서 온 원본 소스:", source);
                     let apiUrl = source.dataApiUrl?.includes('/api/execute')
@@ -100,10 +100,10 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
 
                     if (!apiUrl) {
                         console.warn(`[경고] ${source.componentId}에 연결된 SQL 키나 API 주소가 없습니다.`);
-                        return { id: source.componentId, data: [] };
+                        return {id: source.componentId, data: []};
                     }
                     // 내 일기 모드 일때 URL변경
-                    if (source.componentId === "diary_list_source" && isOnlyMine){
+                    if (source.componentId === "diary_list_source" && isOnlyMine) {
                         apiUrl = "/api/diary/member-diaries";
                     }
 
@@ -138,7 +138,7 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
 
                     if (screenId === "DIARY_DETAIL") {
                         // 상세 조회는 GET 요청
-                        res = await axios.get(apiUrl, { params: finalParams, headers });
+                        res = await axios.get(apiUrl, {params: finalParams, headers});
                     } else if (isOnlyMine && source.componentId === "diary_list_source") {
                         // GET 요청: headers는 config 객체 안에 넣어야 함 (중요!)
                         res = await axios.get(apiUrl, {
@@ -147,10 +147,10 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                         });
                     } else {
                         // POST 요청
-                        res = await axios.post(apiUrl, { ...finalParams });
+                        res = await axios.post(apiUrl, {...finalParams});
                         console.log("백엔드에서 날아온 생 데이터:", res.data);
                     }
-                    return { id: source.componentId, status: "success", data: res.data.data || res.data };
+                    return {id: source.componentId, status: "success", data: res.data.data || res.data};
                 });
 
                 const results = await Promise.all(dataPromises);
@@ -215,6 +215,6 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
         initializePage();
     }, [screenId, currentPage, isOnlyMine, diaryId]);
 
-    return { metadata, pageData, loading, totalCount, isLoggedIn };
+    return {metadata, pageData, loading, totalCount, isLoggedIn};
 
 };

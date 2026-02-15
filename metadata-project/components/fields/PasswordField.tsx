@@ -4,7 +4,7 @@ import React, {useState} from 'react';
 
 // 타입을 정의한다
 interface PasswordFieldProps {
-    meta:{
+    meta: {
         id: string;
         componentId: string;
         labelText?: string;
@@ -12,17 +12,17 @@ interface PasswordFieldProps {
         inline_style?: string;
         componentType?: string;
     };
-    onChange?:(id: string, value: string) => void;
+    onChange?: (id: string, value: string) => void;
 }
 
 const PasswordField: React.FC<any> = ({meta, onChange, onAction}) => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
     // 인라인스타일처리
-    let customStyle= {};
-    try{
+    let customStyle = {};
+    try {
         customStyle = JSON.parse(meta.inline_style || "{}");
-    } catch (e){
+    } catch (e) {
         customStyle = {};
     }
 
@@ -30,14 +30,14 @@ const PasswordField: React.FC<any> = ({meta, onChange, onAction}) => {
         <div className={meta.cssClass} style={{position: 'relative', width: '100%'}}>
             <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder={meta.labelText|| "비밀번호를 입력하세요"}
+                placeholder={meta.labelText || "비밀번호를 입력하세요"}
                 className={meta.cssClass}
-                style={{...customStyle, width: '100%', paddingRight: '70px',boxSizing: 'border-box'}}
-                onChange={(e)=>onChange && onChange(meta.componentId || 'password', e.target.value)}
+                style={{...customStyle, width: '100%', paddingRight: '70px', boxSizing: 'border-box'}}
+                onChange={(e) => onChange && onChange(meta.componentId || 'password', e.target.value)}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter' && onAction) onAction(meta);
                 }}
-                    />
+            />
             <button type="button"
                     onClick={() => {
                         console.log('showPassword : ', showPassword);

@@ -12,7 +12,7 @@ interface TextAreaFieldProps {
     onChange: (id: string, value: string) => void;
 }
 
-const TextAreaField: React.FC<TextAreaFieldProps> = ({ id, meta, data, value, onChange }) => {
+const TextAreaField: React.FC<TextAreaFieldProps> = ({id, meta, data, value, onChange}) => {
     // 1. 스타일 파싱 로직 (안전하게)
     let customStyle: React.CSSProperties = {};
     try {
@@ -31,8 +31,8 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({ id, meta, data, value, on
     const isReadOnly = meta.isReadonly === true || meta.isReadonly === "true";
 
     return (
-        <div className="testfield" style={{ width: '100%' }}>
-            {meta.labelText && <label style={{ display: 'block', marginBottom: '5px' }}>{meta.labelText}</label>}
+        <div className="testfield" style={{width: '100%'}}>
+            {meta.labelText && <label style={{display: 'block', marginBottom: '5px'}}>{meta.labelText}</label>}
             <textarea
                 id={id}
                 className={meta.cssClass}

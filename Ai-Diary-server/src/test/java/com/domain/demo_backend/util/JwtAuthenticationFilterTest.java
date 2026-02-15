@@ -1,11 +1,11 @@
 package com.domain.demo_backend.util; // 패키지 경로를 util로 변경
 
-import com.domain.demo_backend.token.domain.RefreshToken;
-import com.domain.demo_backend.token.domain.RefreshTokenRepository;
+import com.domain.demo_backend.domain.token.domain.RefreshToken;
+import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException; // 에러 해결을 위한 임포트
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,14 +15,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import java.io.IOException; // 에러 해결을 위한 임포트
+import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 
-// 정적 임포트를 통해 verify, times, any, given을 바로 사용합니다.
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class JwtAuthenticationFilterTest {
