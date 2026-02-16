@@ -4,13 +4,13 @@ import {useCallback, useEffect, useState} from "react";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import axios from "@/services/axios";
 import {useRouter} from "next/navigation";
-
+import { useAuth } from "@/context/AuthContext";
 // @@@@ useRecordTime 역할 : reactQurey 로 목표시간데이터, 리스트, 도착시간 부분 백앤드와 연결 관리
 export const useRecordTime = () => {
     const [remainTimeText, setRemainTimeText] = useState('');
     const queryClient = useQueryClient();
     const router = useRouter(); // window.location.href 대신 사용
-
+    const { user, isLoggedIn, isLoading: authLoading } = useAuth();
     // 쿠키 확인 로직
     const getCookie = (name: string) => {
         if (typeof document === 'undefined') return null;
@@ -22,7 +22,6 @@ export const useRecordTime = () => {
         return matches ? decodeURIComponent(matches[1]) : null;
     };
 
-    const isLoggedIn = !!getCookie("accessToken");
 
     // [API] 목표시간 데이터 가져오기 React Query
     const {data: goalTime} = useQuery({
@@ -68,7 +67,7 @@ export const useRecordTime = () => {
     const handleLinkToSetup = () => {
         const currentToken = getCookie("accessToken"); // 실행 시점에 다시 읽기
 
-        if (!currentToken) {
+        if (!isLoggedIn) {
             alert('로그인이 필요한 서비스입니다.');
         } else {
             router.push('/view/SET_TIME_PAGE');

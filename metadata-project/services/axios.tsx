@@ -22,10 +22,13 @@ const getCookie = (name: string): string | null => {
     return null;
 };
 
-// 2. 요청 인터셉터: 모든 요청 헤더에 Access Token 주입
+let memoAccessToken = "";
+
+//  요청 인터셉터: Access Token 주입
 api.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
-        const token = getCookie('accessToken');
+    (config) => {
+        // 1순위: 메모리 토큰, 2순위: 쿠키 토큰
+        const token = memoAccessToken || getCookie('accessToken');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -37,8 +40,8 @@ api.interceptors.request.use(
 // 3. 응답 인터셉터: 에러 핸들링 및 토큰 재발급 로직 통합
 api.interceptors.response.use(
     (response) => response,
-    async (error: AxiosError<ErrorResponse>) => {
-        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    async (error) => {
+        const originalRequest = error.config;
         const {response} = error;
 
         // CASE 1: 토큰 만료 (401) 시 재발급 시도
@@ -47,15 +50,15 @@ api.interceptors.response.use(
 
             try {
                 // 주의: 인스턴스(api)가 아닌 생 axios를 써야 무한 루프를 방지함
-                await axios.post('http://localhost:8080/api/auth/refresh', {}, {withCredentials: true});
-
-                // 재발급 성공 시 기존 요청 다시 보냄
+                const res = await axios.post('http://localhost:8080/api/auth/refresh', {}, { withCredentials: true });
+                memoAccessToken = res.data.accessToken; // 새 토큰 업데이트
                 return api(originalRequest);
-            } catch (refreshError) {
+            } catch (err) {
                 alert("세션이 만료되었습니다. 다시 로그인해주세요.");
                 window.location.href = "/view/LOGIN_PAGE";
-                return Promise.reject(refreshError);
             }
+            return Promise.reject(error);
+
         }
 
         // CASE 2: 401이 아니거나 재발급 실패 후의 비즈니스 에러 처리

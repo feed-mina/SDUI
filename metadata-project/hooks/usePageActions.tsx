@@ -104,7 +104,7 @@ export const usePageActions = (metadata: any[]) => {
 
                     // 성공 처리
                     if (response.data.accessToken) {
-                        document.cookie = `accessToken=${response.data.accessToken}; path=/; max-age=3600`;
+                        localStorage.setItem('isLoggedIn', 'true');
                         router.push("/view/MAIN_PAGE"); // 전체 새로고침으로 데이터 강제 갱신
                         router.refresh(); // 서버 컴포넌트 상태 갱신
                     } else {

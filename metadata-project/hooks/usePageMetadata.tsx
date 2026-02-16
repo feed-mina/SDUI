@@ -1,19 +1,8 @@
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import axios from "@/services/axios";
+import { useAuth } from "@/context/AuthContext";
 
-const getPayloadFromToken = (token: string) => {
-    try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
-    } catch (e) {
-        return null;
-    }
-};
 //  @@@@ usePageMetadata 역할 : 메타데이터가져오기 , 원본 데이터 가져오기 , 가져온 데이터를 pageData로 담아줌, 로딩중인지 전체 개수가 몇개인지 같은 페이지의 전역 상태를 관리
 export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMine: boolean, diaryId?: string) => {
     const router = useRouter(); // window.location.href 대신 사용
@@ -26,23 +15,11 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
     const [loading, setLoading] = useState(true);
     const pageSize = 5; // 한 페이지당 보여줄 개수
 
-    // --- 쿠키 및 로그인 로직 (기존 코드 유지) ---
-    const getCookie = (name: string) => {
-        if (typeof document === "undefined") return null; // 서버 사이드 에러 방지
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop()?.split(';').shift();
-    };
 
-    const isLoggedIn = !!getCookie("accessToken");
-    // usePageMetadata 내부
-    const token = getCookie("accessToken");
-    const payload = token ? getPayloadFromToken(token) : null;
+    const { user, isLoggedIn, isLoading: authLoading } = useAuth();
 
-// 토큰 내 userId와 userSqno 추출
-    const currentUserId = payload?.userId || "";
-    const currentUserSqno = payload?.userSqno || "";
-
+    const currentUserId = user?.userId || "";
+    const currentUserSqno = user?.userSqno || "";
     useEffect(() => {
         // initializePage 로직
 
@@ -53,6 +30,8 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
             if (isLoggedIn && screenId === "LOGIN_PAGE") {
                 alert("이미 로그인된 상태입니다.");
                 router.push("/view/MAIN_PAGE");
+
+                router.refresh(); // 서버 컴포넌트 상태 갱신
                 return;
             }
 
@@ -126,24 +105,16 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
                     // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
 
                     console.log(`[요청] 모드:${isOnlyMine ? 'API' : 'SQL'}, URL:${apiUrl}`);
-                    const token = getCookie("accessToken");
-
-                    const headers: any = {};
-                    if (isOnlyMine && token) {
-                        headers["Authorization"] = `Bearer ${token}`; // "Bearer " 뒤에 공백 필수!
-                    }
-                    console.log(`[요청 헤더]`, headers);
 
                     let res;
 
                     if (screenId === "DIARY_DETAIL") {
                         // 상세 조회는 GET 요청
-                        res = await axios.get(apiUrl, {params: finalParams, headers});
+                        res = await axios.get(apiUrl, {params: finalParams});
                     } else if (isOnlyMine && source.componentId === "diary_list_source") {
                         // GET 요청: headers는 config 객체 안에 넣어야 함 (중요!)
                         res = await axios.get(apiUrl, {
                             params: finalParams,
-                            headers
                         });
                     } else {
                         // POST 요청
@@ -213,8 +184,8 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
             }
         };
         initializePage();
-    }, [screenId, currentPage, isOnlyMine, diaryId]);
+    }, [screenId, currentPage, isOnlyMine, diaryId, isLoggedIn, authLoading, user]);
 
-    return {metadata, pageData, loading, totalCount, isLoggedIn};
+    return { metadata, pageData, loading: loading || authLoading, totalCount, isLoggedIn };
 
 };
