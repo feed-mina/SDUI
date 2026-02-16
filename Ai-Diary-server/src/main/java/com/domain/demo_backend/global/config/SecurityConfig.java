@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())  // CSRF 비활성화
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/goalTime/**", "/api/diary/**", "/api/auth/logout", "/api/auth/editPassword", "/api/auth/non-user").authenticated()
+                        .requestMatchers("/api/goalTime/**", "/api/diary/**", "/api/auth/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
@@ -79,7 +79,7 @@ public class SecurityConfig {
                 "https://justsaying.co.kr", "http://justsaying.co.kr"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // 쿠키 허용
         configuration.setMaxAge(10800L); // preflight 캐시 3 * 60 (분) * 60(초)
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
