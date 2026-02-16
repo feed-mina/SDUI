@@ -94,7 +94,7 @@ public class KakaoController {
     }
 
     @GetMapping("/callback")
-    public ResponseEntity<?> getAccessToken(@RequestParam String code, HttpServletResponse response) throws IOException {
+    public void getAccessToken(@RequestParam String code, HttpServletResponse response) throws IOException {
         log.info("KAKAOCONTROLLER-code: " + code);
 
         log.info("KAKAOCONTROLLER-@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -131,32 +131,31 @@ public class KakaoController {
         // 3. JWT 발급
         TokenResponse jwtToken = kakaoService.registerKakaoUser(userInfo, kakaoAccessToken);
 
-        log.info("KAKAOCONTROLLER-accessToken : " + jwtToken);
-
-        // 4. Vue 쪽으로 리다이렉트
-//        String redirectUrl = String.format("https://justsaying.co.kr/login/callback?jwtToken=%s&email=%s&nickname=%s",
-//                jwtToken, URLEncoder.encode(userInfo.getEmail(), "UTF-8"), URLEncoder.encode(userInfo.getNickname(), "UTF-8"));
-//        String redirectUrl = String.format(
-//                "https://justsaying.co.kr/login/callback?jwtToken=%s&email=%s&nickname=%s",
-//                jwtToken.getAccessToken(),
-//                URLEncoder.encode(userInfo.getEmail(), "UTF-8"),
-//                URLEncoder.encode(userInfo.getNickname(), "UTF-8")
-//        );
-// JWT 토큰은 HttpOnly 쿠키로 보냄
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", jwtToken.getRefreshToken())
+        // 4. Access Token 쿠키 생성
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())
                 .httpOnly(true)
-                .secure(true) // 로컬 테스트 시 false
-                .sameSite("None")
+                .secure(false) // 로컬 테스트 시 false로 설정해야 쿠키가 보임 [cite: 2026-01-26]
                 .path("/")
-                .maxAge(7 * 24 * 60 * 60)
+                .maxAge(3600)
+                .sameSite("Lax") // 로컬 테스트용
                 .build();
 
-        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+        // 5. Refresh Token 쿠키 생성
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", jwtToken.getRefreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)
+                .sameSite("Lax")
+                .build();
 
+        // 쿠키 두 개 모두 추가
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
-        response.sendRedirect("https://justsaying.co.kr/login/callback"); // 302 리다이렉트
-        return ResponseEntity.status(HttpStatus.FOUND).build();
-//        return "Access Token 발급 성공! : " + accessToken;  -- vue spa 방식(  250527주석)
+        // 6. 프론트엔드 메인 페이지로 리다이렉트 [cite: 2026-01-01]
+        // 쿼리 파라미터로 토큰을 던지지 말고, 쿠키를 믿고 그냥 보내라. [cite: 2026-01-26]
+        response.sendRedirect("http://localhost:3000/view/MAIN_PAGE");
     }
 
     @PostMapping("/sendRecord")

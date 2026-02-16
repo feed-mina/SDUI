@@ -111,73 +111,36 @@ public class KakaoService {
 
     @Transactional
     public TokenResponse registerKakaoUser(KakaoUserInfo kakaoUserInfo, String accessToken) {
-        Date date = new Date();
-        LocalDateTime ldt = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        log.info("KAKAOSERVICE-registerKakaoUser 진입 , 이메일이 있는지 확인 : ");
-        // DB에서 같은 이메일이 있는지 확인해
-        if (userRepository.findByEmail(kakaoUserInfo.getEmail()) != null) {
-            log.info("KAKAOSERVICE-카카오 사용자 이메일: " + kakaoUserInfo.getEmail());
+        log.info("KAKAOSERVICE-사용자 확인: {}", kakaoUserInfo.getEmail());
 
-            // 이미 존재하는 경우 updated_at 갱신
-//            userRepository.updateUpdatedAt(kakaoUserInfo.getEmail());
 
-            Optional<User> extiUser = userRepository.findByEmail(kakaoUserInfo.getEmail());
-            System.out.println("KAKAOSERVICE-@@@@@@@@@useruserRepositorydByUSerEmail" + extiUser);
+        User user = userRepository.findByEmail(kakaoUserInfo.getEmail())
+                .orElseGet(() -> {
+                    log.info("KAKAOSERVICE-신규 유저 생성 시작");
+                    User newUser = User.builder()
+                            .userId(kakaoUserInfo.getEmail().split("@")[0])
+                            .password("") // 소셜 로그인은 비밀번호가 필요 없음
+                            .hashedPassword("")
+                            .email(kakaoUserInfo.getEmail())
+                            .phone("111-111-111")
+                            .username(kakaoUserInfo.getNickname())
+                            .role("ROLE_USER")
+                            .verifyYn("Y")
+                            .socialType("K")
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    return userRepository.save(newUser); // 여기서 save해야 userSqno가 생성됨
+                });
 
-            TokenResponse tokenResponse = jwtUtil.generateTokens(
-                    kakaoUserInfo.getEmail(),
-                    kakaoUserInfo.getUserSqno(),
-                    String.valueOf(kakaoUserInfo.getUserId())
-            );
-            log.info("KAKAOSERVICE-카카오 사용자 이메일: " + kakaoUserInfo.getEmail());
-
-            // JWT 토큰을 생성해 반환해
-            String jwtToken = "Bearer " + tokenResponse.getAccessToken();
-            log.info("KAKAOSERVICE-jwtToken: " + jwtToken);
-            System.out.println("KAKAOSERVICE-@@@@@@@@@jwtToken" + jwtToken);
-//            return jwtToken;
-            return tokenResponse;
-        }
-        // 새로운 사용자 객체 생성 (빌더 패턴 사용)
-        User user = User.builder()
-                .userId(kakaoUserInfo.getEmail().split("@")[0])
-                .password(accessToken)
-                .hashedPassword(kakaoUserInfo.getHashedPassword())
-                .email(kakaoUserInfo.getEmail())
-                .phone("111-111-111")
-                .verificationCode("K" + kakaoUserInfo.getPassword())
-                .username(kakaoUserInfo.getNickname())
-                .role("ROLE_USER")
-                .verifyYn("Y") // 카카오는 이미 인증이 완료됐으니까 'Y'를 설정해
-                .socialType("K") // 카카오의 소셜 타입은 'K'
-                .createdAt(ldt)
-                .sleepUsingType("N")
-                .drugUsingType("N")
-                .build();
 
         System.out.println("KAKAOSERVICE-@@@ kakao_login_user.getUserSqno() != null" + user.getUserSqno() != null);
         System.out.println("KAKAOSERVICE-@@@ kakao_user!" + user);
         // DB에 저장 후 자동 생성된 사용자 고유 번호(userSqno)가 있으면
-        if (user.getUserSqno() != null) {
-            // 사용자 정보를 DB에 저장해
-            userRepository.save(user);
 
-            // JWT 토큰을 생성해 반환해
-            TokenResponse tokenResponse = jwtUtil.generateTokens(user.getEmail(), user.getUserSqno(), user.getUserId());
-            String jwtToken = "Bearer " + tokenResponse.getAccessToken();
-            log.info("KAKAOSERVICE-jwtToken: " + jwtToken);
-            return tokenResponse;
-        } else {
-            log.info("KAKAOSERVICE-user: " + user);
-            log.info("KAKAOSERVICE-user Mapper insertUser 시작");
-            // 사용자 정보를 DB에 저장해
-            userRepository.save(user);
-            // JWT 토큰을 생성해 반환해
-            TokenResponse tokenResponse = jwtUtil.generateTokens(user.getEmail(), user.getUserSqno(), user.getUserId());
-            String jwtToken = "Bearer " + tokenResponse.getAccessToken();
-            log.info("KAKAOSERVICE-jwtToken: " + jwtToken);
-            return tokenResponse;
-        }
+        TokenResponse tokenResponse = jwtUtil.generateTokens(user.getEmail(), user.getUserSqno(), user.getUserId());
+
+        // 2. 토큰 생성 (기존이든 신규든 여기서 생성)
+        return jwtUtil.generateTokens(user.getEmail(), user.getUserSqno(), user.getUserId());
     }
 
 }
