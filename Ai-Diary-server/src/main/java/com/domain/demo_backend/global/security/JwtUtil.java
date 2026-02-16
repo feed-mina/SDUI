@@ -119,7 +119,7 @@ public class JwtUtil {
         Date refreshExp = new Date(now.getTime() + REFRESH_TOKEN_VALIDITY);
 
         Claims claims = Jwts.claims().setSubject(email);
-
+        long ttlInSeconds = REFRESH_TOKEN_VALIDITY / 1000;
 
         if (email == null) {
             throw new IllegalArgumentException("unique_userId값이 존재하지 않습니다.");
@@ -147,8 +147,7 @@ public class JwtUtil {
         refreshTokenRepository.save(new RefreshToken(
                 user.getUserSqno(), //  꼭 넣어줘야 해!
                 email,
-                refreshToken,
-                refreshExp.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime() // 한국날짜로 변환
+                refreshToken,ttlInSeconds // LocalDateTime 대신 Long 타입을 전달
         ));
 
         return new TokenResponse(accessToken, refreshToken);
@@ -172,7 +171,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(accessExp)
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
