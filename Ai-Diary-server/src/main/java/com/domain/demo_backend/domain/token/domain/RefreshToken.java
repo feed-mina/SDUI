@@ -4,28 +4,27 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
 
 import java.time.LocalDateTime;
-
 @Getter
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED) // 보안을 위해서...
-// 20260125 Redis 로직 추가
-@RedisHash(value = "refreshToken", timeToLive = 60 * 60 * 3)
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@RedisHash(value = "refreshToken") // 시간을 여기서 정하지 말고 필드로 관리하자
 public class RefreshToken {
 
     @Id
-    private Long userSqno;
-    private String email;
+    private Long userSqno; // Redis의 Key가 됨 (예: refreshToken:1)
 
+    private String email;
     private String refreshToken;
 
-    private LocalDateTime expiration;
+    @TimeToLive
+    private Long expiration; // 초(second) 단위로 저장하면 Redis가 자동으로 관리해줘
 
-    public RefreshToken(Long userSqno, String email, String refreshToken, LocalDateTime expiration) {
+    public RefreshToken(Long userSqno, String email, String refreshToken, Long expiration) {
         this.userSqno = userSqno;
         this.email = email;
         this.refreshToken = refreshToken;
         this.expiration = expiration;
     }
-
 }
