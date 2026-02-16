@@ -104,15 +104,6 @@ public class DiaryController {
             ip = request.getRemoteAddr();
         }
         System.out.println("@@@클라이언트 IP: " + ip);
-        // 2. 현재 로그인한 사용자 정보 꺼내기
-        CustomUserDetails currentUser = UserInfoHelper.getMemberInfo();
-        System.out.println("@@@currentUser 값: " + currentUser);
-
-        diaryRequest.setUserSqno(currentUser.getUserSqno());
-        diaryRequest.setUserId(currentUser.getUserId());
-        diaryRequest.setEmail(currentUser.getUsername());
-        diaryRequest.setAuthor(currentUser.getUserId());
-
         System.out.println("@@@ [안전하게 세팅된] diaryRequest: " + diaryRequest);
 
         try {
