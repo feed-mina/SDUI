@@ -47,7 +47,20 @@ public class AuthController {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
     }
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
 
+        // 보안상 필요한 정보(ID, 이메일, 시퀀스번호 등)만 객체에 담아 반환
+        return ResponseEntity.ok(Map.of(
+                "userId", userDetails.getUserId(),
+                "userSqno", userDetails.getUserSqno(),
+                "email", userDetails.getEmail(),
+                "role", "ROLE_USER"
+        ));
+    }
     @PostConstruct
     public void init() {
         System.out.println(" refreshTokenRepository: " + refreshTokenRepository);
@@ -63,20 +76,34 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody com.domain.demo_backend.domain.user.dto.LoginRequest loginRequest) {
         TokenResponse tokenResponse = authService.login(loginRequest);
-
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
+//  Access Token 쿠키 (수명 1시간)
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", tokenResponse.getAccessToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)  // 로컬 HTTP 테스트 시 false HTTPS 적용 시  true
                 .path("/")
-                .sameSite("None")
+                .maxAge(60 * 60)
+                .sameSite("Lax")
                 .build();
 
+        // 2. Refresh Token 쿠키 (수명 7일)
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
+                .httpOnly(true)
+                .secure(false) // 로컬 HTTP 테스트 시 false HTTPS 적용 시  true
+                .path("/")
+                .maxAge(60 * 60 * 24 * 7)
+                .sameSite("Lax")
+                .build();
+// AccessToken (보안용)
+        ResponseCookie cookie = ResponseCookie.from("accessToken", tokenResponse.getAccessToken())
+                .httpOnly(true).secure(true).path("/").maxAge(3600).build();
+
+// 로그인 여부 확인용 (자바스크립트 접근 가능)
+        ResponseCookie statusCookie = ResponseCookie.from("isLoggedIn", "true")
+                .httpOnly(false).path("/").maxAge(3600).build();
         return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                .body(Map.of(
-                        "accessToken", tokenResponse.getAccessToken(),
-                        "refreshToken", tokenResponse.getRefreshToken()
-                ));
+                .body(Map.of("message", "로그인 성공")); // 바디에는 토큰을 담지 않음
     }
 
     @Operation(summary = "회원 가입페이지에서 회원가입 로직", description = "users 테이블에 insert한다..")
@@ -282,7 +309,7 @@ public class AuthController {
     public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
         // 1. Redis에서 리프레시 토큰 삭제
         if (userDetails != null) {
-            refreshTokenRepository.deleteById(userDetails.getEmail());
+            refreshTokenRepository.deleteById(userDetails.getUserSqno());
         }
         // 2. 쿠키 삭제를 위한 설정 (Max-Age를 0으로 설정)
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
