@@ -1,4 +1,4 @@
-import axios, {AxiosError, AxiosInstance, InternalAxiosRequestConfig} from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 // 서버 에러 응답 규격 정의
 interface ErrorResponse {
@@ -7,61 +7,47 @@ interface ErrorResponse {
     status: number;
 }
 
-// 1. Axios 인스턴스 생성
+//   Axios 인스턴스 생성
 const api: AxiosInstance = axios.create({
     baseURL: 'http://localhost:8080',
     withCredentials: true,
 });
-
-// 쿠키에서 특정 키의 값을 가져오는 유틸 함수
-const getCookie = (name: string): string | null => {
-    if (typeof document === "undefined") return null;
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-    return null;
-};
-
-let memoAccessToken = "";
-
-//  요청 인터셉터: Access Token 주입
+// 브라우저가 HttpOnly 쿠키를 알아서 보냄
 api.interceptors.request.use(
-    (config) => {
-        // 1순위: 메모리 토큰, 2순위: 쿠키 토큰
-        const token = memoAccessToken || getCookie('accessToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
+    (config) => config,
     (error) => Promise.reject(error)
 );
-
 // 3. 응답 인터셉터: 에러 핸들링 및 토큰 재발급 로직 통합
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
         const {response} = error;
+        const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
 
-        // CASE 1: 토큰 만료 (401) 시 재발급 시도
         if (response?.status === 401 && !originalRequest._retry) {
+            // [방어 로직] 이미 로그인 페이지라면 재발급 시도나 리다이렉트를 하지 않음
+            if (currentPath === "/view/LOGIN_PAGE") {
+                return Promise.reject(error);
+            }
+
             originalRequest._retry = true;
 
             try {
-                // 주의: 인스턴스(api)가 아닌 생 axios를 써야 무한 루프를 방지함
-                const res = await axios.post('http://localhost:8080/api/auth/refresh', {}, { withCredentials: true });
-                memoAccessToken = res.data.accessToken; // 새 토큰 업데이트
-                return api(originalRequest);
+                // 토큰 재발급 시도
+                await axios.post('http://localhost:8080/api/auth/refresh', {}, { withCredentials: true });
+                return api(originalRequest); // 재발급 성공 시 원래 요청 재시도
             } catch (err) {
-                alert("세션이 만료되었습니다. 다시 로그인해주세요.");
-                window.location.href = "/view/LOGIN_PAGE";
+                // 재발급 실패 시 로그아웃 처리
+                if (currentPath !== "/view/LOGIN_PAGE") {
+                    alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+                    window.location.href = "/view/LOGIN_PAGE";
+                }
             }
             return Promise.reject(error);
-
         }
 
-        // CASE 2: 401이 아니거나 재발급 실패 후의 비즈니스 에러 처리
+        // 재발급 실패 후의 비즈니스 에러 처리
         if (response?.data) {
             const {code, message} = response.data;
 
