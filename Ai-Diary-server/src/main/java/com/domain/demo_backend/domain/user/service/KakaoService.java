@@ -115,32 +115,31 @@ public class KakaoService {
 
 
         User user = userRepository.findByEmail(kakaoUserInfo.getEmail())
+                .map(existingUser -> {
+                    // 탈퇴한 유저라면 재활성화
+                    if ("Y".equals(existingUser.getDelYn())) {
+                        existingUser.setDelYn("N");
+                        existingUser.setUpdatedAt(LocalDateTime.now());
+                    }
+                    return existingUser;
+                })
                 .orElseGet(() -> {
-                    log.info("KAKAOSERVICE-신규 유저 생성 시작");
-                    User newUser = User.builder()
+                    log.info("KAKAOSERVICE-신규 카카오 유저 가입");
+                    return userRepository.save(User.builder()
                             .userId(kakaoUserInfo.getEmail().split("@")[0])
-                            .password("") // 소셜 로그인은 비밀번호가 필요 없음
+                            .password("") // 소셜 로그인은 비밀번호가 의미 없음
                             .hashedPassword("")
                             .email(kakaoUserInfo.getEmail())
                             .phone("111-111-111")
-                            .username(kakaoUserInfo.getNickname())
                             .role("ROLE_USER")
                             .verifyYn("Y")
                             .socialType("K")
+                            .delYn("N")
                             .createdAt(LocalDateTime.now())
-                            .build();
-                    return userRepository.save(newUser); // 여기서 save해야 userSqno가 생성됨
+                            .build());
                 });
 
-
-        System.out.println("KAKAOSERVICE-@@@ kakao_login_user.getUserSqno() != null" + user.getUserSqno() != null);
-        System.out.println("KAKAOSERVICE-@@@ kakao_user!" + user);
-        // DB에 저장 후 자동 생성된 사용자 고유 번호(userSqno)가 있으면
-
-        TokenResponse tokenResponse = jwtUtil.generateTokens(user.getEmail(), user.getUserSqno(), user.getUserId());
-
-        // 2. 토큰 생성 (기존이든 신규든 여기서 생성)
+        // 2. 토큰 발행 (딱 한 번만 호출!)
         return jwtUtil.generateTokens(user.getEmail(), user.getUserSqno(), user.getUserId());
     }
-
 }
