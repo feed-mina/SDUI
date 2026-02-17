@@ -1,6 +1,7 @@
 package com.domain.demo_backend.global.config;
 
 import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
+import com.domain.demo_backend.domain.user.domain.UserRepository;
 import com.domain.demo_backend.global.security.JwtAuthenticationFilter;
 import com.domain.demo_backend.global.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,22 +52,36 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtUtil jwtUtil, UserRepository userRepository) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
                 .csrf(csrf -> csrf.disable())  // CSRF 비활성화
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/goalTime/**", "/api/diary/**", "/api/auth/**").authenticated()
+                        // 인증 없이 접근 가능한 '화이트리스트' 설정
+                        .requestMatchers(
+                                "/api/auth/me",
+                                "/api/auth/login",
+                                "/api/auth/refresh",
+                                "/api/kakao/**",
+                                "/api/ui/**",
+                                "/api/goalTime/**"
+                        ).permitAll()
+                        //  반드시 인증이 필요한 서비스 주소
+                        .requestMatchers(
+                                "/api/diary/**"
+                        ).authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new Http403ForbiddenEntryPoint()) //  403 Forbidden 반환 (Redirect 방지)
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, refreshTokenRepository), UsernamePasswordAuthenticationFilter.class)
-                .formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer.disable()) // 기본 로그인 폼 완전 비활성화
-                .logout(logout -> logout.disable()); // 로그아웃 비활성화 (API 방식 사용)
-
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtUtil, refreshTokenRepository, userRepository),
+                        UsernamePasswordAuthenticationFilter.class
+                )
+                .formLogin(f -> f.disable())
+                .logout(l -> l.disable());
         return http.build();
     }
 
