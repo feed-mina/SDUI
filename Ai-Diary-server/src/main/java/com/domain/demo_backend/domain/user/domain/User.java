@@ -29,14 +29,11 @@ public class User {
     private String hashedPassword;
 
     private String role;                // role
-    private String username;            // username
     private String phone;               // phone
     private String email;               // email
 
     @Transient // DB에는 저장하지 않은 필드
     private String repassword;          // repassword
-
-    private String nickname;
 
     @Column(name = "del_yn")
     private String delYn = "N"; // 기본값 설정
@@ -71,12 +68,11 @@ public class User {
     private String drugUsingType;
 
     @Builder
-    public User(String userId, String password, String hashedPassword, String role, String username, String delYn, String phone, String email, String verifyYn, String socialType, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationCode, LocalDateTime withdrawAt, String sleepUsingType, String drugUsingType) {
+    public User(String userId, String password, String hashedPassword, String role,  String delYn, String phone, String email, String verifyYn, String socialType, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationCode, LocalDateTime withdrawAt, String sleepUsingType, String drugUsingType) {
         this.userId = userId;
         this.password = password;
         this.hashedPassword = hashedPassword;
         this.role = role;
-        this.username = username;
         this.delYn = delYn;
         this.phone = phone;
         this.email = email;

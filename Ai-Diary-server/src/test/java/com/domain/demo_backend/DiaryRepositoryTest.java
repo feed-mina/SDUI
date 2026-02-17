@@ -1,5 +1,9 @@
 package com.domain.demo_backend;
 
+import com.domain.demo_backend.domain.diary.domain.Diary;
+import com.domain.demo_backend.domain.diary.domain.DiaryRepository;
+import com.domain.demo_backend.domain.user.domain.User;
+import com.domain.demo_backend.domain.user.domain.UserRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +31,6 @@ public class DiaryRepositoryTest {
         // 1.Given 사용자 준비 : 외래키 제약조건 때문
         User user = User.builder()
                 .email("test@test.com")
-                .username("피드민아")
                 .build();
         userRepository.save(user);
 
@@ -64,7 +67,6 @@ public class DiaryRepositoryTest {
         // 1. Given :사용자 준비
         User user = User.builder()
                 .email("paging@test.com")
-                .username("페이징민아")
                 .build();
         userRepository.save(user);
 

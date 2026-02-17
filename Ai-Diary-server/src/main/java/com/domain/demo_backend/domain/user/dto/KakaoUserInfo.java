@@ -15,8 +15,6 @@ public class KakaoUserInfo {
     private Long userSqno;       // DB: user_sqno
     private Long userId;  // 카카오 유저 ID
     private String connectedAt;
-    private String nickname;
-    private String username;
     private String password;
     private String hashedPassword;  // DB: hashed_password
     private String email;
@@ -44,8 +42,6 @@ public class KakaoUserInfo {
                 .hashedPassword(PasswordUtil.sha256(accessToken)) // 직접 구현한 유틸
                 .userId(body.get("id") != null ? ((Number) body.get("id")).longValue() : null)
                 .connectedAt((String) body.getOrDefault("connected_at", ""))
-                .nickname((String) properties.getOrDefault("nickname", "카카오 사용자"))
-                .username(nickname)  // username = nickname 으로 설정
                 .email((String) kakaoAccount.getOrDefault("email", ""))
                 .hasEmail((Boolean) kakaoAccount.getOrDefault("has_email", false))
                 .isEmailValid((Boolean) kakaoAccount.getOrDefault("is_email_valid", false))

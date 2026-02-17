@@ -11,8 +11,6 @@ import java.time.LocalDate;
 @Setter
 public class RegisterRequest {
     private String userId;
-    @NotBlank(message = "이름은 필수입니다.")
-    private String username;
     @NotBlank(message = "비밀번호는 필수입니다.")
     private String password;
     // private String hashedPassword;
