@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,14 +51,16 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+            return ResponseEntity.ok(Map.of("isLoggedIn", false, "role", "GUEST"));
         }
 
         // 보안상 필요한 정보(ID, 이메일, 시퀀스번호 등)만 객체에 담아 반환
         return ResponseEntity.ok(Map.of(
-                "userId", userDetails.getUserId(),
+                "isLoggedIn", true,
                 "userSqno", userDetails.getUserSqno(),
-                "email", userDetails.getEmail(),
+                "userId", userDetails.getUserId(),
+                "email", userDetails.getUserEmail(),
+                "socialType", userDetails.getSocialType(),
                 "role", "ROLE_USER"
         ));
     }
@@ -94,8 +97,14 @@ public class AuthController {
                 .sameSite("Lax")
                 .build();
 // AccessToken (보안용)
-        ResponseCookie cookie = ResponseCookie.from("accessToken", tokenResponse.getAccessToken())
-                .httpOnly(true).secure(true).path("/").maxAge(3600).build();
+
+        // 일반 로그인/카카오 로그인 성공 로직에 추가
+        ResponseCookie loginTypeCookie = ResponseCookie.from("loginType", "N")
+                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false 
+                .path("/")
+                .maxAge(3600)
+                .build();
+
 
 // 로그인 여부 확인용 (자바스크립트 접근 가능)
         ResponseCookie statusCookie = ResponseCookie.from("isLoggedIn", "true")
@@ -103,6 +112,8 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, loginTypeCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, statusCookie.toString())
                 .body(Map.of("message", "로그인 성공")); // 바디에는 토큰을 담지 않음
     }
 
@@ -302,25 +313,35 @@ public class AuthController {
         }
     }
 
-    /*
-@@@@ 2026-01-25 로그아웃 로직 추가, redis에서 리프레시 토큰 삭제, 쿠키 삭제
-     */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        // 1. Redis에서 리프레시 토큰 삭제
-        if (userDetails != null) {
-            refreshTokenRepository.deleteById(userDetails.getUserSqno());
-        }
-        // 2. 쿠키 삭제를 위한 설정 (Max-Age를 0으로 설정)
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(true)
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        // 1. Access Token 삭제 쿠키
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", "")
                 .path("/")
-                .sameSite("None")
-                .maxAge(0)
+                .maxAge(0) // 수명을 0으로 설정하여 즉시 삭제 
+                .httpOnly(true)
+                .secure(false) // 개발 환경에 맞춰 설정
                 .build();
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body("로그아웃 성공");
-    }
 
+        // 2. Refresh Token 삭제 쿠키
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(false)
+                .build();
+
+        // 3. 로그인 타입 플래그 쿠키 삭제 (일반 쿠키)
+        ResponseCookie loginTypeCookie = ResponseCookie.from("loginType", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(false) // 프론트에서 접근 가능했던 쿠키 
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
+        return ResponseEntity.ok().body("로그아웃 성공");
+    }
 
 }
