@@ -108,31 +108,22 @@ public class DiaryService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<Diary> viewDiaryItem(DiaryRequest diaryReq) {
+    public Optional<Diary> viewDiaryItem(DiaryRequest diaryReq) throws NotFoundException {
 
         System.out.println("@@@viewDiaryItem 서비스 로직 진입 diaryReq:: " + diaryReq);
-        System.out.println("@@@selectDiaryItem sql시작" + diaryReq);
+        if (diaryReq.getDiaryId() == null) {
+            throw new IllegalArgumentException("diaryId가 누락되었습니다.");
+        }
+
         Long diaryId = diaryReq.getDiaryId().longValue();
-        System.out.println("userId: " + diaryReq.getUserId());
         String userId = diaryReq.getUserId();
-        if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("userId 값이 올바르지 않습니다.");
-        }
-        try {
-            // 일기 조회
-            Optional<Diary> diary = diaryRepository.findByDiaryIdAndUserIdAndDelYn(diaryId, userId, "N");
+        Optional<Diary> diary = diaryRepository.findByDiaryIdAndUserIdAndDelYn(diaryId, userId, "N");
 
-            //  조회된 데이터가 없을 경우 예외 처리 추가
-            if (diary == null) {
-                throw new NotFoundException("해당 일기를 찾을 수 없습니다.");
-            }
-
-            return diary;
-        } catch (Exception e) {
-            System.err.println("Error fetching diary item: " + e.getMessage());
-            throw new RuntimeException("일기를 조회하는 도중 오류가 발생했습니다.", e);
+        if (diary.isEmpty()) { // [수정] null 체크가 아닌 isEmpty 체크 [cite: 2026-02-16]
+            throw new NotFoundException("해당 일기를 찾을 수 없습니다.");
         }
 
+        return diary;
     }
 
 
@@ -140,33 +131,27 @@ public class DiaryService {
     public void addDiary(DiaryRequest diaryRequest, String ip, Authentication authentication) {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
         System.out.println("@@@diaryRequest-다이어리서비스: " + diaryRequest);
-        String email = userDetails.getUsername();
-        HttpServletRequest request;
-        ObjectMapper objectMapper = new ObjectMapper();
+
+        // 1. 먼저 DB에서 유저를 찾는다.
+        User user = userRepository.findByUserSqno(userDetails.getUserSqno()).orElseThrow(() -> new IllegalArgumentException("존재하지 않은 사용자입니다."));
+
         String selectedTimesJson = "";
         try {
+            ObjectMapper objectMapper = new ObjectMapper();
+
             selectedTimesJson = objectMapper.writeValueAsString(diaryRequest.getSelectedTimes());
         } catch (JsonProcessingException e) {
             e.printStackTrace(); // 또는 로깅 처리
         }
 
-        // 1. 먼저 DB에서 유저를 찾는다.
-        User user = userRepository.findByUserSqno(diaryRequest.getUserSqno()).orElseThrow(() -> new IllegalArgumentException("존재하지 않은 사용자입니다."));
-        // 안전한 ID 만들기 (User 엔티티 활용)
-        String safeUserId = user.getUserId(); // 1순위: DB에 저장된 ID
-        if (safeUserId == null || safeUserId.isEmpty()) {
-            // 2순위: DB ID가 없으면 이메일(@앞부분)을 ID처럼 사용
-            safeUserId = user.getEmail().split("@")[0];
-        }
         // 2.빌더를 사용해 다이어리를 만든다
         Diary diary = Diary.builder()
                 .user(user) // userSqno 대신 객체 자체를 넣어준다.
                 .delYn("N")
                 .title(diaryRequest.getDiaryTitle() != null ? diaryRequest.getDiaryTitle() : "Untitled")
                 .author(diaryRequest.getAuthor() != null ? diaryRequest.getAuthor() : "Undefined")
-                .userId(safeUserId)
+                .userId(user.getUserId())
                 .content(diaryRequest.getDiaryContent() != null ? diaryRequest.getDiaryContent() : "")
                 .tag1(diaryRequest.getTag1() != null ? diaryRequest.getTag1() : "")
                 .tag2(diaryRequest.getTag2() != null ? diaryRequest.getTag2() : "")
@@ -181,19 +166,16 @@ public class DiaryService {
                 .drugDinner(diaryRequest.getDrugDinner() != null ? diaryRequest.getDrugDinner() : "")
                 .build();
 
-
         System.out.println("@@@Diary 객체 생성 값: " + diary);
-
-//        diaryRepository.insertDiary(diary);
         diaryRepository.save(diary);
     }
 
     public PageInfo<DiaryResponse> selectMemberDiaryList(Authentication authentication, int pageNo, int pageSize) {
         // 1. 현재 로그인한 사용자 정보 가져오기
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        String email = userDetails.getUsername(); // email추출
+        String email = userDetails.getUserId(); // email추출
         // 2. DB에서 유저 객체 찾기
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+        User user = userDetails.getUser();
 
         // 3. 페이징 설정 및 해당 유저의 데이터만 조회
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);

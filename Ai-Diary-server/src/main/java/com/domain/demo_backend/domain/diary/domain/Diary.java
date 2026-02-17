@@ -46,8 +46,8 @@ public class Diary {
     private String tag3;
     private String date;
     private String email;
-    private String username;
     private String sbsceDt;
+
 
     @Column(name = "last_updt_dt")
     private String lastUpdtDt;

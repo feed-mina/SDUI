@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,48 +41,24 @@ public class DiaryController {
 
     @GetMapping("/viewDiaryItem/{diaryId}")
     @ResponseBody
-    public ResponseEntity<?> viewDiaryItem(@PathVariable("diaryId") Long diaryId, @RequestParam(value = "userId", required = false) String userId, @RequestHeader(value = "X-Current-User-Id", required = false) String currentUserId, @RequestHeader(value = "Authorization", required = false) String authorizationHeader, HttpServletRequest request) {
+    public ResponseEntity<?> viewDiaryItem(@PathVariable("diaryId") Long diaryId, @AuthenticationPrincipal CustomUserDetails userDetails , HttpServletRequest request) {
 //        String userId = userIds != null && !userIds.isEmpty() ? userIds.get(0) : null;
 
         System.out.println("@@@@@@ viewDiaryItem diaryId" + diaryId);
-        System.out.println("@@@ viewDiaryItem userId" + userId);
-        System.out.println("@@@ viewDiaryItem currentUserId" + currentUserId);
         System.out.println("@@@ viewDiaryItem request" + request);
 
-        if (userId == null) {
-            return ResponseEntity.badRequest().body("userId가 필요합니다."); // userId 없으면 오류 응답
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
-
-        String token = authorizationHeader.substring(7);
-        Claims claims = jwtUtil.validateToken(token);
-        currentUserId = claims.get("userId", String.class);
-        System.out.println("@@@ viewDiaryItem authorizationHeader" + authorizationHeader);
-        System.out.println("@@@ viewDiaryItem token" + token);
-        System.out.println("@@@ viewDiaryItem claims" + claims);
-   /*
-        if (currentUserId == null && authorizationHeader == null && !authorizationHeader.startsWith("Bearer ")) {
-            currentUserId = claims.get("userId", String.class);
-            System.out.println("@@@ viewDiaryItem currentUserId"+currentUserId);
-        }else {
-            System.out.println("@@@ 로그인 정보가 없습니다");
-        }
-    */
         DiaryRequest diaryReq = new DiaryRequest();
         // userId랑 diaryId랑 diaryReq로 받는다
         diaryReq.setDiaryId(diaryId);
-        diaryReq.setUserId(userId);
-
-        System.out.println("@@@viewDiaryItem 다이어리  로직 진입");
-        System.out.println("@@@5--diaryReq:: " + diaryReq);
+        diaryReq.setUserId(userDetails.getUserId());
         try {
             System.out.println("@@@viewDiaryItem 서비스 로직 진입");
             Optional<Diary> diaryItem = diaryService.viewDiaryItem(diaryReq);
             System.out.println("@@@6--selectDiaryList 서비스:: " + diaryItem);
-            Map<String, Object> response = new HashMap<>();
-            response.put("diaryItem", diaryItem);
-            System.out.println("@@@7--selectDiaryList diaryItem:: " + diaryItem);
-            System.out.println("@@@7--selectDiaryListresponse:: " + response);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("diaryItem", diaryItem));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
