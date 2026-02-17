@@ -5,11 +5,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '@/services/axios';
 
 interface User {
-    userId: string;
-    userSqno: number;
-    email: string;
+    userId?: string;
+    userSqno?: number;
+    email?: string;
+    socialType?: string;
+    isLoggedIn: boolean;
+    role?: string;
 }
-
 interface AuthContextType {
     user: User | null;
     isLoggedIn: boolean;
@@ -21,15 +23,25 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+
     const [isLoading, setIsLoading] = useState(true);
 
     const checkLoginStatus = async () => {
         try {
-            // /api/auth/me를 호출하면 브라우저가 HttpOnly 쿠키를 자동으로 실어 보냄 [cite: 2026-01-26]
+            // /api/auth/me를 호출하면 브라우저가 HttpOnly 쿠키를 자동으로 실어 보냄 
             const res = await api.get('/api/auth/me');
             setUser(res.data);
+            setIsLoggedIn(res.data.isLoggedIn);// 서버가 로그인이 아니라고 하면 로컬 스토리지도 청소한다
+            if (!res.data.isLoggedIn) {
+                localStorage.removeItem('isLoggedIn');
+            }
         } catch (err) {
             setUser(null);
+            setIsLoggedIn(false);
+            localStorage.removeItem('isLoggedIn');
+
         } finally {
             setIsLoading(false);
         }
@@ -40,7 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, isLoggedIn: !!user, isLoading, updateUser: setUser }}>
+
+        <AuthContext.Provider value={{ user, isLoggedIn, isLoading, updateUser: setUser }}>
             {children}
         </AuthContext.Provider>
     );
