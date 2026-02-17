@@ -6,6 +6,7 @@ import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.domain.token.domain.TokenResponse;
 import com.domain.demo_backend.domain.user.dto.KakaoAuthRequest;
 import com.domain.demo_backend.domain.user.dto.KakaoUserInfo;
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.global.security.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +54,7 @@ public class KakaoController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> kakaoLogin(@RequestBody KakaoAuthRequest kakaoAuthRequest) {
+    public ResponseEntity<?> kakaoLogin(@RequestBody KakaoAuthRequest kakaoAuthRequest, HttpServletResponse response) {
 
         try {
             // 로그로 디버그 정보 출력
@@ -69,15 +71,17 @@ public class KakaoController {
 //        String jwtToken = kakaoService.registerKakaoUser(kakaoUserInfo, kakaoAuthRequest.getAccessToken());
             TokenResponse tokenResponse = kakaoService.registerKakaoUser(kakaoUserInfo, kakaoAuthRequest.getAccessToken());
 
-            // 3. JWT 토큰을 클라이언트에 응답으로 보내줘
-//        KakaoAuthResponse response = new KakaoAuthResponse(kakaoUserInfo, jwtToken);
+
+            // 5. Refresh Token 쿠키 생성
             ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
                     .httpOnly(true)
-                    .secure(true) // 로컬 테스트시 false
-                    .sameSite("None") // 로컬 테스트시 Lax
+                    .secure(false)
                     .path("/")
                     .maxAge(7 * 24 * 60 * 60)
+                    .sameSite("Lax")
                     .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
 
             return ResponseEntity.ok()
@@ -134,7 +138,7 @@ public class KakaoController {
         // 4. Access Token 쿠키 생성
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())
                 .httpOnly(true)
-                .secure(false) // 로컬 테스트 시 false로 설정해야 쿠키가 보임 [cite: 2026-01-26]
+                .secure(false) // 로컬 테스트 시 false로 설정해야 쿠키가 보임 
                 .path("/")
                 .maxAge(3600)
                 .sameSite("Lax") // 로컬 테스트용
@@ -149,12 +153,19 @@ public class KakaoController {
                 .sameSite("Lax")
                 .build();
 
-        // 쿠키 두 개 모두 추가
+        // 일반 로그인/카카오 로그인 성공 로직에 추가
+        ResponseCookie loginTypeCookie = ResponseCookie.from("loginType", "K")
+                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false 
+                .path("/")
+                .maxAge(3600)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
+
         // 6. 프론트엔드 메인 페이지로 리다이렉트 [cite: 2026-01-01]
-        // 쿼리 파라미터로 토큰을 던지지 말고, 쿠키를 믿고 그냥 보내라. [cite: 2026-01-26]
+        // 쿼리 파라미터로 토큰을 던지지 말고, 쿠키를 믿고 그냥 보내라. 
         response.sendRedirect("http://localhost:3000/view/MAIN_PAGE");
     }
 
@@ -255,11 +266,6 @@ public class KakaoController {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-//        params.add("template_object", "{" +
-//                "\"object_type\":\"text\"," +
-//                "\"text\":\"" + messageText + "\"," +
-//                "\"link\":{\"web_url\":\"" + recordUrl + "\",\"mobile_web_url\":\"" + recordUrl + "\"}}"
-//        );
         params.add("template_object", templateObject);
 
 
@@ -277,6 +283,43 @@ public class KakaoController {
             return ResponseEntity.status(e.getStatusCode()).body("카톡 전송 실패! 오류: " + e.getResponseBodyAsString());
         }
     }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletResponse response) {
+        // 1. Redis에서 리프레시 토큰 삭제
+        if (userDetails != null) {
+            refreshTokenRepository.deleteById(userDetails.getUserSqno()); // 사용자 고유 번호로 토큰 삭제
+        }
 
+        // 모든 인증 관련 쿠키 일괄 삭제 
+        String[] cookiesToClear = {"accessToken", "refreshToken", "loginType"};
+        for (String cookieName : cookiesToClear) {
+            ResponseCookie cookie = ResponseCookie.from(cookieName, "")
+                    .path("/")
+                    .maxAge(0)
+                    .httpOnly(!cookieName.equals("loginType"))
+                    .secure(false)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        }
 
+        return ResponseEntity.ok().body("로컬 로그아웃 성공");
+    }
+    // KakaoController.java 내부 하단에 추가
+    private void addAuthCookies(HttpServletResponse response, TokenResponse tokens, String type) {
+        // 1. Access Token (HttpOnly)
+        ResponseCookie access = ResponseCookie.from("accessToken", tokens.getAccessToken())
+                .path("/").maxAge(3600).httpOnly(true).secure(false).sameSite("Lax").build();
+
+        // 2. Refresh Token (HttpOnly)
+        ResponseCookie refresh = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
+                .path("/").maxAge(7 * 24 * 60 * 60).httpOnly(true).secure(false).sameSite("Lax").build();
+
+        // 3. Login Type Flag (일반 쿠키 - 프론트엔드 노출용) 
+        ResponseCookie loginType = ResponseCookie.from("loginType", type)
+                .path("/").maxAge(3600).httpOnly(false).build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, access.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refresh.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, loginType.toString());
+    }
 }
