@@ -11,21 +11,11 @@ export const useRecordTime = () => {
     const queryClient = useQueryClient();
     const router = useRouter(); // window.location.href 대신 사용
     const { user, isLoggedIn, isLoading: authLoading } = useAuth();
-    // 쿠키 확인 로직
-    const getCookie = (name: string) => {
-        if (typeof document === 'undefined') return null;
 
-        // 정규식을 사용하면 훨씬 정확하고 깔끔하게 찾을 수 있습니다.
-        const matches = document.cookie.match(new RegExp(
-            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-        ));
-        return matches ? decodeURIComponent(matches[1]) : null;
-    };
-
-
+    const isValidUser = isLoggedIn && user?.userSqno && Number(user.userSqno) !== 9999;
     // [API] 목표시간 데이터 가져오기 React Query
     const {data: goalTime} = useQuery({
-        queryKey: ['goalTime'],
+        queryKey: ['goalTime', user?.userSqno],
         queryFn: async () => {
             const res = await axios.get('/api/goalTime/getGoalTime');
             return res.data.goalTime ?? null;
@@ -65,7 +55,6 @@ export const useRecordTime = () => {
     // 페이지 이동 핸들러
 // 핸들러 내부에서 실시간으로 쿠키를 다시 체크합니다.
     const handleLinkToSetup = () => {
-        const currentToken = getCookie("accessToken"); // 실행 시점에 다시 읽기
 
         if (!isLoggedIn) {
             alert('로그인이 필요한 서비스입니다.');
