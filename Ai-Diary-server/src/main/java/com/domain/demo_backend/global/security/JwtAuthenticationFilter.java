@@ -1,5 +1,7 @@
 package com.domain.demo_backend.global.security;
 
+import com.domain.demo_backend.domain.user.domain.User;
+import com.domain.demo_backend.domain.user.domain.UserRepository;
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
@@ -35,6 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     // 2026-01-25 RefreshTokenRepository 주입 성능개선
     private final RefreshTokenRepository refreshTokenRepository;
+
+    private final UserRepository userRepository;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -77,7 +81,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 1. 토큰 추출 (헤더 우선, 없으면 쿠키)
         String token = resolveToken(request);
         if (token == null || token.isEmpty()) {
-            // 토큰이 없으면 검증하지 않고 다음 필터(Spring Security)로 넘김 [cite: 2025-12-28]
+            // 토큰이 없으면 검증하지 않고 다음 필터(Spring Security)로 넘김
             filterChain.doFilter(request, response);
             return;
         }
@@ -103,6 +107,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                      * @@@ 2026-01-25 RefreshTokenRepository 주입받아 저장 > TTL 초기화
                      * 슬라이딩 만료 최적화
                      * */
+
+                    User user = userRepository.findByEmail(email)
+                            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
                     Date issuedAt = claims.getIssuedAt();
                     long now = System.currentTimeMillis();
                     long passedTime = now - issuedAt.getTime();
@@ -117,7 +124,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                     List<GrantedAuthority> authorities = List.of(() -> "ROLE_USER");
                     System.out.println("@@@@authorities: " + authorities);
-                    CustomUserDetails userDetails = new CustomUserDetails(email, userSqno, userId, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                    CustomUserDetails userDetails = new CustomUserDetails(user);
+
 
                     System.out.println("@@@@userDetails: " + userDetails);
                     // 인증 토큰 생성
@@ -125,6 +133,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     System.out.println("@@@@authentication: " + authentication);
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                    handleSlidingExpiration(claims, email);
                 }
             } catch (Exception e) {
                 // 유효하지 않은 토큰 예외 처리
@@ -142,14 +151,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     /**
-     * 슬라이딩 만료 처리 (코드 가독성을 위해 분리) [cite: 2026-01-25]
+     * 슬라이딩 만료 처리 (코드 가독성을 위해 분리) 
      */
     private void handleSlidingExpiration(Claims claims, String email) {
         Date issuedAt = claims.getIssuedAt();
         long now = System.currentTimeMillis();
         long passedTime = now - issuedAt.getTime();
 
-        // 30분이 지났으면 Redis 갱신 [cite: 2026-01-25]
+        // 30분이 지났으면 Redis 갱신 
         if (passedTime > 1000L * 60 * 30) {
             refreshTokenRepository.findByEmail(email).ifPresent(refreshTokenRepository::save);
         }

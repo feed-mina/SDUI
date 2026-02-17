@@ -1,57 +1,28 @@
 package com.domain.demo_backend.global.config;
 
-import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.domain.user.domain.User;
 import com.domain.demo_backend.domain.user.domain.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import com.domain.demo_backend.global.security.CustomUserDetails;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
+@RequiredArgsConstructor // 생성자 주입 자동화 
+public class CustomUserDetailsService implements UserDetailsService { // [필수] 인터페이스 구현 추가 
 
     private final UserRepository userRepository;
 
-    @Autowired
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // db에서 조회
-        //  CustomUserDetails user =  userMapper.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        // 1. DB에서 유저 엔티티를 찾는다 
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
 
-        User user = userRepository.findByUsername
-                (username).orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
-        System.out.println("DB에서 조회된 사용자: " + user);
-        System.out.println("CustomUserDetails userSqno: " + user.getUserSqno());
-        System.out.println("CustomUserDetails username: " + user.getUserSqno());
-        System.out.println("CustomUserDetails userId: " + user.getUserId());
-
-        if (user == null) {
-            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);
-        }
-
-        return new CustomUserDetails(
-                user.getEmail(),
-                user.getUserSqno(),
-                user.getUserId(),
-                getAuthorities(user.getRole())
-        ); // CustomUserDetails 객체 반환
+        // 2. [핵심] 찾은 'user' 객체 자체를 생성자에 넘긴다 
+        //Found 에러가 났던 4개의 인자(String, Long 등)를 모두 지우고 user 객체 하나만 전달하세요.
+        return new CustomUserDetails(user);
     }
-
-    // 사용자 역할 권한 부여
-    private Collection<? extends GrantedAuthority> getAuthorities(String role) {
-        return List.of(new SimpleGrantedAuthority(role));
-    }
-
-
 }

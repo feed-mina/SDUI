@@ -1,36 +1,47 @@
 package com.domain.demo_backend.global.security;
 
+import com.domain.demo_backend.domain.user.domain.User;
 import lombok.Getter;
-import lombok.Setter;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
-
+import java.util.Collections;
 
 @Getter
-@Setter
-public class CustomUserDetails extends User {
-    // Spring Security의 SecurityContextHolder에서 인증 정보 가져오기
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+public class CustomUserDetails implements UserDetails {
 
-    private Long userSqno;
-    private String email;
-    private String hashedPassword;
-    private String userId;
+    private final User user; // [수정] final 필드는 생성자에서 반드시 초기화해야 함
 
-    // Constructor for CustomUserDetails
-    public CustomUserDetails(String email, Long userSqno, String userId, Collection<? extends GrantedAuthority> authorities) {
-        // Call the superclass (User) constructor
-        super(email, "dummy_password", authorities);
-        this.email = email;
-        this.userId = userId;
-        this.userSqno = userSqno;
+    // [수정] 인자를 User 객체 하나만 받도록 일치시킴 
+    public CustomUserDetails(User user) {
+        this.user = user;
     }
 
-    public Long getUserSqno() {
-        return this.userSqno;
+    // 프론트엔드 응답을 위해 필요한 Getter들 
+    public Long getUserSqno() { return user.getUserSqno(); }
+    public String getUserId() { return user.getUserId(); }
+    public String getSocialType() { return user.getSocialType(); }
+    public String getUserEmail(){ return user.getEmail();}
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // [수정] DB의 role 필드(예: ROLE_USER)를 권한으로 변환
+        return Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
     }
+
+    @Override
+    public String getPassword() { return user.getHashedPassword(); }
+
+    @Override
+    public String getUsername() { return user.getEmail(); }
+
+    // 계정 상태 체크 (기본값 true)
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return "N".equals(user.getDelYn()); }
+
 }
