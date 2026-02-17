@@ -1,5 +1,52 @@
 /*페이지별 css*/
 
+
+/* 로그아웃 버튼 (메인) */
+.logout_button {
+    width: 100%;
+    height: 52px;
+    background-color: #FDBFBC;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.logout_button:hover {
+    background-color: #fbada9;
+}
+
+.logout_button:active {
+    transform: scale(0.98);
+}
+
+
+/* 카카오 버튼 (브랜드 컬러 적용) */
+.kakao_logout_button {
+    width: 100%;
+    height: 52px;
+    background-color: #FEE500;
+    color: #191919;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.2s;
+}
+
+.kakao_logout_button:hover {
+    opacity: 0.9;
+}
+
 /* [LOGIN / SIGNUP] */
 
 /* === 로그인 이메일 입력창 찌그러짐 방지 === */
@@ -213,12 +260,12 @@
         flex-direction: row; /* PC에서는 가로 정렬 가능 */
         justify-content: space-around;
     }
-
+    .logout_button,
     .login_form_button {
         width: 22rem;
         font-size: 2em;
     }
-
+    .kakao_logout_button,
     .kakao-button {
         padding-bottom: 10rem; /* PC 특화 여백 */
     }
@@ -236,6 +283,7 @@
         width: 90%;
     }
 
+    .logout_button,
     .login_form_button {
         padding: 10px 20px;
         font-size: 1em;
@@ -727,6 +775,8 @@
 }
 
 .group-TITLE_AUTHOR_GROUP{
+
+    background: beige;
     display:flex;
     flex-direction: row;
     justify-content: space-between;
