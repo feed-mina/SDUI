@@ -3,18 +3,18 @@ package com.domain.demo_backend.domain.query.service;
 import com.domain.demo_backend.domain.query.domain.QueryMaster;
 import com.domain.demo_backend.domain.query.repository.QueryMasterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class QueryMasterService {
     private final QueryMasterRepository queryMasterRepository;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Autowired
-    public QueryMasterService(QueryMasterRepository queryMasterRepository, RedisTemplate<String, String> redisTemplate) {
+    public QueryMasterService(QueryMasterRepository queryMasterRepository, StringRedisTemplate stringRedisTemplate) {
         this.queryMasterRepository = queryMasterRepository;
-        this.redisTemplate = redisTemplate;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     public QueryMaster getQueryInfo(String sqlKey) {
@@ -25,7 +25,7 @@ public class QueryMasterService {
 
     public String getQuery(String sqlKey) {
         // 먼저 Redis에서 해당 키의 SQL이 있는지 확인
-        String cachedQuery = redisTemplate.opsForValue().get("SQL:" + sqlKey);
+        String cachedQuery = stringRedisTemplate.opsForValue().get("SQL:" + sqlKey);
         if (cachedQuery != null) {
             System.out.println("Redis 캐시에서 쿼리를 찾았습니다 : " + sqlKey);
             return cachedQuery;
@@ -38,7 +38,7 @@ public class QueryMasterService {
 
 
         // 찾은 쿼리를 다음에 빨리 쓰기 위해 Redis에 저장(캐싱)한다.
-        redisTemplate.opsForValue().set("SQL:" + sqlKey, queryMaster.getQueryText());
+        stringRedisTemplate.opsForValue().set("SQL:" + sqlKey, queryMaster.getQueryText());
         return queryMaster.getQueryText();
 
 

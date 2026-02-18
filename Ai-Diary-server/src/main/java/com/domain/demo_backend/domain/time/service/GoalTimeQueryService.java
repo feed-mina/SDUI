@@ -5,7 +5,7 @@ import com.domain.demo_backend.domain.time.domain.GoalSetting;
 import com.domain.demo_backend.domain.time.domain.GoalSettingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GoalTimeQueryService {
     private final QueryMasterService queryMasterService;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GoalSettingRepository goalSettingRepository;
 
@@ -41,7 +41,7 @@ public class GoalTimeQueryService {
         String cacheKey = "USER_GOAL:" + userSqno;
         System.out.println("@@@ cacheKey: " + cacheKey);
 
-        String cachedTime = redisTemplate.opsForValue().get(cacheKey);
+        String cachedTime = stringRedisTemplate.opsForValue().get(cacheKey);
         System.out.println("@@@ cachedTime: " + cachedTime);
 
         if (cachedTime != null) return cachedTime;
@@ -62,7 +62,7 @@ public class GoalTimeQueryService {
             System.out.println("@@@ targetTime: " + targetTime);
             // 4. 실행 결과를 Redis에 저장 (예 : 1시간 동안 유지)
             if (targetTime != null) {
-                redisTemplate.opsForValue().set(cacheKey, targetTime, Duration.ofHours(3));
+                stringRedisTemplate.opsForValue().set(cacheKey, targetTime, Duration.ofHours(3));
                 System.out.println("@@@ 레디스에  targetTime 저장");
             }
             return targetTime;
@@ -80,7 +80,7 @@ public class GoalTimeQueryService {
         GoalSetting savedGoal = goalSettingRepository.save(goal);
 
         String cacheKey = "USER_GOAL:" + userSqno;
-        redisTemplate.delete(cacheKey);
+        stringRedisTemplate.delete(cacheKey);
         return savedGoal;
     }
 
@@ -112,7 +112,7 @@ public class GoalTimeQueryService {
 
         if (updatedCount > 0) {
             String cacheKey = "USER_GOAL:" + userSqno;
-            redisTemplate.delete(cacheKey);
+            stringRedisTemplate.delete(cacheKey);
             System.out.println("LOG: 캐시 삭제 완료 -" + cacheKey);
         } else {
             System.out.println("LOG: 업데이트 대상이 없습니다. 이미 처리되었거나 목표가 없음");
