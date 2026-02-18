@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Getter
 public class CustomUserDetails implements UserDetails {
@@ -19,6 +20,7 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(User user) {
         this.user = user;
     }
+
 
     // 프론트엔드 응답을 위해 필요한 Getter들 
     public Long getUserSqno() { return user.getUserSqno(); }

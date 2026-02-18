@@ -1,4 +1,4 @@
-package com.domain.demo_backend;
+package com.domain.demo_backend.page;
 
 import com.domain.demo_backend.domain.diary.domain.Diary;
 import com.domain.demo_backend.domain.diary.domain.DiaryRepository;
@@ -39,7 +39,6 @@ public class DiaryRepositoryTest {
                 .user(user) // 위에서 저장한 유저 객체를 넣어준다.
                 .title("오늘의 일기")
                 .content("JPA 테스트 중입니다")
-                .author("민아")
                 .delYn("N")
                 .build();
 

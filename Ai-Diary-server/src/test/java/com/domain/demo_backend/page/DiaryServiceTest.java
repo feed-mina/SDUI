@@ -1,4 +1,4 @@
-package com.domain.demo_backend;
+package com.domain.demo_backend.page;
 
 import com.domain.demo_backend.domain.diary.domain.Diary;
 import com.domain.demo_backend.domain.diary.domain.DiaryRepository;

@@ -1,9 +1,8 @@
-package com.domain.demo_backend;
+package com.domain.demo_backend.util;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,25 +13,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 public class RedisTest {
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
 
     @Test
-    void redisConnectionTest() {
+    void redisConnectionTest(StringRedisTemplate stringRedisTemplate) {
         // 1. 저장할 데이터 정의
         String key = "test:connection";
         String value = "Good!";
 
         // 2. 실행: 레디스에 저장했다가 다시 조회하기
         // opsForValue() 는 단순한 문자열 (String) 작업을 의미
-        redisTemplate.opsForValue().set(key, value);
-        String result = redisTemplate.opsForValue().get(key);
+        stringRedisTemplate.opsForValue().set(key, value);
+        String result = stringRedisTemplate.opsForValue().get(key);
 
         // 3. 검증: 내가 넣은 값과 꺼낸 값이 같은지 확인
         assertThat(result).isEqualTo(value);
 
         // 4. 테스트 종료 : 레디스 데이터 지우기
-        redisTemplate.delete(key);
+        stringRedisTemplate.delete(key);
     }
 
 }

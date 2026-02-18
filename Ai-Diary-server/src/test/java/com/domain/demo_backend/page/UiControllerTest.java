@@ -1,4 +1,4 @@
-package com.domain.demo_backend;
+package com.domain.demo_backend.page;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
