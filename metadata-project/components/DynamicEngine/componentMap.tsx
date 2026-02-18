@@ -10,6 +10,8 @@ import EmailSelectField from "@/components/fields/EmailSelectField";
 import EmotionSelectField from "@/components/fields/EmotionSelectField";
 import RecordTimeComponent from "@/components/fields/RecordTimeComponent";
 import DateTimePicker from "@/components/fields/DateTimePicker";
+import TimeSelect from "@/components/fields/TimeSelect";
+import TimeSlotRecord from "@/components/fields/TimeSlotRecord";
 
 export const componentMap: Record<string, React.FC<any>> = {
     INPUT: InputField,
@@ -25,5 +27,7 @@ export const componentMap: Record<string, React.FC<any>> = {
     TEXTAREA: TextAreaField,
     TIME_RECORD_WIDGET: RecordTimeComponent,
     DATETIME_PICKER: DateTimePicker,
+    TIME_SELECT: TimeSelect,
+    TIME_SLOT_RECORD: TimeSlotRecord,
     GROUP: ({children}) => <>{children}</>,
 };
