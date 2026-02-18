@@ -2,18 +2,23 @@ import {useRouter} from "next/navigation";
 import axios from "@/services/axios";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useQueryClient} from "@tanstack/react-query";
-
+import { useAuth } from "@/context/AuthContext"; // 1. AuthContext 가져오기
+import { useWebSocket } from "@/hooks/useWebSocket"; // 2. 새로 만든 훅
 
 // @@@@ 2026-02-07 주석 추가
 // usePageActions 역할 : 사용자의 입력 (formData)와  클릭 이벤트 (handleAction)를 처리하는 훅
 // 인자 타입을 (meta, data) 두 개로 변경하는 것이 핵심입니다.
 export const usePageActions = (metadata: any[]) => {
+    const { user } = useAuth(); // 3. 로그인한 유저 정보 꺼내기
+    const { sendMessage } = useWebSocket(); // 4. 메시지 전송 함수 가져오기
+
     const queryClient = useQueryClient();
     const router = useRouter();
     const [formData, setFormData] = useState<any>({});
     const [showPassword, setShowPassword] = useState(false);
     const [pwType, setPwType] = useState("password");
 
+    //   웹소켓을 통해 서버로 메시지를 보내는 함수라고 가정할게.
     const formDataRef = useRef(formData);
     useEffect(() => {
         formDataRef.current = formData;
@@ -36,6 +41,23 @@ export const usePageActions = (metadata: any[]) => {
         const actionUrl = meta.actionUrl || meta.action_url;
         const currentFormData = formDataRef.current; // 현재 시점의 데이터 꺼내기
         const requiredFields = metadata.filter(m => m.isRequired);
+        const payload = {
+            userSqNo: data?.user_sq_no || "unknown",
+            lat: data?.lat || 0,
+            lng: data?.lng || 0
+        };
+        const startLocationTracking = () => {
+            // 4. 브라우저의 기능을 써서 현재 위치를 가져와.
+            navigator.geolocation.watchPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                // 5. 5초마다 혹은 위치가 바뀔 때마다 서버에 위치를 전송해.
+                sendMessage('/pub/location/update', {
+                    lat: latitude,
+                    lng: longitude
+                });
+            });
+        };
+
 
         // 1. 비밀번호 토글
         switch (actionType) {
@@ -105,7 +127,16 @@ export const usePageActions = (metadata: any[]) => {
             case "SUBMIT":
                     for (const field of requiredFields as any[]) {
                         const value = currentFormData[field.componentId];
-                        if (!value || value.trim() === "") {
+
+                        const isBlank = (val: any) => {
+                            if (val === null || val === undefined) return true;
+                            if (typeof val === 'string') return val.trim() === "";
+                            if (Array.isArray(val)) return val.length === 0;
+                            if (typeof val === 'object') return Object.keys(val).length === 0;
+                            return false;
+                        };
+
+                        if (isBlank(value)) {
                             alert(`${field.label_text || field.labelText} 필드는 필수입니다.`)
                             return;
                         }
@@ -146,10 +177,33 @@ export const usePageActions = (metadata: any[]) => {
                             }
                         }
                     }
+
+            case 'START_WORK':
+                // 2. 출근 버튼을 누르면 위치 추적을 시작해.
+                startLocationTracking();
+                break;
+            case 'SOS_REQUEST':
+                // 5. 에러가 났던 payload 부분을 객체로 제대로 정의해.
+                // navigator를 사용해 현재 위치를 즉시 가져오는 로직이야.
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const payload = {
+                        userSqno: user?.userSqno, // AuthContext에서 가져온 번호
+                        status: 'HELP',
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    console.log("SOS 메시지 전송:", payload);
+                    sendMessage('/pub/location/emergency', payload);
+                }, (error) => {
+                    alert("위치 정보를 가져올 수 없어 SOS를 보낼 수 없어.");
+                });
+                break;
+
             default:
                 console.warn(`정의되지 않은 액션 타입이야: ${actionType}`);
                 break;
         }
-    }, [metadata, router, queryClient]);
+    }, [metadata, router, queryClient, user, sendMessage]);
     return {formData, handleChange, handleAction, showPassword, pwType};
 };
