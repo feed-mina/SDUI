@@ -1,10 +1,7 @@
 package com.domain.demo_backend.domain.user.domain;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +10,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
     @Id
@@ -67,7 +66,6 @@ public class User {
     @Column(name = "drug_using_type")
     private String drugUsingType;
 
-    @Builder
     public User(String userId, String password, String hashedPassword, String role,  String delYn, String phone, String email, String verifyYn, String socialType, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationCode, LocalDateTime withdrawAt, String sleepUsingType, String drugUsingType) {
         this.userId = userId;
         this.password = password;
