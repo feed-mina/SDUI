@@ -3,15 +3,21 @@ import {Metadata} from "@/components/DynamicEngine/type"
 
 // @@@@ 2026-02-07 주석 추가
 // useDynamicEngine 역할 : 메타데이터를 트리(부모-자식) 구조로 바꾸고 데이터를 매핑함, 데이터바인딩 (pageData에서 필드로 연결)
-export const useDynamicEngine = (metadata: Metadata[], pageData: any) => {
+export const useDynamicEngine = (metadata: Metadata[], pageData: any, formData: any) => {
 
     const treeData = metadata;
 
-    // 데이터 추출 로직
+    // @@@@ 데이터 추출 로직 개선: formData(입력값)가 있으면 최우선으로 반환
     const getComponentData = (node: Metadata, rowData: any) => {
         // rowData (리피터에서 넘겨준 개별 아이템)가 있으면 최 우선
         const refId = node.refDataId || node.ref_data_id;
 
+        // 사용자가 입력 중인 데이터(formData)가 있으면 그걸 먼저 보여준다.
+        if (refId && formData && formData[refId] !== undefined) {
+            return formData[refId];
+        }
+
+        // 그 다음이 기존 pageData 로직
         // 1. 리피터 내부(rowData가 있을 때, 리스트의 개별 항목을 그릴 때) 처리
         if (rowData) {
             // 내 refId(예: 'title')에 해당하는 값이 rowData 안에 있으면 그 값만 반환
@@ -30,6 +36,5 @@ export const useDynamicEngine = (metadata: Metadata[], pageData: any) => {
 // @@@@ 2026-02-09 MAIN_PAGE처럼 데이터 소스가 없는 경우 전체 pageData (또는 빈 객체)를 반환
         return pageData || {};
     };
-
     return {treeData, getComponentData};
 };

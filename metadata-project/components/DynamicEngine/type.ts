@@ -26,6 +26,7 @@ export interface Metadata {
 
 export interface DynamicEngineProps {
     metadata: Metadata[];
+    formData: any;
     pageData: any;
     onChange: (id: string, value: any) => void;
     onAction: (meta: Metadata, data?: any) => void;
