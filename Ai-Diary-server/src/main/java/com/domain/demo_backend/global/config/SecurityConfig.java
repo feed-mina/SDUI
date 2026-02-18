@@ -2,6 +2,7 @@ package com.domain.demo_backend.global.config;
 
 import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.domain.user.domain.UserRepository;
+import com.domain.demo_backend.global.common.util.MockAuthFilter;
 import com.domain.demo_backend.global.security.JwtAuthenticationFilter;
 import com.domain.demo_backend.global.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +27,17 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 
+
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
+
+    @Autowired(required = false)
+    private MockAuthFilter mockAuthFilter; // 테스트 프로필일 때만 주입됨
 
     @Autowired
     public SecurityConfig(JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
@@ -76,11 +82,16 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(new Http403ForbiddenEntryPoint()) //  403 Forbidden 반환 (Redirect 방지)
                 )
+                // 핵심 수정: MockAuthFilter가 null이 아니면(test 프로필이면) JWT 필터 앞에 추가 [cite: 2026-02-18]
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtUtil, refreshTokenRepository, userRepository),
                         UsernamePasswordAuthenticationFilter.class
-                )
-                .formLogin(f -> f.disable())
+                );
+
+        if (mockAuthFilter != null) {
+            http.addFilterBefore(mockAuthFilter, JwtAuthenticationFilter.class);
+        }
+        http.formLogin(f -> f.disable())
                 .logout(l -> l.disable());
         return http.build();
     }
