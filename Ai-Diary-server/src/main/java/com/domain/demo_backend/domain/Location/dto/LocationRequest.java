@@ -1,7 +1,12 @@
-package com.domain.demo_backend.domain.Location.domain;
+package com.domain.demo_backend.domain.Location.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class LocationRequest {
-    private String userSqNo;
+    private String userSqno;
     private double lat;
     private double lng;
     private String restaurantId;
