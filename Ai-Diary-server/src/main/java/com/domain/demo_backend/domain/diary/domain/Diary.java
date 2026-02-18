@@ -4,9 +4,15 @@ import com.domain.demo_backend.domain.user.domain.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "diary")
@@ -46,7 +52,6 @@ public class Diary {
     private String tag3;
     private String date;
     private String email;
-    private String sbsceDt;
 
 
     @Column(name = "last_updt_dt")
@@ -61,7 +66,6 @@ public class Diary {
     @Column(name = "frst_rgst_usps_sqno")
     private BigInteger frstRgstUspsSqno;
 
-    private String author; // 작성자 추가
     private Integer emotion; // 감정지수 추가
 
     @Column(name = "updt_dt")
@@ -91,21 +95,21 @@ public class Diary {
     @Column(name = "last_updt_usps_sqno")
     private BigInteger lastUpdtUspsSqno;
 
+    @JdbcTypeCode(SqlTypes.JSON) // Hibernate 6 이상에서 JSONB 매핑 방식
     @Column(name = "selected_times")
-    private String selectedTimes;
+    private List<Integer> selectedTimes; // [22, 23, 0, 1] 형태로 자동 매핑
 
-    @Column(name = "drug_morning")
-    private String drugMorning;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "daily_slots")
+    private Map<String, String> dailySlots; // {"morning": "...", "lunch": "..."} 형태로 매핑
 
-    @Column(name = "drug_lunch")
-    private String drugLunch;
 
-    @Column(name = "drug_dinner")
-    private String drugDinner;
 
     @PrePersist
     public void prePersist() {
         this.regDt = LocalDateTime.now();
         this.updtDt = LocalDateTime.now();
+        if (this.selectedTimes == null) this.selectedTimes = new ArrayList<>();
+        if (this.dailySlots == null) this.dailySlots = new HashMap<>();
     }
 }

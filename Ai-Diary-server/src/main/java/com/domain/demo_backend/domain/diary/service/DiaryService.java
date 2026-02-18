@@ -103,7 +103,6 @@ public class DiaryService {
         dto.setRegDt(diary.getRegDt());
         dto.setUserId(diary.getUserId());
         // dto.setUserId(diary.getUser().getUserId());
-        dto.setAuthor(diary.getAuthor());
         return dto;
     }
 
@@ -132,38 +131,25 @@ public class DiaryService {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         System.out.println("@@@diaryRequest-다이어리서비스: " + diaryRequest);
-
-        // 1. 먼저 DB에서 유저를 찾는다.
+        //먼저 DB에서 유저를 찾는다.
         User user = userRepository.findByUserSqno(userDetails.getUserSqno()).orElseThrow(() -> new IllegalArgumentException("존재하지 않은 사용자입니다."));
 
-        String selectedTimesJson = "";
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-
-            selectedTimesJson = objectMapper.writeValueAsString(diaryRequest.getSelectedTimes());
-        } catch (JsonProcessingException e) {
-            e.printStackTrace(); // 또는 로깅 처리
-        }
-
-        // 2.빌더를 사용해 다이어리를 만든다
+        // 빌더를 사용해 다이어리를 만든다
         Diary diary = Diary.builder()
                 .user(user) // userSqno 대신 객체 자체를 넣어준다.
-                .delYn("N")
-                .title(diaryRequest.getDiaryTitle() != null ? diaryRequest.getDiaryTitle() : "Untitled")
-                .author(diaryRequest.getAuthor() != null ? diaryRequest.getAuthor() : "Undefined")
                 .userId(user.getUserId())
+                .title(diaryRequest.getDiaryTitle() != null ? diaryRequest.getDiaryTitle() : "Untitled")
                 .content(diaryRequest.getDiaryContent() != null ? diaryRequest.getDiaryContent() : "")
+                .emotion(diaryRequest.getDiaryEmotion() != null ? diaryRequest.getDiaryEmotion() : 0)
+                .frstRegIp(ip != null ? ip : "127.0.0.1")
+                .selectedTimes(diaryRequest.getSelectedTimes()) // List<Integer> 그대로 주입
+                .dailySlots(diaryRequest.getDailySlots())       // Map<String, String> 그대로 주입
                 .tag1(diaryRequest.getTag1() != null ? diaryRequest.getTag1() : "")
                 .tag2(diaryRequest.getTag2() != null ? diaryRequest.getTag2() : "")
                 .tag3(diaryRequest.getTag3() != null ? diaryRequest.getTag3() : "")
-                .emotion(diaryRequest.getDiaryEmotion() != null ? diaryRequest.getDiaryEmotion() : 0)
                 .diaryStatus(diaryRequest.getDiaryStatus() != null ? diaryRequest.getDiaryStatus() : "true")
                 .diaryType(diaryRequest.getDiaryType() != null ? diaryRequest.getDiaryType() : "N")
-                .frstRegIp(ip != null ? ip : "127.0.0.1")
-                .selectedTimes(selectedTimesJson) // → DB에 저장할 수 있도록 문자열로 바꾸는 처리도 고려
-                .drugMorning(diaryRequest.getDrugMorning() != null ? diaryRequest.getDrugMorning() : "")
-                .drugLunch(diaryRequest.getDrugLunch() != null ? diaryRequest.getDrugLunch() : "")
-                .drugDinner(diaryRequest.getDrugDinner() != null ? diaryRequest.getDrugDinner() : "")
+                .delYn("N")
                 .build();
 
         System.out.println("@@@Diary 객체 생성 값: " + diary);

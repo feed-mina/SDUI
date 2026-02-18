@@ -1,7 +1,10 @@
 package com.domain.demo_backend.domain.diary.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Column;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.List;
 import java.util.Map;
@@ -51,16 +54,16 @@ public class DiaryRequest {
     private String tag1;
     private String tag2;
     private String tag3;
-
-    private String author;
-
     private Integer diaryEmotion;
 
     private String diaryType;
 
-    private List<Integer> selectedTimes;
-    private String drugMorning;
-    private String drugLunch;
-    private String drugDinner;
+    @JdbcTypeCode(SqlTypes.JSON) // Hibernate 6 이상에서 JSONB 매핑 방식
+    @Column(name = "selected_times")
+    private List<Integer> selectedTimes; // [22, 23, 0, 1] 형태로 자동 매핑
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "daily_slots")
+    private Map<String, String> dailySlots; // {"morning": "...", "lunch": "..."} 형태로 매핑
 
 }
