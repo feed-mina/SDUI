@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
+const DEFAULT_SLOT_DATA = { morning: '', lunch: '', evening: '' };
 // @@@@ 2026-02-17 시간대별 범용 기록 컴포넌트
 const TimeSlotRecord: React.FC<any> = ({ id, meta, data, onChange }) => {
     // 1. DB의 JSONB(component_props)에서 테마 설정을 가져옴
@@ -10,17 +11,21 @@ const TimeSlotRecord: React.FC<any> = ({ id, meta, data, onChange }) => {
     } = meta.component_props || {};
 
     // 2. 현재 저장된 데이터 (없으면 빈 객체)
-    const slotData = data || { morning: '', lunch: '', evening: '' };
+    const slotData = data || DEFAULT_SLOT_DATA;
+    const updateKey = meta.refDataId || meta.ref_data_id || id;
 
     const handleInputChange = (slot: string, value: string) => {
         // 3. 불변성을 유지하며 부모의 formData 업데이트
-        onChange(id, {
-            ...slotData,
+        onChange(updateKey, {
+            morning: slotData.morning || '',
+            lunch: slotData.lunch || '',
+            evening: slotData.evening || '',
             [slot]: value
         });
     };
 
-    if (meta.isVisible === "false") return null;
+    const isVisible = meta.isVisible !== false && meta.isVisible !== "false";
+    if (!isVisible) return null;
 
     const slots = [
         { key: 'morning', label: '아침' },
@@ -53,4 +58,4 @@ const TimeSlotRecord: React.FC<any> = ({ id, meta, data, onChange }) => {
     );
 };
 
-export default TimeSlotRecord;
+export default memo(TimeSlotRecord);
