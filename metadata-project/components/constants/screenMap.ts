@@ -5,6 +5,7 @@ export const SCREEN_MAP: Record<string, string> = {
     "/MY_PAGE": "MY_PAGE",
     "/DASHBOARD_PAGE": "DASHBOARD_PAGE",
     "/DIARY_LIST": "DIARY_LIST",
+    "/DIARY_WRITE": "DIARY_WRITE",
 };
 
 export const DEFAULT_SCREEN_ID = "COMMON_LAYOUT";
