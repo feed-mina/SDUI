@@ -60,13 +60,13 @@ public class User {
     private LocalDateTime verificationExpiredAt;
 
 
-    @Column(name = "sleep_using_type")
-    private String sleepUsingType;
+    @Column(name = "time_using_type")
+    private String timeUsingType;
 
     @Column(name = "drug_using_type")
     private String drugUsingType;
 
-    public User(String userId, String password, String hashedPassword, String role,  String delYn, String phone, String email, String verifyYn, String socialType, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationCode, LocalDateTime withdrawAt, String sleepUsingType, String drugUsingType) {
+    public User(String userId, String password, String hashedPassword, String role,  String delYn, String phone, String email, String verifyYn, String socialType, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationCode, LocalDateTime withdrawAt, String timeUsingType, String drugUsingType) {
         this.userId = userId;
         this.password = password;
         this.hashedPassword = hashedPassword;
@@ -80,7 +80,7 @@ public class User {
         this.updatedAt = updatedAt;
         this.verificationCode = verificationCode;
         this.withdrawAt = withdrawAt;
-        this.sleepUsingType = sleepUsingType;
+        this.timeUsingType = timeUsingType;
         this.drugUsingType = drugUsingType;
     }
 
