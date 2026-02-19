@@ -1,156 +1,118 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 import {useRouter} from "next/navigation";
 import axios from "@/services/axios";
 import { useAuth } from "@/context/AuthContext";
+import { useMetadata } from "@/components/MetadataProvider";
+
 
 //  @@@@ usePageMetadata 역할 : 메타데이터가져오기 , 원본 데이터 가져오기 , 가져온 데이터를 pageData로 담아줌, 로딩중인지 전체 개수가 몇개인지 같은 페이지의 전역 상태를 관리
-export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMine: boolean, diaryId?: string) => {
+export const usePageMetadata = ( currentPage: number, isOnlyMine: boolean, diaryId?: string, overrideScreenId?: string) => {
     const router = useRouter(); // window.location.href 대신 사용
 
+    const { user, isLoggedIn } = useAuth();
+    // 1. Provider에서 이미 로드된 메타데이터와 가공된 screenId(예: USER_MAIN), 실제 메타데이터(menuTree)를 가져옴
+    const { menuTree, isLoading: metaLoading, screenId: providerScreenId } = useMetadata();
     const [metadata, setMetadata] = useState<any[]>([]);
-    const [formData, setFormData] = useState<any>({});
     const [totalCount, setTotalCount] = useState(0);
-
-    const [pageData, setPageData] = useState([]);
+    const [pageData, setPageData] = useState<any>({});
     const [loading, setLoading] = useState(true);
+
+    // 2. 외부에서 주입된 screenId가 있으면 그것을 우선 사용
+    const finalScreenId = overrideScreenId || providerScreenId;
+
+    // 3. Provider의 데이터가 변경되면 로컬 metadata 상태에 동기화
+    useEffect(() => {
+        if (menuTree && menuTree.length > 0) {
+            setMetadata(menuTree);
+        }
+    }, [menuTree]);
+
     const pageSize = 5; // 한 페이지당 보여줄 개수
 
-
-    const { user, isLoggedIn, isLoading: authLoading } = useAuth();
-
+    // 트리 구조 평탄화 함수 (DATA_SOURCE가 어디 있든 찾아냄)
+    const getAllComponents = useCallback((items: any[]): any[] => {
+        let res: any[] = [];
+        items.forEach(item => {
+            res.push(item);
+            if (item.children) res = res.concat(getAllComponents(item.children));
+        });
+        return res;
+    }, []);
     const currentUserId = user?.userId || "";
     const currentUserSqno = user?.userSqno || "";
     useEffect(() => {
-        // initializePage 로직
+        const fetchBusinessData = async () => {
+            // metadata가 비어있으면 로직 실행 안 함
+            if (!metadata || metadata.length === 0) return;
+            // 2. 로그인 체크 로직 (필요 시 유지)
 
-        const initializePage = async () => {
-            if (!screenId) return;
-            setLoading(true);
-
-            if (isLoggedIn && screenId === "LOGIN_PAGE") {
-                alert("이미 로그인된 상태입니다.");
+            if (isLoggedIn && finalScreenId?.includes("LOGIN_PAGE")) {
                 router.push("/view/MAIN_PAGE");
-
-                router.refresh(); // 서버 컴포넌트 상태 갱신
                 return;
             }
 
+            setLoading(true);
             try {
-                const uiRes = await axios.get(`/api/ui/${screenId}`);
-                const metadataList = uiRes.data.data || [];
-                setMetadata(metadataList);
-
-                // 데이터 소스 탐색 전 평탄화 로직 추가
-                const getAllComponents = (items: any[]): any[] => {
-                    let res: any[] = [];
-                    items.forEach(item => {
-                        res.push(item);
-                        if (item.children) res = res.concat(getAllComponents(item.children));
-                    });
-                    return res;
-                };
-
-                const allComponents = getAllComponents(metadataList);
+                // 3. 메타데이터에서 DATA_SOURCE 추출
+                const allComponents = getAllComponents(metadata);
                 const sources = allComponents.filter((item: any) =>
-                    item.componentType === "DATA_SOURCE" && item.actionType === "AUTO_FETCH"
+                    (item.componentType === "DATA_SOURCE" || item.component_type === "DATA_SOURCE") &&
+                    (item.actionType === "AUTO_FETCH" || item.action_type === "AUTO_FETCH")
                 );
 
-                // const sources = metadataList.filter((item:any) => item.componentType === "DATA_SOURCE" && item.actionType === "AUTO_FETCH");
-
                 const dataPromises = sources.map(async (source: any) => {
-                    // console.log("지금 source에 들어 있는 모든 것 :", Object.keys(source));
-                    console.log("DB에서 온 원본 소스:", source);
-                    let apiUrl = source.dataApiUrl?.includes('/api/execute')
-                        ? source.dataApiUrl
-                        : (source.dataSqlKey ? `/api/execute/${source.dataSqlKey}` : null);
+                    // API URL 결정 로직 (Role 접두사가 붙은 screenId 기반으로 분기 가능)
+                    let apiUrl = source.dataApiUrl || source.data_api_url;
 
-                    // [추가] 상세 페이지일 경우 URL 뒤에 ID 붙이기
-                    if (screenId === "DIARY_DETAIL" && source.componentId === "detail_source" && diaryId) {
-                        // source.dataApiUrl이 "/viewDiaryItem" 이라면 -> "/viewDiaryItem/6"
-                        apiUrl = `${source.dataApiUrl}/${diaryId}`;
-                    } else if (source.dataApiUrl?.includes('/api/execute')) {
-                        // 기존 로직
-                        apiUrl = source.dataApiUrl;
-                    } else if (source.dataSqlKey) {
-                        // 기존 로직
-                        apiUrl = `/api/execute/${source.dataSqlKey}`;
+                    if (finalScreenId?.includes("DIARY_DETAIL") && diaryId) {
+                        apiUrl = `${apiUrl}/${diaryId}`;
+                    } else if (source.dataSqlKey || source.data_sql_key) {
+                        apiUrl = `/api/execute/${source.dataSqlKey || source.data_sql_key}`;
                     }
 
-
-                    if (!apiUrl) {
-                        console.warn(`[경고] ${source.componentId}에 연결된 SQL 키나 API 주소가 없습니다.`);
-                        return {id: source.componentId, data: []};
-                    }
-                    // 내 일기 모드 일때 URL변경
                     if (source.componentId === "diary_list_source" && isOnlyMine) {
                         apiUrl = "/api/diary/member-diaries";
                     }
 
+                    if (!apiUrl) return { id: source.componentId, data: [] };
+
+                    // 파라미터 구성
                     const rawParams = source.dataParams || source.data_params || "{}";
                     const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
-                    // dataParams가 문자열이면 객체로 바꾸고 없으면 빈 객체를 기본값으로 준다
-
-                    const calculatedOffset = (currentPage - 1) * pageSize; // SQL용 (0, 5, 10...)
 
                     const finalParams = {
                         ...parsedParams,
                         pageSize,
                         offset: (currentPage - 1) * pageSize,
-                        // 내가 쓴 일기 모드일 때 토큰에서 뽑은 진짜 ID를 전달
-                        filterId: isOnlyMine ? currentUserId : "",
-
-                        userId: currentUserId || "guest",
-                        userSqno: isOnlyMine ? currentUserSqno : (parsedParams.userSqno || "9999")
+                        filterId: isOnlyMine ? user?.userId : "",
+                        userId: user?.userId || "guest",
+                        userSqno: user?.userSqno
                     };
-                    // 서버가 바로 꺼내 쓸 수 있도록 펼쳐서 보낸다.
-
-                    console.log(`[요청] 모드:${isOnlyMine ? 'API' : 'SQL'}, URL:${apiUrl}`);
 
                     let res;
-
-                    if (screenId === "DIARY_DETAIL") {
-                        // 상세 조회는 GET 요청
-                        res = await axios.get(apiUrl, {params: finalParams});
-                    } else if (isOnlyMine && source.componentId === "diary_list_source") {
-                        // GET 요청: headers는 config 객체 안에 넣어야 함 (중요!)
-                        res = await axios.get(apiUrl, {
-                            params: finalParams,
-                        });
+                    if (finalScreenId?.includes("DIARY_DETAIL") || (isOnlyMine && source.componentId === "diary_list_source")) {
+                        res = await axios.get(apiUrl, { params: finalParams });
                     } else {
-                        // POST 요청
-                        res = await axios.post(apiUrl, {...finalParams});
-                        console.log("백엔드에서 날아온 생 데이터:", res.data);
+                        res = await axios.post(apiUrl, finalParams);
                     }
-                    return {id: source.componentId, status: "success", data: res.data.data || res.data};
+
+                    return {
+                        id: source.componentId || source.component_id,
+                        data: res.data.data || res.data
+                    };
                 });
 
                 const results = await Promise.all(dataPromises);
                 const combinedData: any = {};
-                // @@@@ 2026-02-03 추가 임시변수 활용
                 let detectedTotalCount = 0;
 
                 results.forEach((res: any) => {
-
-
                     if (res && res.id) {
-                        // 1. 백엔드가 준 보따리 풀기 (member-diaries는 res.data에 직접 데이터가 옴)
                         const rawResponse = res.data || {};
-                        let realList = [];
+                        const realList = Array.isArray(rawResponse) ? rawResponse :
+                            (rawResponse.list || rawResponse.data || [rawResponse]);
 
-                        if (Array.isArray(rawResponse)) {
-                            realList = rawResponse;
-                        } else if (rawResponse.list && Array.isArray(rawResponse.list)) {
-                            realList = rawResponse.list;
-                        } else if (rawResponse.data && Array.isArray(rawResponse.data)) {
-                            realList = rawResponse.data;
-                        } else if (rawResponse.diaryItem) {
-                            realList = [rawResponse.diaryItem];
-                        } else {
-                            // 단일 객체(예: total_count 객체)인 경우 배열로 감싸기
-                            realList = [rawResponse];
-                        }
-
-                        // 2. 이름표 갈아끼우기 (기존 로직 유지하되 안전하게)
+                        // 필드 매핑 (Snake Case <-> Camel Case 통일)
                         const unifiedList = realList.map((item: any) => ({
                             ...item,
                             diary_id: item.diaryId || item.diary_id,
@@ -160,32 +122,30 @@ export const usePageMetadata = (screenId: string, currentPage: number, isOnlyMin
 
                         combinedData[res.id] = unifiedList;
 
-                        // 4. TotalCount 추출 (가장 중요)
-                        if (res.id === "diary_list_source" && isOnlyMine) {
-                            detectedTotalCount = rawResponse.total || rawResponse.totalCount || 0;
-                        } else if (res.id === "diary_total_count" && !isOnlyMine) {
-                            // unifiedList[0]이 {total_count: 9}를 가지고 있을 것임
-                            detectedTotalCount = unifiedList[0]?.total_count || rawResponse.total_count || 0;
+                        // Total Count 계산
+                        if (res.id === "diary_list_source" || res.id === "diary_total_count") {
+                            detectedTotalCount = rawResponse.total || rawResponse.totalCount || rawResponse.total_count || unifiedList[0]?.total_count || 0;
                         }
-
-                        console.log(`[최종확인] ${res.id} 상자에 담긴 실제 데이터 개수:`, unifiedList.length);
-                        console.log("최종 pageData:", combinedData);
                     }
                 });
-                console.log("진짜로 이름표가 붙은 창고:", combinedData);
 
-                // 2026-02-03 추가 상태 업데이트는 마지막에 몰아서 한번만 !
                 setPageData(combinedData);
                 setTotalCount(detectedTotalCount);
             } catch (error) {
-                console.error("에러 발생: ", error);
+                console.error("Data Fetching Error:", error);
             } finally {
                 setLoading(false);
             }
         };
-        initializePage();
-    }, [screenId, currentPage, isOnlyMine, diaryId, isLoggedIn, authLoading, user]);
 
-    return { metadata, pageData, loading: loading || authLoading, totalCount, isLoggedIn };
+        fetchBusinessData();
+    }, [metadata, finalScreenId, currentPage, isOnlyMine, diaryId, isLoggedIn, user, getAllComponents]);
 
+    return {
+        metadata,
+        pageData,
+        loading: loading || metaLoading ,
+        totalCount,
+        isLoggedIn
+    };
 };
