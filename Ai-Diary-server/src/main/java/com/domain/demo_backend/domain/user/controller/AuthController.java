@@ -51,18 +51,24 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails == null) {
-            return ResponseEntity.ok(Map.of("isLoggedIn", false, "role", "GUEST"));
+            // [수정] Map.of 대신 직접 HashMap을 쓰거나 Null 방어 로직 추가
+            Map<String, Object> guestResponse = new HashMap<>();
+            guestResponse.put("isLoggedIn", false);
+            guestResponse.put("role", "GUEST");
+            return ResponseEntity.ok(guestResponse);
         }
-
         // 보안상 필요한 정보(ID, 이메일, 시퀀스번호 등)만 객체에 담아 반환
-        return ResponseEntity.ok(Map.of(
-                "isLoggedIn", true,
-                "userSqno", userDetails.getUserSqno(),
-                "userId", userDetails.getUserId(),
-                "email", userDetails.getUserEmail(),
-                "socialType", userDetails.getSocialType(),
-                "role", "ROLE_USER"
-        ));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("isLoggedIn", true);
+        response.put("userSqno", userDetails.getUserSqno());
+        response.put("userId", userDetails.getUserId());
+        response.put("email", userDetails.getUserEmail());
+        response.put("socialType", userDetails.getSocialType());
+        response.put("role", "ROLE_USER");
+
+        return ResponseEntity.ok(response);
+
     }
     @PostConstruct
     public void init() {
