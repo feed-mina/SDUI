@@ -30,14 +30,16 @@ const TextField: React.FC<TextFieldProps> = ({meta, data, value}) => {
     } catch (e) {
         console.error(`[TextField] 스타일 파싱 에러 (${meta.componentId}):`, meta.inlineStyle);
     }
+    const isVisible = meta.isVisible !== false && meta.isVisible !== "false";
     const customStyle = {
         ...parsedStyle,
-        visibility: ((meta.isVisible === "false" || meta.isVisible === false) ? "hidden" : "visible") as "visible" | "hidden"
+        // visibility: (isVisible? "hidden" : "visible") as "visible" | "hidden"
+        visibility: (isVisible ? "visible" : "hidden") as "visible" | "hidden"
     };
 
     // [핵심 수정 1] key가 절대 undefined가 되지 않도록 '내 이름(componentId)'을 방어막으로 둡니다.
     // ref_data_id(스네이크) -> refDataId(카멜) -> componentId(내 이름) 순서
-    const targetKey = meta.ref_data_id || meta.refDataId || meta.componentId;
+    const targetKey = meta.ref_data_id || meta.refDataId || meta.componentId || "0218";
 
     // [핵심 수정 2] 최종 값 결정 로직 통합
     // 1. 엔진이 준 value가 있으면 최우선
