@@ -22,7 +22,7 @@ public class MockAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
+        System.out.println("MockAuthFilter 실행됨!");
         String testAuthHeader = request.getHeader("X-Test-Auth");
 
         if ("true".equals(testAuthHeader)) {
@@ -30,6 +30,7 @@ public class MockAuthFilter extends OncePerRequestFilter {
             User mockUser = User.builder()
                     .userSqno(1L)
                     .userId("pagingmina")
+                    .role("USER")
                     .build();
 
             CustomUserDetails userDetails = new CustomUserDetails(mockUser);

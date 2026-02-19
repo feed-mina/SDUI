@@ -1,9 +1,8 @@
 package com.domain.demo_backend.global.security;
 
+import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.domain.user.domain.User;
 import com.domain.demo_backend.domain.user.domain.UserRepository;
-import com.domain.demo_backend.global.security.CustomUserDetails;
-import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -75,9 +73,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
     @Override
-    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        // [추가] 이미 MockAuthFilter 등에 의해 인증이 완료된 경우 JWT 검사를 건너뛴다.
+        if (SecurityContextHolder.getContext().getAuthentication() != null &&
+                SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         // 1. 토큰 추출 (헤더 우선, 없으면 쿠키)
         String token = resolveToken(request);
         if (token == null || token.isEmpty()) {
