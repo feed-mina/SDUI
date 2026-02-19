@@ -1,0 +1,99 @@
+/* TimeSelect.css */
+
+.time-select-wrapper {
+    position: relative;
+    padding: 1.5rem 1rem;
+    background-color: #f9fafb;
+    border-radius: 1rem;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.time-select-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #9ca3af; /* gray-400 */
+    margin-bottom: 1rem;
+    margin-left: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.swiper-container-wrapper {
+    position: relative;
+    padding: 0 2.5rem;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.time-button {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: none;
+    cursor: pointer;
+}
+
+/* 선택되지 않았을 때 */
+.time-button.default {
+    background-color: #ffffff;
+    color: #4b5563; /* gray-600 */
+}
+
+.time-button.default:hover {
+    background-color: #f3f4f6; /* gray-100 */
+}
+
+/* 선택되었을 때 */
+.time-button.active {
+    background-color: #4f46e5; /* indigo-600 */
+    color: #ffffff;
+    transform: scale(1.1);
+    box-shadow: 0 10px 15px -3px rgba(199, 210, 254, 0.5); /* indigo-200 shadow */
+}
+
+.swiper-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    cursor: pointer;
+    font-size: 1.25rem;
+    user-select: none;
+}
+
+.swiper-nav-btn.prev { left: 0; }
+.swiper-nav-btn.next { right: 0; }
+
+.time-select-legend {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    font-size: 0.875rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.color-box {
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+
+.color-box.wake { background-color: #fef9c3; } /* yellow-100 */
+.color-box.sleep { background-color: #a855f7; } /* purple-500 */

@@ -1,6 +1,53 @@
 /*페이지별 css*/
 
+.header-contents {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 150px;
+    padding: 0 20px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #eaeaea;
+}
+.logo {
+    flex: 2;
+    display: flex;
+    align-items: center;
+}
+.time-record-container,
+.no-goal-container {
+    flex: 8;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
 
+.header-loading{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 60px;
+    background-color: #f8f9fa;
+    color: #adb5bd;
+    font-size: 14px;
+    font-weight: 500;
+    animation: pulse-animation 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-animation {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+
+.auth-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
 /* 로그아웃 버튼 (메인) */
 .logout_button {
     width: 100%;
@@ -260,14 +307,12 @@
         flex-direction: row; /* PC에서는 가로 정렬 가능 */
         justify-content: space-around;
     }
+
+    .kakao_logout_button,
     .logout_button,
     .login_form_button {
         width: 22rem;
-        font-size: 2em;
-    }
-    .kakao_logout_button,
-    .kakao-button {
-        padding-bottom: 10rem; /* PC 특화 여백 */
+        font-size: 1.5rem;
     }
 }
 
