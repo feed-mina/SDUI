@@ -10,7 +10,7 @@ export const useRecordTime = () => {
     const [remainTimeText, setRemainTimeText] = useState('');
     const queryClient = useQueryClient();
     const router = useRouter(); // window.location.href 대신 사용
-    const { user, isLoggedIn, isLoading: authLoading } = useAuth();
+    const { user, isLoggedIn } = useAuth();
 
     const isValidUser = isLoggedIn && user?.userSqno && Number(user.userSqno) !== 9999;
     // [API] 목표시간 데이터 가져오기 React Query
