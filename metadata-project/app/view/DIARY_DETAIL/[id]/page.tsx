@@ -16,7 +16,7 @@ export default function DiaryDetailPage() {
     console.log("pageData:", pageData);
 
     // 여기서 pwType, showPassword도 같이 꺼냅니다.
-    const {handleChange, handleAction, pwType, showPassword} = usePageActions(metadata);
+    const {formData, handleChange, handleAction, pwType, showPassword} = usePageActions(metadata);
 
     console.log("diaryIdpage_pageData:", pageData);
     console.log("diaryIdpage_metadata:", metadata);
@@ -25,9 +25,10 @@ export default function DiaryDetailPage() {
         <div className="page-wrap diary-detail">
             <DynamicEngine
                 metadata={metadata}
+                pageData={pageData}
+                formData={formData}
                 onChange={handleChange}
                 onAction={handleAction}
-                pageData={pageData}
                 pwType={pwType}
                 showPassword={showPassword}
             />

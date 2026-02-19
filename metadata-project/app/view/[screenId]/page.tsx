@@ -80,9 +80,10 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
             )}
             <DynamicEngine
                 metadata={filtedMetadata}
+                pageData={combineData}
+                formData={formData}
                 onChange={handleChange}
                 onAction={handleAction}
-                pageData={combineData}
                 pwType={pwType}
                 showPassword={showPassword}
             />
