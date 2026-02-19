@@ -69,6 +69,11 @@ export const usePageActions = (metadata: any[]) => {
         // 2. 단순 페이지 이동 (새 일기 쓰기 버튼 등)
             case "LINK":
             case "ROUTE":
+                const url = meta.actionUrl || meta.action_url;
+                if (url.startsWith('http://') || url.startsWith('https://')) {
+                    window.location.href = url;
+                    return;
+                }
                 router.push(actionUrl);
                 router.refresh();
                 break;
