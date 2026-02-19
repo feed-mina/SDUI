@@ -15,6 +15,7 @@ export interface Metadata {
     is_visible?: boolean | string;
     groupDirection?: "ROW" | "COLUMN";
     cssClass?: string;
+    css_class?: string;
     inlineStyle?: any;
     actionType?: string;
     placeholder?: string;
