@@ -12,26 +12,34 @@ export const useDynamicEngine = (metadata: Metadata[], pageData: any, formData: 
         // rowData (리피터에서 넘겨준 개별 아이템)가 있으면 최 우선
         const refId = node.refDataId || node.ref_data_id;
 
+        // 그 다음이 기존 pageData 로직
+        // 1. 리피터 내부(rowData가 있을 때, 리스트의 개별 항목을 그릴 때) 처리
         // 사용자가 입력 중인 데이터(formData)가 있으면 그걸 먼저 보여준다.
         if (refId && formData && formData[refId] !== undefined) {
             return formData[refId];
         }
 
-        // 그 다음이 기존 pageData 로직
-        // 1. 리피터 내부(rowData가 있을 때, 리스트의 개별 항목을 그릴 때) 처리
+        // [핵심] 리피터 안(rowData가 있을 때)에서는 row 객체 전체를 그냥 넘겨라!
+        // 그래야 하위 컴포넌트가 자기가 필요한 키(title, reg_dt 등)를 스스로 꺼낸다.
         if (rowData) {
-            // 내 refId(예: 'title')에 해당하는 값이 rowData 안에 있으면 그 값만 반환
-            if (refId && rowData[refId] !== undefined) {
-                return rowData[refId];// 문자열만 반환
-            }
-            // 필드명이 없으면 객체 전체를 반환 (이미지 컴포넌트 등에서 활용)
             return rowData;
         }
+
+
+        // 필드명이 없으면 객체 전체를 반환 (이미지 컴포넌트 등에서 활용)
+
         //  리피터 외부 (전역 데이터 창고 참조)
         if (refId && pageData && pageData[refId]) {
             const remote = pageData[refId];
 // @@@@ 2026-02-08 추가 리스트면 첫 번째 항목을 아니면 데이터 전체를 반환
-            return Array.isArray(remote) ? (remote[0] || {}) : remote;
+
+            // [핵심] 리스트가 아닌 '단일 컴포넌트(TimeSlot 등)'인데 배열로 감싸져 왔다면 0번을 꺼내준다
+            // 만약 컴포넌트 자체가 리스트를 다루는 '리피터'라면 배열 그대로를 반환한다
+            const isRepeater = node.children && node.children.length > 0;
+            if (!isRepeater && Array.isArray(remote)) {
+                return remote[0] || {};
+            }
+            return remote;
         }
 // @@@@ 2026-02-09 MAIN_PAGE처럼 데이터 소스가 없는 경우 전체 pageData (또는 빈 객체)를 반환
         return pageData || {};
