@@ -20,9 +20,9 @@ public class DiaryResponse {
     private String userId;
     private String title;
     private String content;
-    private String tag1;
-    private String tag2;
-    private String tag3;
+    private String dayTag1;
+    private String dayTag2;
+    private String dayTag3;
     private String diaryStatus;
     private Integer emotion;
     private String delYn;

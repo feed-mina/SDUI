@@ -4,14 +4,11 @@ import com.domain.demo_backend.domain.diary.domain.Diary;
 import com.domain.demo_backend.domain.diary.domain.DiaryRepository;
 import com.domain.demo_backend.domain.diary.dto.DiaryRequest;
 import com.domain.demo_backend.domain.diary.dto.DiaryResponse;
-import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.domain.user.domain.User;
 import com.domain.demo_backend.domain.user.domain.UserRepository;
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.global.security.JwtUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
-import jakarta.servlet.http.HttpServletRequest;
 import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -138,15 +135,16 @@ public class DiaryService {
         Diary diary = Diary.builder()
                 .user(user) // userSqno 대신 객체 자체를 넣어준다.
                 .userId(user.getUserId())
+                .email(user.getEmail())
                 .title(diaryRequest.getDiaryTitle() != null ? diaryRequest.getDiaryTitle() : "Untitled")
                 .content(diaryRequest.getDiaryContent() != null ? diaryRequest.getDiaryContent() : "")
                 .emotion(diaryRequest.getDiaryEmotion() != null ? diaryRequest.getDiaryEmotion() : 0)
                 .frstRegIp(ip != null ? ip : "127.0.0.1")
-                .selectedTimes(diaryRequest.getSelectedTimes()) // List<Integer> 그대로 주입
-                .dailySlots(diaryRequest.getDailySlots())       // Map<String, String> 그대로 주입
-                .tag1(diaryRequest.getTag1() != null ? diaryRequest.getTag1() : "")
-                .tag2(diaryRequest.getTag2() != null ? diaryRequest.getTag2() : "")
-                .tag3(diaryRequest.getTag3() != null ? diaryRequest.getTag3() : "")
+                .selectedTimes(diaryRequest.getSelectedTimes())
+                .dailySlots(diaryRequest.getDailySlots())
+                .dayTag1(diaryRequest.getDayTag1() != null ? diaryRequest.getDayTag1() : "")
+                .dayTag2(diaryRequest.getDayTag2() != null ? diaryRequest.getDayTag2() : "")
+                .dayTag3(diaryRequest.getDayTag3() != null ? diaryRequest.getDayTag3() : "")
                 .diaryStatus(diaryRequest.getDiaryStatus() != null ? diaryRequest.getDiaryStatus() : "true")
                 .diaryType(diaryRequest.getDiaryType() != null ? diaryRequest.getDiaryType() : "N")
                 .delYn("N")

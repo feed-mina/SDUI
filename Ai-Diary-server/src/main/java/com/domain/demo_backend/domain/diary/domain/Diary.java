@@ -47,9 +47,9 @@ public class Diary {
 //    @JsonProperty("tags")
 //    private Map<String, String> tags;
 
-    private String tag1;
-    private String tag2;
-    private String tag3;
+    private String dayTag1;
+    private String dayTag2;
+    private String dayTag3;
     private String date;
     private String email;
 
@@ -101,7 +101,7 @@ public class Diary {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "daily_slots")
-    private Map<String, String> dailySlots; // {"morning": "...", "lunch": "..."} 형태로 매핑
+    private Map<String, Object> dailySlots; // {"morning": "...", "lunch": "..."} 형태로 매핑
 
 
 
