@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useMemo, ReactNode } from "react";
+import React, {createContext, useContext, useMemo, ReactNode, useState, useEffect} from "react";
 import { usePathname, useParams } from 'next/navigation'; // @@@@ useParams 추가됨
 import { DEFAULT_SCREEN_ID, SCREEN_MAP } from '@/components/constants/screenMap';
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 interface MetadataContextType {
     menuTree: any[];
+    isDesktop: boolean;
     isLoading: boolean;
     screenId: string;
 }
@@ -20,6 +21,16 @@ interface MetadataProviderProps {
 }
 
 export function MetadataProvider({ children, screenId: propScreenId }: MetadataProviderProps) {
+
+    const [isDesktop, setIsDesktop] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => setIsDesktop(window.innerWidth >= 1024); // 초기 실행
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const { user } = useAuth();
     const pathname = usePathname();
     const params = useParams();
@@ -55,10 +66,10 @@ export function MetadataProvider({ children, screenId: propScreenId }: MetadataP
         staleTime: 1000 * 60 * 5,
         enabled: !!finalScreenId, // ID가 확정되었을 때만 실행
     });
-
     return (
         <MetadataContext.Provider value={{
             menuTree: data || [],
+            isDesktop,
             isLoading,
             screenId: finalScreenId
         }}>

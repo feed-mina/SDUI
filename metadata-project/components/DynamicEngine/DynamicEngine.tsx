@@ -5,20 +5,22 @@ import {componentMap} from "./componentMap";
 import {useDynamicEngine} from "./useDynamicEngine";
 import {DynamicEngineProps, Metadata} from "./type";
 import {useRenderCount} from "@/hooks/useRenderCount";
+import {useMetadata} from "@/components/MetadataProvider";
 
 // @@@@ 2026-02-07 주석 추가
 // DynamicEngine 역할 : 분석된 구조를 바탕으로 실제 리액트 컴포넌트를 랜더링
-interface MetadataRoot {
-    screenId: string;
-    children: any[]; // 실제 메타데이터 노드 배열
-}
-
+    // ... 이하 렌더링 로직 동일
 const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
 
-    const {metadata, pageData, formData, onChange, onAction, ...rest} = props;
+    //  구조 분해 할당 시 screenId 추출
+    const {metadata, screenId, pageData, formData, onChange, onAction, ...rest} = props;
+    const { isDesktop } = useMetadata();
+
+    //   비즈니스 로직 훅에 필요한 데이터를 넘겨 트리 구조(treeData)를 생성한다.
     const {treeData, getComponentData} = useDynamicEngine(metadata, pageData, formData);
 
-    useRenderCount(`DynamicEngine (Screen: ${(metadata as any).screenId})`);
+    //  screenId를 로그에 남긴다.
+    useRenderCount(`DynamicEngine (Screen: ${screenId})`);
     // 1. 파라미터 타입을 Metadata[] | null | undefined 로 확장
     const renderNodes = (nodes?: Metadata[] | null, rowData: any = null) => {
         // 2. nodes가 없으면 즉시 null 반환 (런타임 에러 방지)
@@ -120,8 +122,11 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
     };
 
     return (
-        <div className="engine-container">
-            {renderNodes(treeData)}
+        // @@@@ 최상위 컨테이너에만 클래스를 부여해 CSS 상속 유도
+        <div className={`engine-container ${isDesktop ? 'is-desktop' : 'is-mobile'}`}>
+            <div className="content-area">
+                {renderNodes(treeData)}
+            </div>
         </div>
     );
 };
