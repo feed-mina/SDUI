@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import {useRenderCount} from "@/hooks/useRenderCount";
 
 const DEFAULT_SLOT_DATA = { morning: '', lunch: '', evening: '' };
 // @@@@ 2026-02-17 시간대별 범용 기록 컴포넌트

@@ -5,6 +5,7 @@ import { Navigation } from 'swiper/modules';
 import '../../app/styles/TimeSelect.css'
 import 'swiper/css';
 import 'swiper/css/navigation';
+import {useRenderCount} from "@/hooks/useRenderCount";
 
 interface TimeItem {
     hour: number;
@@ -17,6 +18,8 @@ interface TimeSelectProps {
 }
 
 const TimeSelect: React.FC<any> = ({ id, meta, data, onChange }) => {
+    useRenderCount("TimeSelect (Child)"); // @@@@ 렌더링 횟수 추적 추가
+
     // data는 useDynamicEngine에서 ref_data_id를 통해 매핑된 selected_times 배열일 것임
 
     // console.log('TimeSelectmeta', meta);
