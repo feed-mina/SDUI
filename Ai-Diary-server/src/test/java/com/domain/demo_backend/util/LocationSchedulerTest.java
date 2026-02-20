@@ -1,7 +1,6 @@
 package com.domain.demo_backend.util;
 
 import com.domain.demo_backend.global.common.util.LocationScheduler;
-import jakarta.inject.Qualifier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +22,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class LocationSchedulerTest {
 
-    @Mock
+
+    @Mock // @Qualifier를 삭제하고 필드 이름으로 구분해
     private RedisTemplate<String, Object> redisTemplate;
 
     @Mock
@@ -40,7 +40,7 @@ class LocationSchedulerTest {
 
     @Test
     @DisplayName("스케줄러 실행 시 Redis 위치 정보가 DB로 Bulk Insert 되는지 확인")
-    void testTransferLocationLogsToDb(@Qualifier("redisObjectTemplate") RedisTemplate<String, Object> redisTemplate) {
+    void testTransferLocationLogsToDb() {
 
         this.redisTemplate = redisTemplate;
         // Given
