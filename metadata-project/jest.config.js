@@ -4,19 +4,23 @@ module.exports = {
     setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 
     transformIgnorePatterns: [
-        "/node_modules/(?!(until-async|msw|@mswjs|@bundled-es-modules|swiper|ssr-window|dom7)/)"
+        "/node_modules/(?!(swiper|ssr-window|dom7|until-async|msw|@mswjs)/)"
     ],
 
     transform: {
-        '^.+\\.(t|j)sx?|mjs$': ['@swc/jest'],
+        '^.+\\.(t|j)sx?$|\\.mjs$': ['@swc/jest'],
     },
-
+// @@@@ JSON 파일을 모듈로 인식할 수 있게 확장자 순서 확인
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+    // @@@@ Jest에게 .mjs를 ESM으로 처리하라고 알려줌
+    extensionsToTreatAsEsm: ['.ts', '.tsx'],
     moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-        '^swiper/css$': 'identity-obj-proxy',
         '^swiper/css/(.*)$': 'identity-obj-proxy',
         '^@/(.*)$': '<rootDir>/$1',
         '^msw$': '<rootDir>/node_modules/msw',
+        '^swiper/react$': '<rootDir>/node_modules/swiper/swiper-react.mjs',
+        '^swiper/css$': 'identity-obj-proxy',
     },
 
     testEnvironmentOptions: {

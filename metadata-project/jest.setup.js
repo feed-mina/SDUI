@@ -1,4 +1,5 @@
 // jest.setup.js
+import '@testing-library/jest-dom';
 
 // 1. Web Streams API 폴리필 추가 (WritableStream 등)
 import { WritableStream, ReadableStream, TransformStream } from 'node:stream/web';
@@ -27,3 +28,7 @@ import { TextEncoder, TextDecoder } from 'util';
 
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
+
+if (!Element.prototype.scrollTo) {
+    Element.prototype.scrollTo = jest.fn();
+}
