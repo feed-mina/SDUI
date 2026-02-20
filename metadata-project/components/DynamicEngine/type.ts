@@ -26,9 +26,10 @@ export interface Metadata {
 }
 
 export interface DynamicEngineProps {
-    metadata: Metadata[];
-    formData: any;
-    pageData: any;
+    metadata: Metadata[];   // 트리 구조로 분석되기 전의 원본 메타데이터 배열
+    screenId: string;       // @@@@ 현재 화면의 고유 식별자 추가
+    pageData: any;          // 서버에서 가져온 실제 비즈니스 데이터
+    formData: any;          // 사용자가 입력 중인 폼 데이터
     onChange: (id: string, value: any) => void;
     onAction: (meta: Metadata, data?: any) => void;
     pwType?: string;
