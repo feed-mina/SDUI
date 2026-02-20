@@ -4,15 +4,21 @@ import React from "react";
 import {componentMap} from "./componentMap";
 import {useDynamicEngine} from "./useDynamicEngine";
 import {DynamicEngineProps, Metadata} from "./type";
+import {useRenderCount} from "@/hooks/useRenderCount";
 
 // @@@@ 2026-02-07 주석 추가
 // DynamicEngine 역할 : 분석된 구조를 바탕으로 실제 리액트 컴포넌트를 랜더링
-
+interface MetadataRoot {
+    screenId: string;
+    children: any[]; // 실제 메타데이터 노드 배열
+}
 
 const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
+
     const {metadata, pageData, formData, onChange, onAction, ...rest} = props;
     const {treeData, getComponentData} = useDynamicEngine(metadata, pageData, formData);
 
+    useRenderCount(`DynamicEngine (Screen: ${(metadata as any).screenId})`);
     // 1. 파라미터 타입을 Metadata[] | null | undefined 로 확장
     const renderNodes = (nodes?: Metadata[] | null, rowData: any = null) => {
         // 2. nodes가 없으면 즉시 null 반환 (런타임 에러 방지)

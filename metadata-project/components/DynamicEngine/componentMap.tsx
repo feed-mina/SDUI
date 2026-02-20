@@ -12,22 +12,25 @@ import RecordTimeComponent from "@/components/fields/RecordTimeComponent";
 import DateTimePicker from "@/components/fields/DateTimePicker";
 import TimeSelect from "@/components/fields/TimeSelect";
 import TimeSlotRecord from "@/components/fields/TimeSlotRecord";
+import {withRenderTrack} from "@/components/utils/withRenderTrack";
+
+const GroupComponent: React.FC<any> = ({ children }) => <>{children}</>;
 
 export const componentMap: Record<string, React.FC<any>> = {
-    INPUT: InputField,
-    TEXT: TextField,
-    PASSWORD: PasswordField,
-    BUTTON: ButtonField,
-    SNS_BUTTON: ButtonField,
-    LINK_BUTTON: ButtonField,
-    IMAGE: ImageField,
-    EMAIL_SELECT: EmailSelectField,
-    EMOTION_SELECT: EmotionSelectField,
-    SELECT: SelectField,
-    TEXTAREA: TextAreaField,
-    TIME_RECORD_WIDGET: RecordTimeComponent,
-    DATETIME_PICKER: DateTimePicker,
-    TIME_SELECT: TimeSelect,
-    TIME_SLOT_RECORD: TimeSlotRecord,
-    GROUP: ({children}) => <>{children}</>,
+    INPUT: withRenderTrack(InputField,"InputField"),
+    TEXT: withRenderTrack(TextField,"TextField") ,
+    PASSWORD: withRenderTrack(PasswordField,"PasswordField"),
+    BUTTON: withRenderTrack(ButtonField,"ButtonField"),
+    SNS_BUTTON: withRenderTrack(ButtonField,"ButtonField"),
+    LINK_BUTTON: withRenderTrack(ButtonField,"ButtonField"),
+    IMAGE: withRenderTrack(ImageField,"ImageField"),
+    EMAIL_SELECT: withRenderTrack(EmailSelectField,"EmailSelectField"),
+    EMOTION_SELECT: withRenderTrack(EmotionSelectField,"EmotionSelectField"),
+    SELECT: withRenderTrack(SelectField,"SelectField"),
+    TEXTAREA: withRenderTrack(TextAreaField,"TextAreaField"),
+    TIME_RECORD_WIDGET: withRenderTrack(RecordTimeComponent,"RecordTimeComponent"),
+    DATETIME_PICKER: withRenderTrack(DateTimePicker,"DateTimePicker"),
+    TIME_SELECT: withRenderTrack(TimeSelect,"TimeSelect"),
+    TIME_SLOT_RECORD: withRenderTrack(TimeSlotRecord,"TimeSlotRecord"),
+    GROUP:withRenderTrack(GroupComponent, "GroupField"),
 };
