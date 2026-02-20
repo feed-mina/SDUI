@@ -1,12 +1,30 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import TimeSelect from '../components/fields/TimeSelect';
+import TimeSelect from '../../components/fields/TimeSelect';
 import '@testing-library/jest-dom';
+import {logTestSuccess} from "@/tests/TestLogger";
 
-// Swiper는 복잡한 내부 로직이 많으므로 테스트 시에는 단순한 div로 대체한다.
+
+// Swiper 모킹 로직 유지...
 jest.mock('swiper/react', () => ({
     Swiper: ({ children }: any) => <div>{children}</div>,
     SwiperSlide: ({ children }: any) => <div>{children}</div>,
 }));
+
+describe('TimeSelect 컴포넌트 테스트', () => {
+    const mockMeta = {
+        label_text: '수면 시간',
+        component_props: { startHour: 0, endHour: 24, slidesPerView: 6 }
+    };
+    const mockOnChange = jest.fn();
+
+    // @@@@ 개별 테스트 성공 시 로그 기록
+    afterEach(() => {
+        // Jest의 현재 테스트 상태를 확인하여 성공 시에만 로그를 남긴다
+        const testName = expect.getState().currentTestName;
+        logTestSuccess(`TimeSelect - ${testName}`);
+    });
+
 
 jest.mock('swiper/modules', () => ({
     Navigation: () => null,
@@ -198,4 +216,5 @@ describe('TimeSelect 컴포넌트 테스트', () => {
         // 또는 Role을 사용하는 더 권장되는 방식
         // expect(screen.getByRole('button', { name: '0' })).toBeInTheDocument();
     });
+});
 });
