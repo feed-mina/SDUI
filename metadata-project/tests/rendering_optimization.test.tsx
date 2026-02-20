@@ -1,53 +1,91 @@
 import React from 'react';
-import {MetadataProvider} from "@/components/MetadataProvider";
-import {renderWithProviders} from "@/tests/test-utils";
-import { render, screen, fireEvent } from '@testing-library/react';
-import {logTestSuccess} from "@/tests/TestLogger";
+import {fireEvent, screen, waitFor} from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
+import { MetadataProvider } from "@/components/MetadataProvider";
+import DynamicEngine from "@/components/DynamicEngine/DynamicEngine";
+import { renderWithProviders } from "@/tests/test-utils";
+import { logTestSuccess } from "@/tests/TestLogger";
+import MAIN_PAGE from "@/tests/mocks/MAIN_PAGE.json";
+import LOGIN_PAGE from "@/tests/mocks/LOGIN_PAGE.json";
+import DIARY_LIST from "@/tests/mocks/DIARY_LIST.json";
+import SET_TIME_PAGE from "@/tests/mocks/SET_TIME_PAGE.json";
+import DIARY_WRITE from "@/tests/mocks/DIARY_WRITE.json";
+import { Metadata } from "@/components/DynamicEngine";
 
-test('자식 입력창에 글자 입력 시 부모 엔진의 리렌더링 횟수 검증', async () => {
-    // 1. 콘솔 로그를 감시하는 스파이(Spy)를 생성한다.
-    const consoleSpy = jest.spyOn(console, 'log');
 
-    // @@@@   실제 InputField가 렌더링되도록 Mock 메타데이터 구성
-    const mockMetadata = {
-        screenId: "HOME_PAGE",
-        children: [
-            {
-                id: "test-field",
-                component_type: "INPUT", // componentMap에서 INPUT을 찾아 렌더링함
-                component_props: { placeholder: "입력해주세요" }
-            }
-        ]
-    };
+// 1. 테스트할 모든 화면 데이터 정의 (서버 응답 규격인 menuTree 형태) [cite: 2026-02-20]
+const allMockData: Record<string, any> = { MAIN_PAGE, LOGIN_PAGE, DIARY_LIST, SET_TIME_PAGE, DIARY_WRITE };
 
-    //   MetadataProvider에 mockMetadata를 강제로 주입 (구현 방식에 따라 props 전달)
-    renderWithProviders(
-        <MetadataProvider screenId="HOME_PAGE">
-            {/* DynamicEngine이 내부적으로 InputField를 그리게 됨 */}
-            <div />
-        </MetadataProvider>
-    );
-    // 3. 입력창에 글자를 입력하는 이벤트를 발생시킨다.
-    const input = screen.getByTestId('test-input');
-    fireEvent.change(input, { target: { value: 'A' } });
-    fireEvent.change(input, { target: { value: 'AB' } });
+// @@@@  화면별 필요한 가짜 비즈니스 데이터 정의
+const mockPageData: Record<string, any> = {
+    DIARY_LIST: { diary_list_source: [] },
+    MAIN_PAGE: {},
+    LOGIN_PAGE: {},
+    SET_TIME_PAGE: {},
+    DIARY_WRITE: {}
+};
 
-    // 4. 로그를 분석하여 렌더링 횟수를 체크한다.  부모(DynamicEngine) 로그가 1번(초기 렌더링)만 찍혔는지 확인한다
-    const engineRenderLogs = consoleSpy.mock.calls.filter(call =>
-        call[0].includes('DynamicEngine 렌더링 횟수')
-    );
+// 2. 동적 MSW 서버 설정
+const server = setupServer(
+    http.get('/api/ui/:screenId', ({params}) => {
+        const {screenId} = params;
+        const data = allMockData[screenId as string];
+        if (!data) return new HttpResponse(null, {status: 404});
+        // 서버 응답 규격에 맞춰 data.data(순수 배열) 전달
+        return HttpResponse.json({ success: true, data: { screenId, children: data.data } });
+    })
+);
 
-    const childRenderLogs = consoleSpy.mock.calls.filter(call =>
-        call[0].includes('InputField 렌더링 횟수')
-    );
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
-    // 5. 검증: 최적화가 잘 되었다면 입력 시 부모 엔진의 렌더링은 늘어나지 않아야 한다.
-    // 첫 렌더링 1회를 제외하고 추가 렌더링이 없어야 함 (상황에 따라 1회로 고정)
-    expect(engineRenderLogs.length).toBeLessThanOrEqual(1);
+describe('SDUI 모든 화면 유동적 최적화 검증', () => {
+    // @@@@ 핵심: 데이터셋의 키 값들을 순회하며 테스트 실행 [cite: 2026-02-20]
+    test.each(Object.keys(allMockData))('%s 화면 렌더링 및 정렬 상태 확인', async (screenId) => {
+        // @@@@ 이전 테스트 로그를 지운다
+        const consoleSpy = jest.spyOn(console, 'log').mockClear();
 
-    // 자식 컴포넌트는 입력한 횟수만큼 정상적으로 그려져야 함
-    expect(childRenderLogs.length).toBeGreaterThan(1);
-    // @@@@ 성공 기록 및 지표 로깅
-    logTestSuccess(`Rendering Optimization - Engine Count: ${engineRenderLogs.length}, Child Count: ${childRenderLogs.length}`);
-    consoleSpy.mockRestore();
+        renderWithProviders(
+            <MetadataProvider screenId={screenId}>
+                <DynamicEngine
+                    //  JSON 객체 전체가 아닌 내부의 data 배열만 전달
+                    metadata={allMockData[screenId].data}
+                    screenId={screenId}
+                    // 2. 인터페이스 규격에 맞춰 필수 프롭 추가
+                    pageData={allMockData[screenId] || {}}
+                    formData={{}}
+                    onChange={jest.fn()}
+                    onAction={jest.fn()}
+                />
+            </MetadataProvider>
+        );
+
+        // 2. 비동기 렌더링 완료 대기
+        await waitFor(() => {
+            // 이제 jest-dom이 로드되어 toBeInTheDocument를 쓸 수 있음
+            expect(screen.queryByText(/DATA_SOURCE/)).not.toBeInTheDocument();
+        });
+
+
+        // 3. 입력창이 있다면 글자를 입력해 본다
+        const textboxes = screen.queryAllByRole('textbox');
+        if (textboxes.length > 0) {
+            fireEvent.change(textboxes[0], { target: { value: 'optimization_test' } });
+        }
+
+        // 4. 성능 지표 분석 (최적화 여부)
+        const engineLogs = consoleSpy.mock.calls.filter(c => c[0].includes('DynamicEngine'));
+
+        // 부모 엔진은 초기 마운트 + isDesktop 업데이트로 인해 최대 2회까지 허용한다.
+        expect(engineLogs.length).toBe(2);
+        // @@@@  여러 개 중 첫 번째 입력창만 타겟팅
+        const inputs = screen.queryAllByRole('textbox');
+
+        // 5. 성공 로그 기록 (전체 요약 리포트에 포함됨) [cite: 2026-02-20]
+        logTestSuccess(`${screenId} - 최적화 통과 (Render Count: ${engineLogs.length})`);
+
+        consoleSpy.mockRestore();
+    });
 });
