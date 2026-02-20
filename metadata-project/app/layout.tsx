@@ -7,6 +7,7 @@ import ReactQueryProvider from "@/components/providers/ReactQueryProvider"; // �
 import {MetadataProvider} from "@/components/MetadataProvider";
 import { AuthProvider } from '@/context/AuthContext';
 import Header from "@/components/Header";
+import AppShell from "@/components/AppShell";
 //  @@@@ 2026-02-08 수정 MetadataProvider 적용
 // layout.tsx 에 있는 컴포넌트들이 undefined 에러 없이 데이터를 안정적으로 받아오게 하는 API 흐름 설계
 // @@@@ layout 역할 :  프론트앤드 전체 레이아웃 구조
@@ -23,8 +24,9 @@ export default function RootLayout({children}: Readonly<{
             <MetadataProvider>
                 {/*<Header/>*/}
                 {/* 유틸리티 컴포넌트는 데이터 흐름 안쪽, 하지만 UI 구조에 방해 안 되는 곳에 위치 */}
-                <Header />
-                <main>{children}</main>
+                <AppShell>
+                    <main>{children}</main>
+                </AppShell>
             </MetadataProvider>
             </AuthProvider>
         </ReactQueryProvider>
