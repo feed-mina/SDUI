@@ -17,7 +17,7 @@ import java.io.IOException;
 
 @Component
 @Profile("test") // 테스트 프로필에서만 작동하도록 설정 [cite: 2026-02-18]
-public class MockAuthFilter extends OncePerRequestFilter {
+public class MockAuthFilterTest extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
