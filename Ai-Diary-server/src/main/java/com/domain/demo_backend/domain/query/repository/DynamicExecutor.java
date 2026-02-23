@@ -42,11 +42,4 @@ public class DynamicExecutor {
         // 2. 쿼리를 실행하여 결과를 리스트로 받는다.
         return jdbcTemplate.update(sql, paramSource);
     }
-//
-//    @Autowired
-//    private CommonMapper commonMapper;
-//
-//    public List<Map<String, Object>> executeList(String sql, Map<String, Object> params){
-//        return commonMapper.executeDynamicQuery(sql, params);
-//    }
 }
