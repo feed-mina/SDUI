@@ -12,6 +12,7 @@ import RecordTimeComponent from "@/components/fields/RecordTimeComponent";
 import DateTimePicker from "@/components/fields/DateTimePicker";
 import TimeSelect from "@/components/fields/TimeSelect";
 import TimeSlotRecord from "@/components/fields/TimeSlotRecord";
+import AddressSearchGroup from "@/components/fields/AddressSearchGroup";
 import {withRenderTrack} from "@/components/utils/withRenderTrack";
 
 const GroupComponent: React.FC<any> = ({ children }) => <>{children}</>;
@@ -32,5 +33,6 @@ export const componentMap: Record<string, React.FC<any>> = {
     DATETIME_PICKER: withRenderTrack(DateTimePicker,"DateTimePicker"),
     TIME_SELECT: withRenderTrack(TimeSelect,"TimeSelect"),
     TIME_SLOT_RECORD: withRenderTrack(TimeSlotRecord,"TimeSlotRecord"),
+    ADDRESS_SEARCH_GROUP : withRenderTrack(AddressSearchGroup, "AddressSearchGroup"),
     GROUP:withRenderTrack(GroupComponent, "GroupField"),
 };
