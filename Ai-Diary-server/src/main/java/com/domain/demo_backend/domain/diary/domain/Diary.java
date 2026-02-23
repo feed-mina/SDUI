@@ -44,11 +44,14 @@ public class Diary {
     @Column(name = "user_sqno", insertable = false, updatable = false)
     private Long userSqno;
 
-//    @JsonProperty("tags")
-//    private Map<String, String> tags;
 
+    @Column(name = "day_tag1")
     private String dayTag1;
+
+    @Column(name = "day_tag2")
     private String dayTag2;
+
+    @Column(name = "day_tag3")
     private String dayTag3;
     private String date;
     private String email;
@@ -100,6 +103,7 @@ public class Diary {
     private List<Integer> selectedTimes; // [22, 23, 0, 1] 형태로 자동 매핑
 
     @JdbcTypeCode(SqlTypes.JSON)
+
     @Column(name = "daily_slots")
     private Map<String, Object> dailySlots; // {"morning": "...", "lunch": "..."} 형태로 매핑
 
