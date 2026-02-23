@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import {useRenderCount} from "@/hooks/useRenderCount";
+import '../../app/styles/TileSlot.css'
 
 const DEFAULT_SLOT_DATA = { morning: '', lunch: '', evening: '' };
 // @@@@ 2026-02-17 시간대별 범용 기록 컴포넌트
@@ -34,20 +35,16 @@ const TimeSlotRecord: React.FC<any> = ({ id, meta, data, onChange }) => {
         { key: 'evening', label: '저녁' }
     ];
 
-    return (
-        <div className="time-slot-container border p-4 rounded-xl bg-white shadow-sm">
-            <h3 className="font-bold text-lg text-gray-800">{title}</h3>
-            <p className="text-sm text-gray-500 mb-6">{description}</p>
-
-            <div className="grid grid-cols-1 gap-4">
+    return (<div className="time-slot-container">
+            <h3 className="time-slot-title">{title}</h3>
+            <p className="time-slot-description">{description}</p>
+            <div className="time-slot-grid">
                 {slots.map((slot) => (
-                    <div key={slot.key} className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-gray-700">
-                            {slot.label}
-                        </label>
+                    <div key={slot.key} className="time-slot-wrapper">
+                        <label className="time-slot-label">{slot.label}</label>
                         <input
                             type="text"
-                            className="w-full border-b-2 border-gray-200 p-2 focus:border-purple-400 outline-none transition-colors"
+                            className="time-slot-input"
                             value={slotData[slot.key] || ''}
                             onChange={(e) => handleInputChange(slot.key, e.target.value)}
                             placeholder={placeholders[slot.key]}
