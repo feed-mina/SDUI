@@ -30,7 +30,7 @@ public class DiaryWriteIntegrationTest {
     void saveDiary_Integration_Success() throws Exception {
         // Given: 실제 전송될 JSON 구조와 동일한 DTO 준비
         DiaryRequest request = new DiaryRequest();
-        request.setDiaryTitle("통합 테스트");
+        request.setTitle("통합 테스트");
         request.setSelectedTimes(List.of(22, 23, 0));
         request.setDailySlots(Map.of("morning", "운동"));
 
