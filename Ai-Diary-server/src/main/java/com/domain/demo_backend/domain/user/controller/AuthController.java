@@ -132,10 +132,18 @@ public class AuthController {
     })
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest) {
+        // 1. 필수 값 검증 (간단한 예시)
+        if (registerRequest.getZipCode() == null || registerRequest.getRoadAddress() == null) {
+            return ResponseEntity.badRequest().body("주소 정보는 필수입니다.");
+        }
+
+        log.info("회원가입 요청 - 이메일: " + registerRequest.getEmail());
+        log.info("주소 정보: [" + registerRequest.getZipCode() + "] " + registerRequest.getRoadAddress());
+
         log.info("registerRequest: " + registerRequest);
         authService.register(registerRequest);
         log.info("register service logic OK");
-        return ResponseEntity.ok("User registred successfully!");
+        return ResponseEntity.status(HttpStatus.CREATED).body("User registred successfully!");
     }
 
 
