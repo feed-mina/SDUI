@@ -18,7 +18,9 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     int countByUserAndDelYn(User user, String delYn);
 
     // 특정 사용자의 일기 목록을 페이징하여 가져오기 (Spring Data JPA 명명 규칙 활용)
-    @Query("SELECT d FROM Diary d JOIN FETCH d.user WHERE d.user.userSqno = :userSqno AND d.delYn = :delYn ORDER BY d.regDt DESC")
+    // JOIN FETCH 대신 EntityGraph를 써서 N+1 문제를 방어하면서 페이징도 안전하게 처리
+    @EntityGraph(attributePaths = {"user"})
+    @Query("SELECT d FROM Diary d WHERE d.user.userSqno = :userSqno AND d.delYn = :delYn")
     List<Diary> findMemberDiaryList(@Param("userSqno") Long userSqno, @Param("delYn") String delYn, Pageable pageable);
     // 2. 특정 사용자의 일기 목록을 페이징하여 가져오기
 
@@ -33,6 +35,9 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     Optional<Diary> findByDiaryIdAndUserIdAndDelYn(Long diaryId, String userId, String delYn);
 
+    // 객체 대신 ID로 개수
+    @Query("SELECT COUNT(d) FROM Diary d WHERE d.user.userSqno = :userSqno AND d.delYn = :delYn")
+    int countByUserIdAndDelYn(@Param("userSqno") Long userSqno, @Param("delYn") String delYn);
     // 3. 개수 세기
     int countByUserId(String userId);
 
