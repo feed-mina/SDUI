@@ -17,7 +17,7 @@ interface RecordTimeProps {
 
 // 부모 블록 전체 화면을 관리하는 곳
 const RecordTimeComponent = ({data, onChange}: RecordTimeProps) => {
-    console.log("  Record Time 컴포넌트가 받은 데이터:", data);
+    // console.log("  Record Time 컴포넌트가 받은 데이터:", data);
     const {formatGoalDate, formatTimePretty, formatDateOnly} = dateFormatter();
     const {
         goalTime,

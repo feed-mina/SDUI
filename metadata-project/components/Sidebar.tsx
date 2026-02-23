@@ -19,7 +19,7 @@ export default function Sidebar() {
     const { isDesktop } = useMetadata();
     const pathname = usePathname();
     const { user, isLoggedIn } = useAuth();
-    const { metadata, loading } = usePageMetadata(1, false, undefined, "GLOBAL_HEADER");
+    const { metadata, loading } = usePageMetadata("GLOBAL_HEADER",1, false);
 
     const flatMeta = metadata ? flattenMetadata(metadata) : [];
     const { handleAction } = usePageActions(flatMeta);

@@ -19,7 +19,7 @@ export const useDynamicEngine = (metadata: Metadata[], pageData: any, formData: 
             return formData[refId];
         }
 
-        // [핵심] 리피터 안(rowData가 있을 때)에서는 row 객체 전체를 그냥 넘겨라!
+        // [핵심] 리피터 안(목록 페이지 등 rowData가 있을 때)에서는 row 객체 전체를 그냥 넘겨라!
         // 그래야 하위 컴포넌트가 자기가 필요한 키(title, reg_dt 등)를 스스로 꺼낸다.
         if (rowData) {
             return rowData;
@@ -28,18 +28,17 @@ export const useDynamicEngine = (metadata: Metadata[], pageData: any, formData: 
 
         // 필드명이 없으면 객체 전체를 반환 (이미지 컴포넌트 등에서 활용)
 
-        //  리피터 외부 (전역 데이터 창고 참조)
+        //  리피터 외부 (상세 페이지) 라면 pageData 전체를 넘김
         if (refId && pageData && pageData[refId]) {
-            const remote = pageData[refId];
 // @@@@ 2026-02-08 추가 리스트면 첫 번째 항목을 아니면 데이터 전체를 반환
 
             // [핵심] 리스트가 아닌 '단일 컴포넌트(TimeSlot 등)'인데 배열로 감싸져 왔다면 0번을 꺼내준다
             // 만약 컴포넌트 자체가 리스트를 다루는 '리피터'라면 배열 그대로를 반환한다
             const isRepeater = node.children && node.children.length > 0;
-            if (!isRepeater && Array.isArray(remote)) {
-                return remote[0] || {};
+            if (!isRepeater && Array.isArray(pageData[refId])) {
+                return pageData[refId][0] || {};
             }
-            return remote;
+            return isRepeater ? pageData[refId] : pageData;
         }
 // @@@@ 2026-02-09 MAIN_PAGE처럼 데이터 소스가 없는 경우 전체 pageData (또는 빈 객체)를 반환
         return pageData || {};
