@@ -22,6 +22,7 @@ export interface Metadata {
     uiId?: string;
     labelText?: string;
     isReadonly?: boolean | string;
+    is_readonly?: boolean | string;
     children?: Metadata[] | null;
 }
 
