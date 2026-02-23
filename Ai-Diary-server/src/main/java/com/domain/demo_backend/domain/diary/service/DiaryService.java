@@ -13,12 +13,18 @@ import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -131,14 +137,21 @@ public class DiaryService {
         //먼저 DB에서 유저를 찾는다.
         User user = userRepository.findByUserSqno(userDetails.getUserSqno()).orElseThrow(() -> new IllegalArgumentException("존재하지 않은 사용자입니다."));
 
+        //   한국 시간(KST) 기준 현재 시간 구하기
+        LocalDateTime nowKst = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime();
+
+        //   한국어 요일 추출 (예: 월요일)
+        String dayOfWeek = nowKst.format(DateTimeFormatter.ofPattern("EEEE", Locale.KOREAN));
         // 빌더를 사용해 다이어리를 만든다
+
         Diary diary = Diary.builder()
-                .user(user) // userSqno 대신 객체 자체를 넣어준다.
+                .user(user)
                 .userId(user.getUserId())
                 .email(user.getEmail())
-                .title(diaryRequest.getDiaryTitle() != null ? diaryRequest.getDiaryTitle() : "Untitled")
-                .content(diaryRequest.getDiaryContent() != null ? diaryRequest.getDiaryContent() : "")
-                .emotion(diaryRequest.getDiaryEmotion() != null ? diaryRequest.getDiaryEmotion() : 0)
+                .roleNm(user.getRole()) //   User 엔티티의 role 정보를 매핑
+                .title(diaryRequest.getTitle() != null ? diaryRequest.getTitle() : "Untitled")
+                .content(diaryRequest.getContent() != null ? diaryRequest.getContent() : "")
+                .emotion(diaryRequest.getEmotion() != null ? diaryRequest.getEmotion() : 0)
                 .frstRegIp(ip != null ? ip : "127.0.0.1")
                 .selectedTimes(diaryRequest.getSelectedTimes())
                 .dailySlots(diaryRequest.getDailySlots())
@@ -148,6 +161,9 @@ public class DiaryService {
                 .diaryStatus(diaryRequest.getDiaryStatus() != null ? diaryRequest.getDiaryStatus() : "true")
                 .diaryType(diaryRequest.getDiaryType() != null ? diaryRequest.getDiaryType() : "N")
                 .delYn("N")
+                .regDt(nowKst)
+                .updtDt(nowKst)
+                .date(dayOfWeek)
                 .build();
 
         System.out.println("@@@Diary 객체 생성 값: " + diary);
@@ -157,14 +173,13 @@ public class DiaryService {
     public PageInfo<DiaryResponse> selectMemberDiaryList(Authentication authentication, int pageNo, int pageSize) {
         // 1. 현재 로그인한 사용자 정보 가져오기
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        String email = userDetails.getUserId(); // email추출
-        // 2. DB에서 유저 객체 찾기
-        User user = userDetails.getUser();
 
+        Long userSqno = userDetails.getUser().getUserSqno();
         // 3. 페이징 설정 및 해당 유저의 데이터만 조회
-        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-        List<Diary> diaries = diaryRepository.findMemberDiaryList(user.getUserSqno(), "N", pageable);
-        int totalCount = diaryRepository.countByUserAndDelYn(user, "N");
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by("regDt").descending());
+
+        List<Diary> diaries = diaryRepository.findMemberDiaryList(userSqno, "N", pageable);
+        int totalCount = diaryRepository.countByUserIdAndDelYn(userSqno, "N");
         // 4. DTO 변환 및 결과 반환
         List<DiaryResponse> diaryResponseList = diaries.stream().map(this::convertToDto).collect(Collectors.toList());
         PageInfo<DiaryResponse> pageInfo = new PageInfo<>(diaryResponseList);
