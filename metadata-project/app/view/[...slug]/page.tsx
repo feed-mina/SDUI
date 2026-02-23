@@ -10,6 +10,7 @@ import {usePageActions} from "@/hooks/usePageActions";
 import Skeleton from "@/components/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import {useRouter} from "next/navigation";
+import {componentMap} from "@/components/DynamicEngine/componentMap";
 
 
 
@@ -26,6 +27,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
     const slug = params.slug || [];
     // slug[0]은 DIARY_LIST 또는 DIARY_DETAIL (screenId)
     // slug[1]은 상세 페이지일 때 넘어오는 PK값 (diaryId)
+    console.log("Current Slug:", slug);
     const screenId = slug[0];
     const diaryId = slug[1];
     const router = useRouter();
@@ -38,12 +40,17 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
 // 1. 상태 선언을 훅 호출보다 위로 올림 (중요!)
     const [currentPage, setCurrentPage] = useState(1);
     const [isOnlyMine, setIsOnlyMine] = useState(false);
-
-    // 2. 데이터 조회 관련 훅 호출
-    const {metadata, pageData, loading, totalCount} = usePageMetadata(screenId, currentPage, isOnlyMine,  diaryId );
-
-    // 3. 사용자 액션 관련 훅 호출 , formData를 꺼내온다
+    // 2. 사용자 액션 관련 훅 호출 , formData를 꺼내온다
+    // 3. 훅에 모든 조건을 넘겨주면, 가공된 metadata가 나옴
+    //   메타데이터 훅 호출 (가공된 metadata를 가져옴)
+    const {metadata, pageData, totalCount, loading: dataLoading} = usePageMetadata(
+        screenId,
+        currentPage,
+        isOnlyMine,
+        diaryId
+    );
     const {formData, handleChange, handleAction, showPassword, pwType} = usePageActions(metadata);
+
     //   접근 권한 체크 로직 (로그인 여부 확인)
     useEffect(() => {
         // 로딩 중이 아닐 때만 판단
@@ -56,7 +63,6 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
         }
     }, [isLoading, isLoggedIn, screenId, router]);
 
-    // 훅 호출
 
     // @@@@ 2026-02-07 추가 서버 데이터(pageData)와 사용자 입력 데이터(formData)를 합친다. 사용자 입력값이 있을 경우 formData를 우선하고 없으면 초기값을 쓴다
 
@@ -70,32 +76,6 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
         setCurrentPage(1);
     };
 
-    // @@@@ 2026-02-08 추가 api 변경에 따라 트리구조에 따라 children 재귀적으로 랜더링
-    const filtedMetadata = useMemo(() => {
-        // 트리 구조를 깊숙이 탐색하며 필터링 하는 함수
-        const filterRecursive = (items: any[]): any[] => {
-            return items
-                .map(item => ({
-                    ...item,
-                    //     자식이 있으면 자식들도 다시 이 함수(자신)을 태워서 필터링함
-                    children: item.children ? filterRecursive(item.children) : null,
-                    // 비밀번호 토글 텍스트 변경 로직도 여기서 처리하면 깔끔해
-                    labelText: item.componentId === "pw_toggle_btn" ? (showPassword ? "숨기기" : "보이기")
-                        : item.labelText
-                }))
-                .filter(item => {
-                    // 로그인 여부에 따른 버튼 노출 로직
-                    if (item.componentId === "go_login_btn" || item.componentId === "go_tutorial_btn") {
-                        return !isLoggedIn; // 로그인 안했을때 보임
-                    }
-                    if (item.componentId === "go_diary_btn" || item.componentId === "view_diary_list_btn") {
-                        return isLoggedIn;
-                    }
-                    return true; // 그 외 컴포넌트 (그룹, 이미지 등)은 유지
-                });
-        };
-        return filterRecursive(metadata);
-    }, [metadata, showPassword, isLoggedIn]);
 
 
     // @@@@ 2026-02-04 스켈레톤 UI로 바꿈
@@ -111,7 +91,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
             )}
             <DynamicEngine
                 screenId={screenId}
-                metadata={filtedMetadata}
+                metadata={metadata}
                 pageData={combineData}
                 formData={formData}
                 onChange={handleChange}
