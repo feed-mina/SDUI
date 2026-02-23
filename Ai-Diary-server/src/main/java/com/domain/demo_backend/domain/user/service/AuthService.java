@@ -1,17 +1,17 @@
 package com.domain.demo_backend.domain.user.service;
 
 
-import com.domain.demo_backend.global.error.DuplicateEmailException;
-import com.domain.demo_backend.global.error.ErrorCode;
-import com.domain.demo_backend.global.security.PasswordUtil;
-import com.domain.demo_backend.global.error.BusinessException;
 import com.domain.demo_backend.domain.token.domain.TokenResponse;
 import com.domain.demo_backend.domain.user.domain.User;
 import com.domain.demo_backend.domain.user.domain.UserRepository;
 import com.domain.demo_backend.domain.user.dto.LoginRequest;
 import com.domain.demo_backend.domain.user.dto.PasswordDto;
 import com.domain.demo_backend.domain.user.dto.RegisterRequest;
+import com.domain.demo_backend.global.error.BusinessException;
+import com.domain.demo_backend.global.error.DuplicateEmailException;
+import com.domain.demo_backend.global.error.ErrorCode;
 import com.domain.demo_backend.global.security.JwtUtil;
+import com.domain.demo_backend.global.security.PasswordUtil;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -87,74 +88,65 @@ public class AuthService {
     // 이미 존재하는 사용자 아이디인지 확인하고 중복되면 예외 발생
     @Transactional
     public void register(RegisterRequest registerRequest) {
+        // 1. 이메일로 기존 유저 조회
+        Optional<User> existingUserOpt = userRepository.findByEmail(registerRequest.getEmail());
 
-        // 1. 중복 체크인 먼저 수행
-        userRepository.findByEmail(registerRequest.getEmail()).ifPresent(u -> {
-            throw new DuplicateEmailException();
-        });
+        if (existingUserOpt.isPresent()) {
+            User user = existingUserOpt.get();
 
-        Date date = new Date();
-        LocalDateTime ldt = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        User reactiveUser = userRepository.findByEmail(registerRequest.getEmail()).orElse(null);
-
-        if (reactiveUser != null) {
-            if ("Y".equals(reactiveUser.getDelYn())) {
-                // 기존 탈퇴 유저 - 재가입 처리
-                LocalDate withdrawDate = reactiveUser.getWithdrawAt().toLocalDate();
-                LocalDate now = LocalDate.now();
-
-                if (ChronoUnit.DAYS.between(withdrawDate, now) < 7) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "탈퇴 후 7일이 지나야 재가입이 가능합니다.");
-                } else {
-                    User user = User.builder()
-                            .userId(registerRequest.getEmail().split("@")[0])
-                            .password(registerRequest.getPassword())
-                            .hashedPassword(PasswordUtil.sha256(registerRequest.getPassword()))
-                            .phone(registerRequest.getPhone())
-                            .email(registerRequest.getEmail())
-                            .delYn("N")
-                            .verifyYn("Y") // 다시 인증했음으로 변경
-                            .socialType("N") // 일반가입은 N!
-                            .updatedAt(ldt)
-                            .withdrawAt(LocalDateTime.parse("2100-12-31 24:59:59"))
-                            .build();
-                    // 재가입 허용 update
-                    userRepository.save(user); // delYn을 'N'으로 , verifyYn 을 'Y'로 바꾸고 새로 정보 업데이트
-                    return;
-                }
-            } else {
+            // 가공되지 않은 활성 유저인 경우
+            if ("N".equals(user.getDelYn())) {
                 throw new DuplicateEmailException();
             }
+
+            // 탈퇴 유저인 경우 (재가입 로직)
+            LocalDate withdrawDate = user.getWithdrawAt().toLocalDate();
+            if (ChronoUnit.DAYS.between(withdrawDate, LocalDate.now()) < 7) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "탈퇴 후 7일 이내에는 재가입이 불가능합니다.");
+            }
+
+            // 재가입 처리 (기존 엔티티 업데이트)
+            updateUserForReRegistration(user, registerRequest);
+            return;
         }
-        if (userRepository.findByEmail(registerRequest.getEmail()) != null) {
-            throw new DuplicateEmailException();
-        }
-        if (userRepository.findByPhone(registerRequest.getPhone()) != null) {
-            log.info("  250527_회원가입 핸드폰 실패");
+
+        // 2. 신규 가입 시 핸드폰 중복 체크
+        if (userRepository.findByPhone(registerRequest.getPhone()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 핸드폰 번호입니다.");
         }
 
-        if (userRepository.findByEmailAndDelYn(registerRequest.getEmail(), "Y").isPresent()) {
-            log.info("  250527_탈퇴한 유저");
-            throw new IllegalArgumentException("탈퇴한 계정은 7일 동안 재가입할 수 없습니다..");
-        }
-        log.info("  250527_유효성 통과");
-        User user = User.builder()
+        // 3. 신규 유저 저장
+        User newUser = User.builder()
                 .userId(registerRequest.getEmail().split("@")[0])
-                .password(registerRequest.getPassword())
+                .password(registerRequest.getPassword()) // 실제로는 BCryptPasswordEncoder 사용 권장
                 .hashedPassword(PasswordUtil.sha256(registerRequest.getPassword()))
                 .phone(registerRequest.getPhone())
                 .email(registerRequest.getEmail())
+                .zipCode(registerRequest.getZipCode())      // 주소 저장 추가
+                .roadAddress(registerRequest.getRoadAddress())
+                .detailAddress(registerRequest.getDetailAddress())
                 .role("ROLE_USER")
-                .verifyYn("N") // 카카오는 인증 완료니까 Y!
-                .socialType("N") // 일반가입은 N!
-                .createdAt(ldt)
+                .delYn("N")
+                .verifyYn("N")
+                .socialType("N")
+                .createdAt(LocalDateTime.now())
                 .build();
-        log.info("  250527_user: " + user);
-        log.info("  250527_user Mapper insertUser 시작");
-//        userRepository.insertUser(user);
+
+        userRepository.save(newUser);
     }
 
+    private void updateUserForReRegistration(User user, RegisterRequest request) {
+        // 빌더 대신 Setter나 별도의 업데이트 메서드 사용
+        user.reRegister(
+                request.getPassword(),
+                PasswordUtil.sha256(request.getPassword()),
+                request.getPhone(),
+                request.getZipCode(),
+                request.getRoadAddress(),
+                request.getDetailAddress()
+        );
+        userRepository.save(user);
+    }
 
     public String sendVerificationCode(String email) throws MessagingException {
         //랜덤 인등코드 생성

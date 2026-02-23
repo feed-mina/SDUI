@@ -1,6 +1,8 @@
 package com.domain.demo_backend.domain.user.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -66,6 +68,12 @@ public class User {
     @Column(name = "drug_using_type")
     private String drugUsingType;
 
+    private String zipCode;
+
+    private String roadAddress;
+
+    private String detailAddress;
+
     public User(String userId, String password, String hashedPassword, String role,  String delYn, String phone, String email, String verifyYn, String socialType, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationCode, LocalDateTime withdrawAt, String timeUsingType, String drugUsingType) {
         this.userId = userId;
         this.password = password;
@@ -74,6 +82,9 @@ public class User {
         this.delYn = delYn;
         this.phone = phone;
         this.email = email;
+        this.zipCode = zipCode;
+        this.roadAddress = roadAddress;
+        this.detailAddress = detailAddress;
         this.verifyYn = verifyYn;
         this.socialType = socialType;
         this.createdAt = createdAt;
@@ -87,7 +98,9 @@ public class User {
     // JPA가 insert 하기 전 자동으로 시간을 넣어주는 기능
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+
+    }
+
+    public void reRegister(@NotBlank(message = "비밀번호는 필수입니다.") String password, String s, @NotBlank(message = "핸드폰 번호는 필수 입력 값입니다.") @Pattern(regexp = "^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$", message = "올바른 핸드폰 번호 형식이 아닙니다.") String phone, @NotBlank(message = "우편번호는 필수입니다.") String zipCode, String roadAddress, String detailAddress) {
     }
 }
