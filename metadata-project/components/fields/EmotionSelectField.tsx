@@ -1,15 +1,15 @@
 'use client';
 import React from 'react';
 
-interface EmotionSelectFieldProps {
-    id: string;
-    style?: React.CSSProperties;
-    className?: string;
-    meta?: any;
-    onChange?: (id: string, value: string) => void;
-}
+function EmotionSelectField({ id, meta, data, onChange }: any) {
+    const targetKey = meta?.ref_data_id || meta?.refDataId || id;
+    // pageData에서 값을 가져옴 [cite: 2026-02-17]
+    const value = (typeof data === 'string' || typeof data === 'number')
+        ? data
+        : (data?.[targetKey] || "");
 
-function EmotionSelectField({ id, style, className, meta, onChange }: EmotionSelectFieldProps) {
+    const isReadOnly = meta?.isReadonly === true || meta?.isReadonly === "true" ||
+        meta?.is_readonly === true || meta?.is_readonly === "true";
 
     const emotionItems = [
         { text: "기분이 좋아요", value: "1" },
@@ -25,22 +25,20 @@ function EmotionSelectField({ id, style, className, meta, onChange }: EmotionSel
     ];
 
     return (
-        <>
+        <div className={meta?.css_class}>
+            <span style={{ fontWeight: 'bold' }}>{meta?.labelText}</span>
             <select
                 id={id}
-                style={{ ...style, flex: 1 }}
-                className={className}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    const val = e.target.value;
-                    if (onChange) onChange(id, val);
-                }}
+                value={value}
+                disabled={isReadOnly} // 읽기 전용일 때 선택 불가 [cite: 2026-02-17]
+                onChange={(e) => !isReadOnly && onChange?.(targetKey, e.target.value)}
             >
                 <option value="">오늘 나의 기분은?</option>
                 {emotionItems.map(item => (
                     <option key={item.value} value={item.value}>{item.text}</option>
                 ))}
             </select>
-        </>
+        </div>
     );
 }
 

@@ -35,7 +35,7 @@ function EmailSelectField({ id, style, className, meta, onChange }: EmailSelectF
                 {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
             </select>
             {isDirect && (
-                <input
+                <input className="domian-input"
                     type="text"
                     placeholder="도메인 입력"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(id, e.target.value)}

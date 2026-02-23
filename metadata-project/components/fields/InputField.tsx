@@ -18,7 +18,9 @@ const InputField = memo(({id, meta, data, onChange, onAction, showPassword, pwTy
     // 1. 데이터를 매핑할 키 결정
     const targetKey = meta?.refDataId || meta?.ref_data_id || String(id || "");
     // 부모가 관리하는 formData와 서버 데이터를 합친 값이 직접 들어온다
-    const value = data?.[targetKey] || "";
+    const value = (typeof data === 'string' || typeof data === 'number')
+        ? data
+        : (data?.[targetKey] || "");
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
@@ -27,6 +29,8 @@ const InputField = memo(({id, meta, data, onChange, onAction, showPassword, pwTy
             onChange(targetKey, newValue);
         }
     };
+    // 서버에서 내려온 읽기 전용 속성 추출
+    const isReadOnly = meta?.isReadonly || meta?.is_readonly || false;
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && onAction && meta?.actionType === "SUBMIT") {
@@ -46,8 +50,10 @@ const InputField = memo(({id, meta, data, onChange, onAction, showPassword, pwTy
                 id={targetKey}
                 type={targetKey.toLowerCase().includes('pw') ? (showPassword ? 'text' : 'password') : 'text'}
                 value={value} // 부모가 준 값을 직접 사용
-                onChange={handleInputChange}
+                onChange={isReadOnly ? undefined : handleInputChange}
                 onKeyDown={onKeyDown}
+                readOnly={isReadOnly}
+                className={isReadOnly ? "readonly-style" : ""}
             />
         </div>
     );
