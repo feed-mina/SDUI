@@ -26,14 +26,9 @@ public class DiaryResponse {
     private String diaryStatus;
     private Integer emotion;
     private String delYn;
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDateTime date;
-
-    // 최종 수정 일시
+    private String date;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime regDt;
-
-    // 최종 수정 일시
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime lastUpdtDt;
 
