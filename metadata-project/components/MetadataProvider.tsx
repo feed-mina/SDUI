@@ -5,6 +5,7 @@ import { usePathname, useParams } from 'next/navigation'; // @@@@ useParams 추�
 import { DEFAULT_SCREEN_ID, SCREEN_MAP } from '@/components/constants/screenMap';
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 interface MetadataContextType {
     menuTree: any[];
@@ -39,15 +40,19 @@ export function MetadataProvider({ children, screenId: propScreenId }: MetadataP
     const finalScreenId = useMemo(() => {
         // 우선순위: 1. 직접 넘겨준 ID(테스트용) -> 2. URL 매핑 테이블 -> 3. URL 파라미터 -> 4. 기본값
         if (propScreenId) return propScreenId;
-        if (SCREEN_MAP[pathname]) return SCREEN_MAP[pathname];
 
-        // useParams에서 가져오거나 pathname의 마지막 세그먼트 활용
-        const urlId = params?.screenId as string;
-        if (urlId) return urlId;
 
+        // pathname이 /view/DIARY_DETAIL/22 라면 ['view', 'DIARY_DETAIL', '22']가 됨
         const pathSegments = pathname.split('/').filter(Boolean);
-        return pathSegments[pathSegments.length - 1] || DEFAULT_SCREEN_ID;
-    }, [propScreenId, pathname, params]);
+
+        // 'view' 다음에 오는 세그먼트(DIARY_DETAIL)를 우선적으로 screenId로 취급
+        const viewIndex = pathSegments.indexOf('view');
+        if (viewIndex !== -1 && pathSegments[viewIndex + 1]) {
+            return pathSegments[viewIndex + 1];
+        }
+
+        return SCREEN_MAP[pathname] || DEFAULT_SCREEN_ID;
+    }, [propScreenId, pathname]);
 
     // 2. 권한 정보 조합
     const rolePrefix = user?.role?.replace('ROLE_', '') || 'GUEST';
@@ -66,6 +71,15 @@ export function MetadataProvider({ children, screenId: propScreenId }: MetadataP
         staleTime: 1000 * 60 * 5,
         enabled: !!finalScreenId, // ID가 확정되었을 때만 실행
     });
+
+    if (isLoading) {
+        return (
+            <div className="page-container">
+                <SkeletonLoader /> {/* 이전에 만든 전체 페이지용 스켈레톤 */}
+            </div>
+        );
+    }
+
     return (
         <MetadataContext.Provider value={{
             menuTree: data || [],

@@ -23,7 +23,7 @@ export default function Header() {
     const { isDesktop } = useMetadata();
     const pathname = usePathname();
     const { user, isLoggedIn } = useAuth();
-    const { metadata, loading: metaLoading } = usePageMetadata(1, false, undefined, "GLOBAL_HEADER");
+    const { metadata, loading: metaLoading } =  usePageMetadata("GLOBAL_HEADER",1, false);
 
     const flatMeta = metadata ? flattenMetadata(metadata) : [];
     const { handleAction } = usePageActions(flatMeta);
