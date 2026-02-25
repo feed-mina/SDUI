@@ -18,10 +18,6 @@ log.txt
 
 dist/*
 
-demo_spring_Vue/Ai-Diary-vue/target
-demo_spring_Vue/Ai-Diary-vue/out
-demo_spring_Vue/Ai-Diary-vue/node_modules/
-demo_spring_Vue/Ai-Diary-vue/dist/
 pronounce-api/.env
 pronounce-api/venv311
 # 구글 서비스 계정 비밀키
