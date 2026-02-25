@@ -1,0 +1,48 @@
+name: Deploy to AWS with Docker
+
+on:
+  push:
+    branches: [ "main" ]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Docker build and push
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/sdui-app:latest ./Ai-Diary-server
+          docker push ${{ secrets.DOCKER_USERNAME }}/sdui-app:latest
+
+      - name: Deploy to AWS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_KEY }}
+          script: |
+            # 1. 최신 이미지 가져오기
+            docker pull yerinmin/sdui-app:latest
+            
+            # 2. 기존 백엔드 컨테이너가 있다면 중지 및 삭제
+            docker stop sdui-backend || true
+            docker rm sdui-backend || true
+            
+            # 3. 새 컨테이너 실행 
+            docker run -d --name sdui-backend \
+              -p 8080:8080 \
+              --network sdui-network \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e SPRING_DATASOURCE_URL=jdbc:postgresql://sdui-db:5432/SDUI_TD \
+              -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} \
+              -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e SPRING_DATA_REDIS_HOST=sdui-redis \
+              -e SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
+              yerinmin/sdui-app:latest
