@@ -1,4 +1,57 @@
-@media (min-width: 1024px) {
+@media (min-width: 1024px) {/* 1. 상단 큰 카드 (약속 안내 영역) */
+    .is-pc .group-MAIN_SECTION {
+        display: flex !important;
+        flex-direction: row !important; /* 좌측 텍스트, 우측 이미지 */
+        justify-content: space-around;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 30px;
+        padding: 80px 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        margin-bottom: 40px;
+    }
+    /* 텍스트와 버튼을 감싸는 영역 */
+    .is-pc .no-goal-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    /* 이미지 영역 */
+    .is-pc .diarylmg {
+        width: 40% !important;
+        order: 2; /* 이미지를 우측으로 */
+        margin-bottom: 0 !important;
+    }
+    /* 2. 하단 요소들을 2열 그리드로 배치 (로그인/튜토리얼 영역) */
+    .is-pc .content-area {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+
+    .is-pc .diary-btn-primary,
+    .is-pc .diary-btn-secondary {
+        width: 100%; /* 카드 너비에 맞게 꽉 채움 */
+        max-width: none;
+    }
+    /* 공통 버튼 스타일 */
+    .diary-btn-primary, .sidebar-auth-btn.login {
+        background-color: #007B65;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+
+
+
+
+
     /* 1. 전체 페이지 레이아웃 구조 잡기 */
     .page-wrap.MAIN_PAGE {
         display: flex;
@@ -21,15 +74,6 @@
         top: 0;
     }
 
-    /* 3. 메인 콘텐츠 영역 (우측 전체) */
-    .content-area {
-        flex: 1;
-        padding: 50px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        max-width: 1200px;
-    }
 
     /* 4. 상단 메인 클럭 섹션 (Hero Card) */
     .group-MAIN_CLOCK_SECTION {
@@ -91,12 +135,10 @@
         border-radius: 30px;
         margin: 0;
     }
-}
 
 /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
 
 /* PC 전용 레이아웃 설정 (1024px 이상) */
-@media (min-width: 1024px) {
     /* 1. 전체 페이지를 사이드바와 콘텐츠로 분리 */
     .app-container {
         display: flex;

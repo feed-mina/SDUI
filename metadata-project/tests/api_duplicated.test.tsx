@@ -2,7 +2,7 @@ import React from 'react';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { renderWithProviders } from './test-utils';
-import { MetadataProvider } from '../components/MetadataProvider';
+import { MetadataProvider } from '../components/providers/MetadataProvider';
 import { waitFor } from '@testing-library/react';
 // @@@@  실제 상수가 정의된 파일에서 SCREEN_MAP을 불러온다.
 import { SCREEN_MAP } from '../components/constants/screenMap';

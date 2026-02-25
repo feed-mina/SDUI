@@ -1,64 +1,19 @@
-/*공통 부품 및 네비게이션*/
-/* 네비게이션 바 */
-.nav-wrap {
-    width: 240px;
-    background: var(--background);
-    border-right: 1px solid var(--border);
-    padding: 2rem 1rem;
-    position: sticky;
-    top: 0;
-    height: 100vh;
+/* SDUI 엔진 컨테이너 */
+.engine-container {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
 }
 
-@media (max-width: 767px) {
-    .nav-wrap {
-        width: 100%;
-        height: 60px;
-        position: fixed;
-        bottom: 0;
-        flex-direction: row;
-        border-right: none;
-        border-top: 1px solid var(--border);
-        z-index: 1000;
-        justify-content: space-around;
-    }
+/* 모바일일 때만 폭 제한 */
+.app-wrapper.is-mobile .engine-container {
+    max-width: 450px;
+    margin: 0 auto;
 }
 
-/* 시간 기록 컴포넌트 */
-.time-record-container {
-    background: var(--bg-gray);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+/* PC일 때 카드 레이아웃 유도 */
+.app-wrapper.is-pc .engine-container {
+    max-width: 1000px;
+    margin: 0 auto;
 }
-
-/* 공통 버튼 */
-.btn-nav {
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-weight: bold;
-    color: white;
-    text-align: center;
-    transition: 0.3s;
-}
-
-.btn-nav.primary {
-    background: var(--primary);
-}
-
-.btn-nav.sub {
-    background: #7E8C79;
-}
-
-.btn-nav:hover {
-    transform: scale(1.05);
-}
-
-
-
-

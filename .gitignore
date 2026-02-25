@@ -28,3 +28,15 @@ pronounce-api/venv311
 pronounce-api/*.json
 # Build results
 Ai-Diary-server/target/
+
+# Playwright test results
+test-results/
+trace.zip
+video.webm
+*.png
+.last-run.json
+
+# Build artifacts
+target/
+node_modules/
+dist/

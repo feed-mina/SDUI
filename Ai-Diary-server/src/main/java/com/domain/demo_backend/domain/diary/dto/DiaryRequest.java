@@ -19,15 +19,21 @@ public class DiaryRequest {
     private String title;
     private String content;
     private Map<String, String> tags;
+    private Long diaryId;
+
+    @JsonProperty("day_tag1")
     private String dayTag1;
+
+    @JsonProperty("day_tag2")
     private String dayTag2;
+
+    @JsonProperty("day_tag3")
     private String dayTag3;
     private Integer emotion;
     private String date;
     private String delYn = "N";
     private int pageNo = 1;
     private int pageSize = 10;
-    private Long diaryId;
     @JsonProperty("selected_times")
     private List<Integer> selectedTimes;
 

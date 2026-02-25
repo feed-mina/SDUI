@@ -20,6 +20,13 @@
     </properties>
 
     <dependencies>
+<!--@@@@ 2026.02 솔라피 추가-->
+        <dependency>
+            <groupId>net.nurigo</groupId>
+            <artifactId>sdk</artifactId>
+            <version>4.3.0</version>
+        </dependency>
+
         <!-- Spring Boot Starter JPA (데이터베이스 연동 + JPA 엔티티 사용) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -1,63 +1,19 @@
-*, *::before, *::after {
-    box-sizing: border-box;
-}
+/* 공통 리셋 및 애니메이션 */
+*, *::before, *::after { box-sizing: border-box; }
+@keyframes pulse-animation { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 
+/* SDUI 엔진 기본형 */
 .engine-container {
-    max-width: 400px !important; /* 인라인 스타일보다 더 높은 우선순위를 가짐 */
-    width: 100% !important;
-    padding: 20px;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-
-}
-
-/* 레이아웃 시스템 */
-.page-wrap {
-    display: flex;
-    width: 100%;
-    min-height: 100dvh;
-}
-
-.content-wrap {
-    flex: 1;
-    padding: 2rem;
-    max-width: 1200px;
+    gap: 15px;
     margin: 0 auto;
+    padding: 20px;
 }
 
-@media (max-width: 767px) {
-    .page-wrap {
-        flex-direction: column;
-    }
-
-    .content-wrap {
-        padding: 1rem;
-        padding-bottom: 80px;
-    }
+/* 모바일 전용 (1024px 미만) */
+.is-mobile .engine-container {
+    max-width: 450px; /* 기존 common.css와 components.css 중복 통합 */
 }
 
-/* 스켈레톤 UI 애니메이션 */
-.skeleton-box {
-    background-color: #e0e0e0;
-    border-radius: 4px;
-    position: relative;
-    overflow: hidden;
-}
-
-.skeleton-box::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-    animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-    100% {
-        transform: translateX(100%);
-    }
-}
