@@ -21,10 +21,6 @@ jobs:
         cache: maven
       # 빌드에 필요한 자바 17 버전을 설치한다.
 
-    - name: Build with Maven
-      run: mvn -f Ai-Diary-server/pom.xml clean package -DskipTests
-      # Maven을 사용해 프로젝트를 빌드한다. 테스트는 시간을 아끼기 위해 일단 제외했다.
-
     - name: Build Docker Image
       run: |
         docker build -t feed-mina/sdui-backend ./Ai-Diary-server
