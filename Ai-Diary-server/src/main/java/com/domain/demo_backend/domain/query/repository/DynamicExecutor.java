@@ -69,7 +69,7 @@ public class DynamicExecutor {
                 paramSource.addValue(paramName, null); // 없는 키는 null로 세팅!
             }
         }
-        // 2. 쿼리를 실행하여 결과를 리스트로 받는다.
+        // 2. 쿼리를 실행하여 결과를 리스트로 받는다..
         return jdbcTemplate.update(sql, paramSource);
     }
 }
