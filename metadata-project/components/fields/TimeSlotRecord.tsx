@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import {useRenderCount} from "@/hooks/useRenderCount";
+import {useRenderCount} from "@/components/DynamicEngine/hook/useRenderCount";
 import '../../app/styles/TileSlot.css'
 
 const DEFAULT_SLOT_DATA = { morning: '', lunch: '', evening: '' };

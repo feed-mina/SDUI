@@ -32,7 +32,11 @@ export interface DynamicEngineProps {
     pageData: any;          // 서버에서 가져온 실제 비즈니스 데이터
     formData: any;          // 사용자가 입력 중인 폼 데이터
     onChange: (id: string, value: any) => void;
-    onAction: (meta: Metadata, data?: any) => void;
+    onAction: (meta: Metadata, data?: any) => void;// [추가] 모달 관련 프로퍼티 정의
+    activeModal?: string | null;
+    closeModal?: () => void;
+    onConfirmModal?: () => void;
     pwType?: string;
     showPassword?: boolean;
+    [key: string]: any;
 }

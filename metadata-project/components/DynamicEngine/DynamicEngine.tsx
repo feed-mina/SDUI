@@ -4,8 +4,8 @@ import React from "react";
 import {componentMap} from "./componentMap";
 import {useDynamicEngine} from "./useDynamicEngine";
 import {DynamicEngineProps, Metadata} from "./type";
-import {useRenderCount} from "@/hooks/useRenderCount";
-import {useMetadata} from "@/components/MetadataProvider";
+import {useRenderCount} from "@/components/DynamicEngine/hook/useRenderCount";
+import {useMetadata} from "@/components/providers/MetadataProvider";
 
 // @@@@ 2026-02-07 주석 추가
 // DynamicEngine 역할 : 분석된 구조를 바탕으로 실제 리액트 컴포넌트를 랜더링
@@ -13,7 +13,7 @@ import {useMetadata} from "@/components/MetadataProvider";
 const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
 
     //  구조 분해 할당 시 screenId 추출
-    const {metadata, screenId, pageData, formData, onChange, onAction, ...rest} = props;
+    const {metadata, screenId, pageData, formData, onChange, onAction, closeModal,activeModal, onConfirmModal, ...rest} = props;
     const { isDesktop } = useMetadata();
 
     //   비즈니스 로직 훅에 필요한 데이터를 넘겨 트리 구조(treeData)를 생성한다.
@@ -68,7 +68,7 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
                         console.warn(`[DynamicEngine] ${refId} 데이터가 배열이 아닙니다.`, list);
                         return null;
                     }
-
+ 
                     return list.map((item: any, idx: number) => {
                         // 3. 리피터 내의 개별 아이템 클릭 핸들러
                         const handleClick = hasAction ? () => onAction(node, item) : undefined;
@@ -120,13 +120,34 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
             );
         });
     };
-
+// 모달만 따로 찾아 렌더링하는 함수
+    const renderModals = (nodes?: Metadata[] | null) => {
+        if (!nodes) return null;
+        return nodes
+            .filter(node => (node.componentType || node.component_type) === 'MODAL')
+            .map(node => {
+                const cid = node.componentId || node.component_id;
+                if (activeModal === cid) {
+                    const ModalComponent = componentMap['MODAL'];
+                    return (
+                        <ModalComponent
+                            key={String(node.uiId)}
+                            meta={node}
+                            onConfirm={() => onAction(node, formData)}
+                            onClose={closeModal}
+                        />
+                    );
+                }
+                return null;
+            });
+    };
     return (
         // @@@@ 최상위 컨테이너에만 클래스를 부여해 CSS 상속 유도
         <div className={`engine-container ${isDesktop ? 'is-desktop' : 'is-mobile'}`}>
             <div className="content-area">
                 {renderNodes(treeData)}
             </div>
+            {renderModals(treeData)}
         </div>
     );
 };

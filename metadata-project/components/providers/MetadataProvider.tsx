@@ -5,7 +5,7 @@ import { usePathname, useParams } from 'next/navigation'; // @@@@ useParams 추�
 import { DEFAULT_SCREEN_ID, SCREEN_MAP } from '@/components/constants/screenMap';
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
-import SkeletonLoader from "@/components/SkeletonLoader";
+import SkeletonLoader from "@/components/utils/SkeletonLoader";
 
 interface MetadataContextType {
     menuTree: any[];
@@ -25,15 +25,19 @@ export function MetadataProvider({ children, screenId: propScreenId }: MetadataP
 
     const [isDesktop, setIsDesktop] = useState(false);
 
+    const { user } = useAuth();
+    const pathname = usePathname();
+    // [수정 1] 브라우저 환경에서만 실행되도록 안전하게 처리
     useEffect(() => {
-        const handleResize = () => setIsDesktop(window.innerWidth >= 1024); // 초기 실행
+        const handleResize = () => {
+            const isPc = window.innerWidth >= 1024;
+            setIsDesktop(prev => (prev !== isPc ? isPc : prev));
+        };
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const { user } = useAuth();
-    const pathname = usePathname();
     const params = useParams();
 
     // 1. 최종 screenId 결정 로직 통합
@@ -72,21 +76,19 @@ export function MetadataProvider({ children, screenId: propScreenId }: MetadataP
         enabled: !!finalScreenId, // ID가 확정되었을 때만 실행
     });
 
-    if (isLoading) {
-        return (
-            <div className="page-container">
-                <SkeletonLoader /> {/* 이전에 만든 전체 페이지용 스켈레톤 */}
-            </div>
-        );
-    }
+    //   Context Value를 메모이제이션하여 참조값 고정
+    const contextValue = useMemo(() => ({
+        menuTree: data || [],
+        isDesktop,
+        isLoading,
+        screenId: finalScreenId
+    }), [data, isDesktop, isLoading, finalScreenId]);
 
+
+    //  얼리 리턴 제거. Provider는 항상 하위 children을 감싸고 있어야 함.
+    // 로딩 처리는 AppShell이나 개별 컴포넌트가 Context의 isLoading을 보고 결정하게 함.
     return (
-        <MetadataContext.Provider value={{
-            menuTree: data || [],
-            isDesktop,
-            isLoading,
-            screenId: finalScreenId
-        }}>
+        <MetadataContext.Provider value={contextValue}>
             {children}
         </MetadataContext.Provider>
     );

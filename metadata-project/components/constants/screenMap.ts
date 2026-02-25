@@ -2,8 +2,12 @@ export const SCREEN_MAP: Record<string, string> = {
     "/": "MAIN_PAGE",
     "/MAIN_PAGE": "MAIN_PAGE",
     "/LOGIN_PAGE": "LOGIN_PAGE",
+    "/SET_TIME_PAGE": "SET_TIME_PAGE" ,
+    "/TUTORIAL_PAGE" : "TUTORIAL_PAGE",
     "/DIARY_LIST": "DIARY_LIST",
     "/DIARY_WRITE": "DIARY_WRITE",
+    "/DIARY_DETAIL" : "DIARY_DETAIL",
+    "/DIARY_MODIFY" : "DIARY_MODIFY",
     // "/MY_PAGE": "MY_PAGE",
     // "/DASHBOARD_PAGE": "DASHBOARD_PAGE",
 };

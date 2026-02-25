@@ -17,6 +17,7 @@ interface AuthContextType {
     isLoggedIn: boolean;
     isLoading: boolean;
     updateUser: (userData: User | null) => void;
+    login: (userData: any) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,23 +25,22 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-
     const [isLoading, setIsLoading] = useState(true);
 
+    // 로그인 성공 시 호출할 함수
+    const login = (userData: any) => {
+        setUser(userData);
+        setIsLoggedIn(true);
+    };
     const checkLoginStatus = async () => {
         try {
             // /api/auth/me를 호출하면 브라우저가 HttpOnly 쿠키를 자동으로 실어 보냄 
             const res = await api.get('/api/auth/me');
             setUser(res.data);
-            setIsLoggedIn(res.data.isLoggedIn);// 서버가 로그인이 아니라고 하면 로컬 스토리지도 청소한다
-            if (!res.data.isLoggedIn) {
-                localStorage.removeItem('isLoggedIn');
-            }
+            setIsLoggedIn(res.data.isLoggedIn);
         } catch (err) {
             setUser(null);
             setIsLoggedIn(false);
-            localStorage.removeItem('isLoggedIn');
 
         } finally {
             setIsLoading(false);
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return (
 
-        <AuthContext.Provider value={{ user, isLoggedIn, isLoading, updateUser: setUser }}>
+        <AuthContext.Provider value={{ user, isLoggedIn, isLoading, updateUser: setUser, login  }}>
             {children}
         </AuthContext.Provider>
     );

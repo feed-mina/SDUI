@@ -14,10 +14,12 @@ import TimeSelect from "@/components/fields/TimeSelect";
 import TimeSlotRecord from "@/components/fields/TimeSlotRecord";
 import AddressSearchGroup from "@/components/fields/AddressSearchGroup";
 import {withRenderTrack} from "@/components/utils/withRenderTrack";
+import Modal from "@/components/fields/Modal";
 
 const GroupComponent: React.FC<any> = ({ children }) => <>{children}</>;
 
 export const componentMap: Record<string, React.FC<any>> = {
+    MODAL: withRenderTrack(Modal,"Modal"),
     INPUT: withRenderTrack(InputField,"InputField"),
     TEXT: withRenderTrack(TextField,"TextField") ,
     PASSWORD: withRenderTrack(PasswordField,"PasswordField"),

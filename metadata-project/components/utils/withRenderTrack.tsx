@@ -1,6 +1,6 @@
-import { useRenderCount } from "@/hooks/useRenderCount";
+import { useRenderCount } from "@/components/DynamicEngine/hook/useRenderCount";
 import React from 'react';
-import {useMetadata} from "@/components/MetadataProvider";
+import {useMetadata} from "@/components/providers/MetadataProvider";
 
 export function withRenderTrack<P extends object>(
     Component: React.ComponentType<P>,

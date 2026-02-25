@@ -1,9 +1,9 @@
 import "./styles/index.css";
 
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider"; // 방금 만든 방 가져오기
-import {MetadataProvider} from "@/components/MetadataProvider";
+import {MetadataProvider} from "@/components/providers/MetadataProvider";
 import { AuthProvider } from '@/context/AuthContext';
-import AppShell from "@/components/AppShell";
+import AppShell from "@/components/layout/AppShell";
 import Script from 'next/script';
 //  @@@@ 2026-02-08 수정 MetadataProvider 적용
 // layout.tsx 에 있는 컴포넌트들이 undefined 에러 없이 데이터를 안정적으로 받아오게 하는 API 흐름 설계

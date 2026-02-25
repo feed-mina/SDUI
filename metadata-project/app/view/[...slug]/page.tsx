@@ -3,19 +3,21 @@
 
 import React, {use, useEffect, useMemo, useState} from "react";
 import DynamicEngine from "@/components/DynamicEngine";
-import Pagination from "@/components/Pagination";
-import FilterToggle from "@/components/FilterToggle";
-import {usePageMetadata} from "@/hooks/usePageMetadata";
-import {usePageActions} from "@/hooks/usePageActions";
-import Skeleton from "@/components/Skeleton";
+import Pagination from "@/components/fields/Pagination";
+import FilterToggle from "@/components/utils/FilterToggle";
+import {usePageMetadata} from "@/components/DynamicEngine/hook/usePageMetadata";
+import {usePageActions} from "@/components/DynamicEngine/hook/usePageActions";
+import Skeleton from "@/components/utils/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import {useRouter} from "next/navigation";
 import {componentMap} from "@/components/DynamicEngine/componentMap";
+import {usePageHook} from "@/components/DynamicEngine/hook/usePageHook";
 
 
 
 //  보호가 필요한 스크린 ID 목록 정의
-const PROTECTED_SCREENS = ["MY_PAGE", "DIARY_LIST", "DIARY_WRITE", "DIARY_DETAIL"];
+const PROTECTED_SCREENS = ["MY_PAGE", "DIARY_LIST", "DIARY_WRITE", "DIARY_DETAIL", "DIARY_MODIFY"];
+
 
 // CommonPage 역할 : 전체 화면의 구성, 메타데이터와 데이터를 가져와 엔진에 전달
 export default function CommonPage({params: paramsPromise}: { params: Promise<{ slug: string[] }> }) {
@@ -31,8 +33,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
     const screenId = slug[0];
     const diaryId = slug[1];
     const router = useRouter();
-
-
+    console.log(`현재 스크린: ${screenId}, 전달된 ID: ${diaryId}`);
     // 인증 상태 가져오기
     const { isLoggedIn, isLoading } = useAuth();
 
@@ -49,9 +50,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
         isOnlyMine,
         diaryId
     );
-    const {formData, handleChange, handleAction, showPassword, pwType} = usePageActions(metadata);
-
-    //   접근 권한 체크 로직 (로그인 여부 확인)
+    const {formData, handleChange, handleAction, showPassword, pwType} = usePageHook(screenId, metadata, pageData);    //   접근 권한 체크 로직 (로그인 여부 확인)
     useEffect(() => {
         // 로딩 중이 아닐 때만 판단
         if (!isLoading) {

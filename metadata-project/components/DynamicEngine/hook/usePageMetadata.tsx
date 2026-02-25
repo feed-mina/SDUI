@@ -2,7 +2,7 @@ import {useEffect, useState, useCallback, useMemo} from "react";
 import {useRouter} from "next/navigation";
 import axios from "@/services/axios";
 import { useAuth } from "@/context/AuthContext";
-import { useMetadata } from "@/components/MetadataProvider";
+import { useMetadata } from "@/components/providers/MetadataProvider";
 import {parseJsonbFields} from "@/components/utils/dataParser";
 
 
@@ -146,15 +146,13 @@ export const usePageMetadata = (
                     };
                     // console.log('usePageMEtadata_diaryId',diaryId);
                     // console.log('usePageMEtadata_diaryId',finalParams);
-                    let res;
-
-                    // 상세 페이지 조회(GET_DIARY_DETAIL)도 이제 통합 컨트롤러에서 처리하므로 POST/GET 선택 가능
-                    if (finalScreenId?.includes("DIARY_DETAIL") || isOnlyMine) {
+                    let res;if (finalScreenId?.includes("DIARY_DETAIL") || finalScreenId?.includes("DIARY_MODIFY") || isOnlyMine) {
+                        // 상세 조회나 수정 화면, 내 글 목록은 GET 방식 사용
                         res = await axios.get(apiUrl, { params: finalParams });
                     } else {
+                        // 그 외 일반 목록 등은 POST 방식 사용 (else 키워드 반드시 추가)
                         res = await axios.post(apiUrl, finalParams);
                     }
-
                     return {
                         id: source.componentId || source.component_id,
                         data: res.data.data || res.data

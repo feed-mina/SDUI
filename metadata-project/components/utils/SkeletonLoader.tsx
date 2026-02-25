@@ -1,6 +1,6 @@
 // components/SkeletonLoader.tsx
 import Skeleton from './Skeleton';
-import '../app/styles/SkeletonLoader.css';
+import '../../app/styles/SkeletonLoader.css';
 
 const SkeletonLoader = () => {
     return (

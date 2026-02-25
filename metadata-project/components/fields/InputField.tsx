@@ -1,8 +1,8 @@
 'use client';
 
-import React, {memo} from "react";
+import React, { memo } from "react";
+import "../../app/styles/field.css";  
 
-// props의 타입을 정확하게 정의해주자. (object라고 퉁치면 안 돼)
 interface InputFieldProps {
     id: string;
     meta: any;
@@ -10,50 +10,66 @@ interface InputFieldProps {
     onChange: (id: string, value: any) => void;
     onAction?: (action: any) => void;
     showPassword?: boolean;
-    pwType?: string; // rest에서 분리하기 위해 추가
     [key: string]: any;
 }
 
-const InputField = memo(({id, meta, data, onChange, onAction, showPassword, pwType, ...rest}: InputFieldProps) => {
-    // 1. 데이터를 매핑할 키 결정
-    const targetKey = meta?.refDataId || meta?.ref_data_id || String(id || "");
-    // 부모가 관리하는 formData와 서버 데이터를 합친 값이 직접 들어온다
-    const value = (typeof data === 'string' || typeof data === 'number')
-        ? data
-        : (data?.[targetKey] || "");
+const InputField = memo(({
+                             id,
+                             meta,
+                             data,
+                             onChange,
+                             onAction,
+                             pwType,
+                             showPassword,
+                             className: externalClassName,
+                             ...rest
+                         }: InputFieldProps) => {
+
+    const targetKey = meta?.ref_data_id || meta?.refDataId || String(id || "");
+    const value = (data && typeof data === 'object') ? (data[targetKey] ?? "") : (data ?? "");
+    const isReadOnly = meta?.is_readonly || meta?.isReadonly || false;
+
+    // 클래스 네임 조합
+    const inputClasses = [
+        "inputfield-core",
+        externalClassName,
+        meta?.css_class,
+        isReadOnly ? "readonly-style" : ""
+    ].filter(Boolean).join(" ");
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
-        if (onChange) {
-            // 부모의 formData를 즉시 업데이트함
-            onChange(targetKey, newValue);
+        if (!isReadOnly) {
+            onChange(targetKey, e.target.value);
         }
     };
-    // 서버에서 내려온 읽기 전용 속성 추출
-    const isReadOnly = meta?.isReadonly || meta?.is_readonly || false;
 
     const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && onAction && meta?.actionType === "SUBMIT") {
+        if (e.key === 'Enter' && onAction && (meta?.action_type === "SUBMIT" || meta?.actionType === "SUBMIT")) {
             onAction({
                 actionType: "SUBMIT",
-                actionUrl: meta.actionUrl,
-                componentId: meta.componentId
+                actionUrl: meta.actionUrl || meta.action_url,
+                componentId: meta.componentId || meta.component_id
             });
         }
     };
 
     return (
-        <div className="inputfield">
-            {meta?.labelText && <label htmlFor={targetKey}>{meta.labelText}</label>}
+        <div className="input-group-wrapper">
+            {meta?.component_id && (
+                <label className="input-label" htmlFor={targetKey}>
+                    {meta.label_text}
+                </label>
+            )}
             <input
                 {...rest}
+                placeholder={meta?.placeholder || `${meta?.labelText}을(를) 입력하세요`}
                 id={targetKey}
                 type={targetKey.toLowerCase().includes('pw') ? (showPassword ? 'text' : 'password') : 'text'}
-                value={value} // 부모가 준 값을 직접 사용
-                onChange={isReadOnly ? undefined : handleInputChange}
+                value={value}
+                onChange={handleInputChange}
                 onKeyDown={onKeyDown}
                 readOnly={isReadOnly}
-                className={isReadOnly ? "readonly-style" : ""}
+                className={inputClasses}
             />
         </div>
     );
