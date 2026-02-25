@@ -39,7 +39,7 @@ class DiaryServiceTest {
     void addDiary_WithJsonbData_Success() {
         // Given: 테스트 데이터 준비 [cite: 2026-02-08, 2026-02-17]
         DiaryRequest request = new DiaryRequest();
-        request.settitle("테스트 제목");
+        request.setTitle("테스트 제목");
         request.setSelectedTimes(List.of(23, 0, 1)); // 수면시간 리스트
         request.setDailySlots(Map.of("morning", "기상", "lunch", "점심식사")); // 일과 맵
 
