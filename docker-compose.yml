@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+
+# 1. 데이터베이스 서비스 
+  db:
+    image: postgres:15
+    container_name: sdui-db
+    environment:
+      - POSTGRES_DB=SDUI_TD
+      - POSTGRES_USER=mina
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5432"
+    networks:
+      - sdui-network
+
+    # 2. Redis 서비스 
   redis:
     image: redis:latest
     container_name: sdui-redis
@@ -9,6 +24,7 @@ services:
     networks:
       - sdui-network
 
+# 3. Spring Boot 애플리케이션 서비스
   app:
     build:
       context: ./Ai-Diary-server
@@ -17,8 +33,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
+      - db
       - redis
     environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/SDUI_TD
+      - SPRING_DATASOURCE_USERNAME=mina
+      - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
     networks:
