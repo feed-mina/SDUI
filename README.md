@@ -1,7 +1,12 @@
-# Diary & Authentication Web App
+# SDUI (Server -Driven UI)
 
 ## 📌 프로젝트 개요
-이 프로젝트는 **Vue.js**와 **Spring Boot**를 사용하여 **일기장 기능 및 사용자 인증**(일반 로그인 & 카카오 소셜 로그인)을 제공하는 웹 애플리케이션입니다.
+
+이 프로젝트는 UI의 구조와 비즈니스 로직을 데이터화하여 서버에서 제어 
+### 기술스택 : Next.js, React Query, Spring Boot, PostgreSQL, AWS EC2, Vercel, Github Actions
+
+
+**하드코딩된 UI구조**로 인해 기능 변경시 마다 클라이언트 배포가 필요한 부분을 **서버에서 UI 메타데이터로 전달**하면 클라이언트 엔진에서 이를 해석하여 화면을 그리는 구조슬 설계했습니다.
 
 사용자는 **일기장**에 글을 작성하고 수정할 수 있으며, **JWT 및 이메일 인증**을 포함한 **일반 로그인과 카카오 소셜 로그인**을 통해 회원가입 및 로그인이 가능합니다.
 
@@ -13,37 +18,40 @@
 서버부터 프론트, 배포 자동화까지 모든 걸 혼자 구성하면서
 '내가 만들고 싶은 서비스는 무엇인가'를 진지하게 고민했던 프로젝트예요.
 ---
-## 🖼 대표 화면
 
-| 메인페이지 | 감정 일기 작성 | 일기 리스트 | 상세 보기 |
-|------------|----------------|--------------|------------|
-| ![main](./assets/main.png) | ![write](./assets/0002.png) | ![list](./assets/0005.png) | ![detail](./assets/0010.png) |
+[//]: # (## 🖼 대표 화면)
 
-## 🚀 주요 기능
-### 📒 일기장 기능
-- **CRUD 기능:** 글 작성 / 수정 / 삭제 / 조회
-- **사용자별 일기 관리:** 내가 쓴 일기만 보기, 전체 일기 보기, 로그인한 사용자가 자신의 일기 작성 및 조회 가능
-- **MySQL 데이터베이스 저장**
+[//]: # (| 메인페이지 | 감정 일기 작성 | 일기 리스트 | 상세 보기 |)
 
-### 🔐 사용자 인증 (Authentication)
-1. **일반 로그인 (JWT + 이메일 인증 포함)**  
-   - JWT (JSON Web Token) 기반 로그인  
-   - 이메일 인증 (SMTP를 활용한 인증 코드 발송)  
-   - 비밀번호 암호화 (BCrypt 적용)  
-2. **카카오 소셜 로그인**  
-   - OAuth 2.0 기반 카카오 로그인  
-   - 카카오 프로필 정보 받아오기 (닉네임, 이메일 등)  
-   - 기존 회원과 연동하여 JWT 발급  
+[//]: # (|------------|----------------|--------------|------------|)
 
+[//]: # (| ![main]&#40;./assets/main.png&#41; | ![write]&#40;./assets/0002.png&#41; | ![list]&#40;./assets/0005.png&#41; | ![detail]&#40;./assets/0010.png&#41; |)
+
+## 🚀 주요 원칙
+### ✔ Backend : No code in DB
+1. ** 유저나 주요 비즈니스 로직은 QueryDSL로 관리  **
+   -  
+   -
+2. ** 서버에서 UI 메타데이터를 내려주면 클라이언트 엔진이 이를 해석해 화면을 그리는 구조  **
+   -
+
+### ✔ Frontend : Component Mapping
+1. ** Dom의 태그를 필드별 관리 > 메카데이터로 관리하여 트리 구조로 렌더링  **  
+   -  DynamicEngine: UI 트리 순회 및 가시성 처리 로직.
+   -  MetadataProvider: React Query를 활용한 메타데이터 캐싱 및 전역 공급.
+   -  Data Binding Strategy: ref_data_id를 통한 메타데이터와 실제 비즈니스 데이터의 결합 방식.
+2. ** RBAC 권한별 페이지를 필터  **  
+   -  
+   -  
+
+###  ✔ Data Binding
 ---
 
 ## 🛠 기술 스택
-###  Frontend (Vue.js)
-- Vue 3
-- Vue Router (페이지 라우팅)
-- 로컬 스토리지 기반 상태 관리 (`onMounted` + `watch` 활용)
-- 로그인 유무 체크
-- Axios (백엔드 API 호출, `axios.interceptor` 적용)
+###   (Next.js)
+- React
+-
+-  
 
 ###  Backend (Spring Boot)
 - Spring Boot 3
@@ -58,8 +66,8 @@
 
 ## 📂 프로젝트 구조
 ```
-my-project
-├── Ai-Diary-server (Spring Boot)
+SDUI
+├── server (Spring Boot)
 │    ├── src/main/java/com/domain/demo_backend/controller  (API 컨트롤러)
 │    ├── src/main/java/com/domain/demo_backend/service     (비즈니스 로직)
 │    ├── src/main/java/com/domain/demo_backend/user       (계정 dto/domain)
@@ -69,14 +77,9 @@ my-project
 │    ├── src/main/resources/application.properties        (설정 파일)
 │    ├── src/main/resources/mappers                      (마이바티스)
 │
-├── frontend (Vue.js)
+├── metadata-project (Next.js)
 │    ├── src/components   (컴포넌트)
-│    ├── src/page         (페이지 설정)
-│    ├── src/router       (라우터 설정)
-│    ├── src/store        (상태 관리 - 로컬 스토리지 활용)
-│    ├── src/App.vue      (axios.interceptor 적용)
-│
-├── README.md
+│    ├── src/page         (페이지 설정)  
 ```
 
 ---
@@ -93,89 +96,62 @@ my-project
 ### 📝 일기장 API
 | Method | Endpoint | 설명 |
 |--------|----------------------------|------------------|
-| POST   | `/api/diary/addDiaryList`  | 일기 작성 |
-| GET    | `/api/diary/viewDiarylist` | 일기 목록 조회 |
-| GET    | `/api/diary/viewDiaryItem/{diaryId}` | 일기 상세보기 |
 
-### ✔ 일반 로그인 요청 예시
+[//]: # (| POST   | `/api/diary/addDiaryList`  | 일기 작성 |)
+
+[//]: # (| GET    | `/api/diary/viewDiarylist` | 일기 목록 조회 | )
+
+### ✔ ui_metadata 구조
 ```json
-{
-  "email": "user@domain/demo_backend.com",
-  "password": "securepassword"
-}
 ```
 
-### ✔ 카카오 로그인 요청 예시
+### ✔ query_master 구조
 ```json
-{
-  "accessToken": "kakao_access_token"
-}
 ```
 
-### ✔ 응답 예시 (JWT 포함)
+### ✔ RBAC 구조
 ```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
+```
+---
+
+## 🛠 "서버 데이터 타입과 클라이언트 컴포넌트 Props 간의 타입 안전성 확보 방법"
+```typescript
 ```
 
 ---
 
-## 🛠 axios.interceptor 적용 (App.vue)
-```javascript
-axios.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem("jwtToken") || localStorage.getItem("kakaoToken");
-    console.log("@@@@App interceptors token", token);
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  error => {
-    return Promise.reject(error);
-  }
-);
+## 🛠 "리피터(Repeater) 컴포넌트 내에서 복잡한 계층 구조를 렌더링할 때의 성능 최적화 방법"
+```typescript
+```
+---
+
+## 🛠 "리피터(Repeater) 컴포넌트 내에서 복잡한 계층 구조를 렌더링할 때의 성능 최적화 방법"
+```java
 ```
 
 ---
 
-## 🚀 실행 방법
-###  백엔드 (Spring Boot) 실행
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-###  프론트엔드 (Vue.js) 실행
-```bash
-cd frontend
-npm install
-npm run dev
-```
+## 🚀 프로젝트 장점
+- "JSON 기반 메타데이터 설계를 통해, 단순 UI 변경 시 클라이언트 코드 수정 없이 서버 설정만으로 화면의 80% 이상 제어 가능하도록 구현"
+- "컴포넌트 매핑 구조를 통해 신규 컴포넌트 추가 시 엔진 수정 없이 설정 등록만으로 즉시 렌더링 지원"
 
 ## 배포 진행중에 있습니다.
-https://justsaying.co.kr 접속 시 정상 동작 여부 확인중
-백엔드: http:/15.165.179.197:8080
-프론트엔드: http://web-2025-version1.s3-website.ap-northeast-2.amazonaws.com
+
+[//]: # (https://justsaying.co.kr 접속 시 정상 동작 여부 확인중)
+
+[//]: # (백엔드: http:/15.165.179.197:8080)
+
+[//]: # (프론트엔드: http://web-2025-version1.s3-website.ap-northeast-2.amazonaws.com)
 ---
 
 ## 🔧 추가 기능 개선 아이디어
-- 네이버, 구글 소셜 로그인 추가
-- 회원 프로필 사진 업로드 기능
+- 리액트네이티브로 App 개발로 확장
+- 권한별 렌더링 기능을 비즈니스 서비스 반영 고민
 
-## 🤝 기여 방법
-1. 이 프로젝트를 **Fork**합니다.
-2. 새로운 브랜치를 만듭니다. (`git checkout -b feature-branch`)
-3. 기능을 추가하거나 수정합니다.
-4. 변경 사항을 커밋합니다. (`git commit -m "설명"`)
-5. 원격 저장소에 푸시합니다. (`git push origin feature-branch`)
-6. **Pull Request**를 생성합니다.
-
+ 
 ---
 
 ## 📜 라이선스
 이 프로젝트는 **MIT 라이선스**를 따릅니다.
-
-🔥 일기 작성과 안전한 로그인 기능을 갖춘 웹 애플리케이션! 🙌 함께 개발하고 싶다면 언제든지 기여해주세요!
+ 
 
