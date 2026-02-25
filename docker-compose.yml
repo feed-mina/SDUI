@@ -27,7 +27,7 @@ services:
 # 3. Spring Boot 애플리케이션 서비스
   app:
     build:
-      context: ./Ai-Diary-server
+      context: ./SDUI-server
       dockerfile: Dockerfile
     container_name: sdui-backend
     ports:

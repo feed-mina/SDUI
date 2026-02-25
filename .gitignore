@@ -23,7 +23,7 @@ pronounce-api/venv311
 # 구글 서비스 계정 비밀키
 pronounce-api/*.json
 # Build results
-Ai-Diary-server/target/
+SDUI-server/target/
 
 # Playwright test results
 test-results/

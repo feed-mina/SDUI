@@ -23,5 +23,5 @@ jobs:
 
     - name: Build Docker Image
       run: |
-        docker build -t feed-mina/sdui-backend ./Ai-Diary-server
+        docker build -t feed-mina/sdui-backend ./SDUI-server
       # 작성한 Dockerfile을 바탕으로 도커 이미지를 생성한다.
