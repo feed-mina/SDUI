@@ -218,6 +218,7 @@ public class AuthController {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 실패! 코드를 다시 확인해주세요.");
         }
+
     }
 
     @Operation(summary = "회원 가입 인증  번호 재전송", description = "회원 가입 인증  번호 다시확인한다.")
@@ -356,6 +357,25 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
         return ResponseEntity.ok().body("로그아웃 성공");
+    }
+    @GetMapping("/check-verification")
+    public ResponseEntity<?> checkVerification(@RequestParam String email) {
+        // DB나 Redis에서 해당 이메일의 인증 상태를 확인하는 로직
+        boolean verified = authService.isUserVerified(email);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("isVerified", verified);
+
+        return ResponseEntity.ok(result);
+    }
+    @GetMapping("/confirm-email")
+    public ResponseEntity<String> confirmEmail(@RequestParam String token) {
+        // 이메일 대신 토큰으로 확인
+        boolean isSuccess = authService.confirmEmailByToken(token);
+        if (isSuccess) {
+            return ResponseEntity.ok("<h1>인증 성공!</h1><p>원래 화면의 확인 버튼을 눌러주세요.</p>");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않거나 만료된 링크입니다.");
     }
 
 }

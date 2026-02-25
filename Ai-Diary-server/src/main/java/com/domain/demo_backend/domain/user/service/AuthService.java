@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -39,16 +40,35 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
+    private final StringRedisTemplate redisTemplate;
+
     @Value("${spring.mail.username}")
     private String fromEmail;
+/*
+    @Value("${solapi.api-key}")
+    private String apiKey;
 
+    @Value("${solapi.api-secret}")
+    private String apiSecret;
+
+    @Value("${solapi.sender-number}")
+    private String senderNumber;
+
+    private DefaultMessageService messageService;
+
+    @PostConstruct
+    public void init() {
+        this.messageService = NurigoApp.INSTANCE.initialize(apiKey, apiSecret, "https://api.solapi.com");
+    }
+ */
     @Autowired
     private JavaMailSender mailSender;
 
 
-    public AuthService(UserRepository userRepository, JwtUtil jwtUtil) {
+    public AuthService(UserRepository userRepository, JwtUtil jwtUtil, StringRedisTemplate redisTemplate) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
+        this.redisTemplate = redisTemplate;
     }
 
     @Transactional
@@ -147,6 +167,56 @@ public class AuthService {
         );
         userRepository.save(user);
     }
+    @Transactional
+    public String sendUrlVerificationCode(String email) throws MessagingException {
+        // 1. 보안을 위한 랜덤 토큰 생성
+        String token = java.util.UUID.randomUUID().toString();
+
+        // 2. Redis에 저장 (Key: token, Value: email, 유효시간: 30분)
+        // opsForValue().set(key, value, timeout, unit)
+        redisTemplate.opsForValue().set(token, email, 30, java.util.concurrent.TimeUnit.MINUTES);
+
+        // 3. 인증 링크 생성
+        String confirmUrl = "http://localhost:8080/api/auth/confirm-email?token=" + token;
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
+        helper.setTo(email);
+        helper.setSubject("📨 회원가입 인증을 완료해주세요");
+
+        String emailContent = "<div style='text-align:center; padding:20px;'>"
+                + "<h2>SDUI Project 인증</h2>"
+                + "<p>아래 버튼을 누르면 30분 내에 인증이 완료됩니다.</p>"
+                + "<a href='" + confirmUrl + "' style='background:#0052cc; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;'>인증하기</a>"
+                + "</div>";
+
+        helper.setText(emailContent, true);
+        mailSender.send(message);
+
+        return "SENT_LINK";
+    }
+
+    @Transactional
+    public boolean confirmEmailByToken(String token) {
+        // 1. Redis에서 토큰으로 이메일을 찾는다.
+        String email = redisTemplate.opsForValue().get(token);
+
+        if (email == null) {
+            // 토큰이 만료되었거나 존재하지 않는 경우
+            return false;
+        }
+
+        // 2. 이메일로 유저를 찾아 인증 상태 업데이트
+        return userRepository.findByEmail(email)
+                .map(user -> {
+                    user.setVerifyYn("Y");
+                    // 3. 인증 완료 후 Redis에서 토큰 즉시 삭제
+                    redisTemplate.delete(token);
+                    return true;
+                }).orElse(false);
+        }
+
+
 
     public String sendVerificationCode(String email) throws MessagingException {
         //랜덤 인등코드 생성
@@ -158,13 +228,14 @@ public class AuthService {
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
         helper.setTo(email);
         //  Your GitHub launch code
-
+        String verifyUrl = "http://localhost:3000/view/VERIFY_CODE_PAGE?email=" + email;
         helper.setSubject("📨 이메일 인증 코드 발송");
 
         String emailContent = "<div style='padding:20px; font-family:Arial; text-align:center;'>"
                 + "<h2>🚀 회원가입 인증 코드</h2>"
                 + "<p>아래 인증 코드를 입력해주세요!</p>"
                 + "<h1 style='color:#4CAF50;'>" + verificationCode + "</h1>"
+                + "<a href='" + verifyUrl + "' style='display:inline-block; padding:10px 20px; background-color:#4CAF50; color:white; text-decoration:none; border-radius:5px;'>인증 페이지로 이동하기</a>"
                 + "<p>감사합니다 😊</p>"
                 + "</div>";
 
@@ -284,4 +355,55 @@ public class AuthService {
         System.out.println("user Mapper nonMember 시작");
         System.out.println("user 탈퇴 처리 완료: " + existingUser);
     }
+
+    public boolean isUserVerified(String email) {
+        // 1. DB에서 해당 이메일로 유저를 찾는다. (없으면 당연히 인증 안 된 것)
+        // 2. 유저의 verifyYn 값이 "Y"인지 확인해서 맞으면 true, 아니면 false를 준다.
+        return userRepository.findByEmail(email)
+                .map(user -> "Y".equals(user.getVerifyYn()))
+                .orElse(false);
+    }
+/*
+
+
+    public String sendVerificationPhoneCode(String phoneNumber) {
+        String verificationPhoneCode = generateRendomCode();
+
+        // 휴대폰 번호를 키로, 인증번호를 값으로 저장. 유효기간 3분 설정.
+        redisTemplate.opsForValue().set(phoneNumber, verificationPhoneCode, 3, TimeUnit.MINUTES);
+
+        // 여기서 솔라피 API를 호출하여 실제로 문자를 발송함 (솔라피 연동 코드 필요)
+        sendSmsViaSolapi(phoneNumber, verificationPhoneCode);
+
+        return verificationPhoneCode;
+    }
+
+    public boolean verifyPhoneCode(String phoneNumber, String inputCode) {
+        // Redis에서 해당 번호로 저장된 인증번호를 가져옴
+        String savedCode = redisTemplate.opsForValue().get(phoneNumber);
+
+        if (savedCode != null && savedCode.equals(inputCode)) {
+            // 인증 성공 시 Redis에서 삭제 (1회용이므로)
+            redisTemplate.delete(phoneNumber);
+            return true;
+        }
+        return false;
+    }
+
+    public void sendSmsViaSolapi(String phoneNumber, String code) {
+        Message message = new Message();
+        message.setFrom(senderNumber);
+        message.setTo(phoneNumber);
+        message.setText("[SDUI Project] 인증번호는 [" + code + "] 입니다. 3분 내에 입력해 주세요.");
+
+        try {
+            SingleMessageSentResponse response = this.messageService.sendOne(new SingleMessageSendingRequest(message));
+            System.out.println(response.getMessageId());
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+ */
+
 }
