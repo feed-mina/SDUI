@@ -1,5 +1,5 @@
 # 1. 자바 17 버전의 실행 환경을 기본 베이스로 가져온다.
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 # 2. 컨테이너 내부의 작업 디렉토리를 /app으로 설정한다.
 WORKDIR /app
