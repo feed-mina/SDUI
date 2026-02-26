@@ -91,7 +91,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://sdui-delta.vercel.app", "http://localhost:3000", "http://localhost:8080","http://43.201.237.68","https://justsaying.co.kr", "http://justsaying.co.kr"));
+        configuration.setAllowedOrigins(List.of("https://sdui-delta.vercel.app","http://sdui-delta.vercel.app", "http://localhost:3000", "http://localhost:8080","http://43.201.237.68","https://justsaying.co.kr", "http://justsaying.co.kr"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true); // 쿠키 허용
