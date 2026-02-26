@@ -77,6 +77,7 @@ public class Diary {
     @Column(name = "diary_type")
     private String diaryType;
 
+    @Builder.Default
     @Column(name = "del_yn")
     private String delYn = "N";
 

@@ -36,9 +36,11 @@ public class User {
     @Transient // DB에는 저장하지 않은 필드
     private String repassword;          // repassword
 
+    @Builder.Default
     @Column(name = "del_yn")
     private String delYn = "N"; // 기본값 설정
 
+    @Builder.Default
     @Column(name = "verify_yn")
     private String verifyYn = "N";
 
@@ -74,7 +76,7 @@ public class User {
 
     private String detailAddress;
 
-    public User(String userId, String password, String hashedPassword, String role,  String delYn, String phone, String email, String verifyYn, String socialType, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationCode, LocalDateTime withdrawAt, String timeUsingType, String drugUsingType) {
+    public User(String userId, String password, String hashedPassword, String role,  String delYn, String phone, String email, String zipCode, String roadAddress, String detailAddress, String verifyYn, String socialType, LocalDateTime createdAt, LocalDateTime updatedAt, String verificationCode, LocalDateTime withdrawAt, String timeUsingType, String drugUsingType) {
         this.userId = userId;
         this.password = password;
         this.hashedPassword = hashedPassword;

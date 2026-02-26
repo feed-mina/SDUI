@@ -1,0 +1,74 @@
+
+spring:
+  application:
+    name: demo_backend
+  main:
+    allow-bean-definition-overriding: true
+  web:
+    resources:
+      static-locations: classpath:/static/
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/testdb
+    username: postgres
+    password: 1234
+    hikari:
+      maximum-pool-size: 12
+      connection-timeout: 30000
+      minimum-idle: 5
+      idle-timeout: 600000
+      pool-name: DemoBackendHikariPool
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: yerin4984@gmail.com
+    password: xbfkdgfxevqytije
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    debug: true
+
+server:
+  port: 8080
+  address: 0.0.0.0
+  ssl:
+    enabled: false
+  forward-headers-strategy: native
+
+jwt:
+  secret-key: d6ac9ecc0a3aa3c395313fb236e0ec10d71ab78fb36f54ba626664eba0b842b1
+  issuer: admin
+  expiration: 86400000
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID:2d22c7fa1d59eb77a5162a3948a0b6fe}
+  token-admin: ${KAKAO_TOKEN_ADMIN:96ed9105639fb627fb2c710f39e6516f}
+  redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/kakao/callback}
+
+logging:
+  file:
+    name: log.txt
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    com.domain.demo_backend.mapper: DEBUG
+    org.mybatis: DEBUG
+    org.apache.ibatis: DEBUG
+    org.springframework.jdbc.core: INFO
+    org.springframework.web: DEBUG

@@ -227,7 +227,7 @@ public class AuthService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
         helper.setTo(email);
-        //  Your GitHub launch code
+        //  https://sdui-delta.vercel.app (프론트앤드 vercel 배포 주소)
         String verifyUrl = "http://localhost:3000/view/VERIFY_CODE_PAGE?email=" + email;
         helper.setSubject("📨 이메일 인증 코드 발송");
 
