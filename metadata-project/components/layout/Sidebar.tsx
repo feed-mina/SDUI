@@ -22,7 +22,7 @@ export default function Sidebar() {
     // * 통합 훅 사용  screenId는 "GLOBAL_HEADER"로 전달
     const { handleAction } = usePageHook("GLOBAL_HEADER", metadata, pageData);
 
-
+    console.log('SIDEBAR METADATA: ', metadata, ' |')
     // 모든 컴포넌트를 한줄로 쭉 세워서 확인이 필요, 구조를 일렬로 펴줌
     const flatMeta = useMemo(() => flattenMetadata(metadata), [metadata]);
 
@@ -40,6 +40,8 @@ export default function Sidebar() {
         getVal(m, 'component_id', 'componentId') === (user?.socialType === 'K' ? 'header_kakao_logout' : 'header_general_logout')
     );
     const loginBtnMeta = flatMeta.find(m => getVal(m, 'component_id', 'componentId') === 'header_login_btn');
+    console.log('sidebar logoutMeta', logoutMeta);
+    console.log('sidebar loginBtnMeta', loginBtnMeta);
 
     return (
         <aside className="pc-sidebar">
@@ -53,7 +55,7 @@ export default function Sidebar() {
                         🏠 홈
                     </div>
                     <div className={`nav-item ${pathname === '/view/SET_TIME_PAGE' ? 'active' : ''}`}
-                         onClick={() => handleAction({actionType: 'ROUTE', actionUrl: '/view/MAIN_PAGE'})}>
+                         onClick={() => handleAction({actionType: 'ROUTE', actionUrl: '/view/SET_TIME_PAGE'})}>
                         📅 약속 관리
                     </div>
                     {/*<div className="nav-item">📊 통계</div>*/}
