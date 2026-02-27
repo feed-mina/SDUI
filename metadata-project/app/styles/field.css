@@ -4,8 +4,8 @@
 .input-group-wrapper {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1.25rem;
-    width: 100%;
+    /*margin-bottom: 1.25rem;*/
+    height: 48px;
 }
 
 .input-label {
