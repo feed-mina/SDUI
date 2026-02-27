@@ -12,5 +12,5 @@ export const useRenderCount = (componentName: string) => {
         count.current += 1;
     });
 
-    console.log(`[Screen: ${screenId}] ${componentName} 렌더링 횟수: ${count.current}`);
+    // console.log(`[Screen: ${screenId}] ${componentName} 렌더링 횟수: ${count.current}`);
 };
