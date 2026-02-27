@@ -27,6 +27,8 @@ const RecordTimeComponent = ({data, onChange}: RecordTimeProps) => {
         handleArrival
     } = useRecordTime();
     const [isListOpen, setIsListOpen] = useState(false); // 팝업 열림/닫힘
+    // console.log('goalTime',goalTime);
+    // console.log('goalList',goalList);
 
     // 목표시간이 없을때 화면
     if (!goalTime) {
@@ -37,7 +39,6 @@ const RecordTimeComponent = ({data, onChange}: RecordTimeProps) => {
             </div>
         );
     }
-
 // 목표 시간이 있을때
     return (
         <div className="time-record-container">
@@ -45,7 +46,7 @@ const RecordTimeComponent = ({data, onChange}: RecordTimeProps) => {
             <div className="clock-container">
                 <div className="clock-display-box">
                     <span className="target-time-label">
-                        목표: {formatGoalDate(goalTime)}
+                        목표 시간  {formatGoalDate(goalTime)}
                     </span>
                     <div className="formatted-time">
                         {formatTimePretty(goalTime)}
