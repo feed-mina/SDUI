@@ -112,45 +112,53 @@ public class JwtUtil {
     }
 
     // 토큰생성
-    public TokenResponse generateTokens(String email, Long userSqno, String userId) {
+    public TokenResponse generateTokens(User user) {
         Date now = new Date();
 
         Date accessExp = new Date(now.getTime() + ACCESS_TOKEN_VALIDITY);
         Date refreshExp = new Date(now.getTime() + REFRESH_TOKEN_VALIDITY);
-
-        Claims claims = Jwts.claims().setSubject(email);
         long ttlInSeconds = REFRESH_TOKEN_VALIDITY / 1000;
 
-        if (email == null) {
-            throw new IllegalArgumentException("unique_userId값이 존재하지 않습니다.");
-        }
+        Claims claims = Jwts.claims().setSubject(user.getEmail());
 
         String accessToken = Jwts.builder()
-                .setClaims(claims)
-                .claim("email", email) // 사용자 고유 식별자 추가
-                .claim("userSqno", userSqno)
-                .claim("userId", userId) //
+                .setSubject(user.getEmail())
+                .claim("email", user.getEmail())
+                .claim("userSqno", user.getUserSqno())
+                .claim("userId", user.getUserId())
+                .claim("role", user.getRole())
                 .setIssuedAt(now)
                 .setExpiration(accessExp)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
 
+
+        // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setSubject(email)
+                .setSubject(user.getEmail())
                 .setIssuedAt(now)
                 .setExpiration(refreshExp)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("해당 이메일을 가진 사용자를 찾을 수 없습니다."));
+        // Redis 저장
         refreshTokenRepository.save(new RefreshToken(
-                user.getUserSqno(), //  꼭 넣어줘야 해!
-                email,
-                refreshToken,ttlInSeconds // LocalDateTime 대신 Long 타입을 전달
+                user.getUserSqno(),
+                user.getEmail(),
+                refreshToken,
+                ttlInSeconds
         ));
 
-        return new TokenResponse(accessToken, refreshToken);
+
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .userId(user.getUserId())
+                .userSqno(user.getUserSqno())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
     }
 
     public Claims validateToken(String token) {

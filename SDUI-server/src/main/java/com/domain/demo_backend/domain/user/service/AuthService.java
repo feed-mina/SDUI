@@ -96,11 +96,9 @@ public class AuthService {
         // 로그인 시각 갱신 (더티 체킹에 의해 자동 업데이트됨)
         user.setUpdatedAt(LocalDateTime.now());
         // 5. JWT 발급
-        return jwtUtil.generateTokens(
-                user.getEmail(),
-                user.getUserSqno(),
-                String.valueOf(user.getUserId())
-        );
+
+        // 5. JWT 발급
+        return jwtUtil.generateTokens(user);
     }
 
 

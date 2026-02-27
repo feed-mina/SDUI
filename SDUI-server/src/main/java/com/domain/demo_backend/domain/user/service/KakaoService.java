@@ -140,6 +140,8 @@ public class KakaoService {
                 });
 
         // 2. 토큰 발행 (딱 한 번만 호출!)
-        return jwtUtil.generateTokens(user.getEmail(), user.getUserSqno(), user.getUserId());
+
+        // 5. JWT 발급
+        return jwtUtil.generateTokens(user);
     }
 }

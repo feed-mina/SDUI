@@ -37,7 +37,7 @@ public class KakaoController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final KakaoService kakaoService;
     private final JwtUtil jwtUtil;
-    @Value("${{kakao.client-id}")
+    @Value("${kakao.client-id}")
     private String clientId;
 
     @Value("${kakao.redirect-uri}")
