@@ -5,13 +5,12 @@ import { usePathname, useParams } from 'next/navigation'; // @@@@ useParams 추�
 import { DEFAULT_SCREEN_ID, SCREEN_MAP } from '@/components/constants/screenMap';
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
-import SkeletonLoader from "@/components/utils/SkeletonLoader";
 
 interface MetadataContextType {
     menuTree: any[];
-    isDesktop: boolean;
     isLoading: boolean;
     screenId: string;
+    refId: string | number | null;
 }
 
 const MetadataContext = createContext<MetadataContextType | undefined>(undefined);
@@ -23,70 +22,64 @@ interface MetadataProviderProps {
 
 export function MetadataProvider({ children, screenId: propScreenId }: MetadataProviderProps) {
 
-    const [isDesktop, setIsDesktop] = useState(false);
-
     const { user } = useAuth();
     const pathname = usePathname();
-    // [수정 1] 브라우저 환경에서만 실행되도록 안전하게 처리
-    useEffect(() => {
-        const handleResize = () => {
-            const isPc = window.innerWidth >= 1024;
-            setIsDesktop(prev => (prev !== isPc ? isPc : prev));
-        };
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    const params = useParams();
 
     // 1. 최종 screenId 결정 로직 통합
     const finalScreenId = useMemo(() => {
-        // 우선순위: 1. 직접 넘겨준 ID(테스트용) -> 2. URL 매핑 테이블 -> 3. URL 파라미터 -> 4. 기본값
+        // 우선순위: 1. 직접 넘겨준 ID -> 2. URL 매핑 테이블 -> 3. URL 파라미터 -> 4. 초기화 값
         if (propScreenId) return propScreenId;
 
-
-        // pathname이 /view/DIARY_DETAIL/22 라면 ['view', 'DIARY_DETAIL', '22']가 됨
         const pathSegments = pathname.split('/').filter(Boolean);
-
-        // 'view' 다음에 오는 세그먼트(DIARY_DETAIL)를 우선적으로 screenId로 취급
         const viewIndex = pathSegments.indexOf('view');
+        //  * 경로가 /view/[screenId]/[index] 인 경우
         if (viewIndex !== -1 && pathSegments[viewIndex + 1]) {
             return pathSegments[viewIndex + 1];
         }
-
+        // * 경로가 meta.screen_id로 URL 또는 MAIN_PAGE
         return SCREEN_MAP[pathname] || DEFAULT_SCREEN_ID;
     }, [propScreenId, pathname]);
 
     // 2. 권한 정보 조합
+    //  * RBAC 유저 권한에 따라 볼수 있는 페이지가 다르다
     const rolePrefix = user?.role?.replace('ROLE_', '') || 'GUEST';
     const dynamicQueryKey = `${rolePrefix}_${finalScreenId}`;
 
     // 3. 데이터 페칭
+    //  * QueryProvider에서 reactQuery를 사용하여 서버와 통신
     const { data, isLoading } = useQuery({
+        // * queryKey는 메타데이터와 dynamicQueryKey : ${유저구분키}_${URL파라미터} 이다.
         queryKey: ['metadata', dynamicQueryKey],
         queryFn: async () => {
-            // API 호출 시에는 원본 finalScreenId 사용
             const res = await fetch(`/api/ui/${finalScreenId}`);
-            if (!res.ok) throw new Error('Network response was not ok');
+            if (!res.ok) throw new Error('네트워크 연결이 올바르지 않습니다');
+            //  * result는 서버에서 받아온 screenId의 메타데이터값이다.  (data, success) 형식
             const result = await res.json();
             return result.data || [];
         },
         staleTime: 1000 * 60 * 5,
-        enabled: !!finalScreenId, // ID가 확정되었을 때만 실행
+        enabled: !!finalScreenId, // * 최종 URL 파라미터 가 확정되었을 때만 실행
     });
-
+    const params = useParams();
+    const slug = (params?.slug as string[]) || [];
     //   Context Value를 메모이제이션하여 참조값 고정
-    const contextValue = useMemo(() => ({
-        menuTree: data || [],
-        isDesktop,
-        isLoading,
-        screenId: finalScreenId
-    }), [data, isDesktop, isLoading, finalScreenId]);
+    //  * data : 서버에서 가져온 screenId별 메타데이터 정보 , 레이아웃크기구분, 로딩상태, 최종 URL파라미터를 contextValue의 변수에 담아 케싱한다
+    const contextValue = useMemo(() => {
+        // URL 기반으로 정보 추출
+        const screenIdFromUrl = slug[0] || SCREEN_MAP[pathname] || DEFAULT_SCREEN_ID;
+        let refIdFromUrl: string | number | null = null;
+        if (slug[1]) {
+            const rawValue = slug[1];
+            refIdFromUrl = !isNaN(Number(rawValue)) ? Number(rawValue) : rawValue;
+        }
+        return {
+            menuTree: data || [],
+            isLoading,
+            screenId: screenIdFromUrl,
+            refId: refIdFromUrl
+        };
+    }, [data,  isLoading, slug, pathname]);
 
-
-    //  얼리 리턴 제거. Provider는 항상 하위 children을 감싸고 있어야 함.
-    // 로딩 처리는 AppShell이나 개별 컴포넌트가 Context의 isLoading을 보고 결정하게 함.
     return (
         <MetadataContext.Provider value={contextValue}>
             {children}

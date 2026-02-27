@@ -1,45 +1,41 @@
 'use client';
 
-import { useMemo } from "react"; // 추가
+import { useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { usePageMetadata } from "@/components/DynamicEngine/hook/usePageMetadata";
-import { usePageActions } from "@/components/DynamicEngine/hook/usePageActions";
 import { usePathname } from 'next/navigation';
-import { useMetadata } from "@/components/providers/MetadataProvider";
-
-// [수정 1] 고정된 빈 배열 선언 (참조값 유지용)
-const EMPTY_ARRAY: any[] = [];
-
-const flattenMetadata = (items: any[]): any[] => {
-    let flat: any[] = [];
-    items.forEach(item => {
-        flat.push(item);
-        if (item.children) flat = flat.concat(flattenMetadata(item.children));
-    });
-    return flat;
-};
+// 1. 기존 useMetadata 대신 useDeviceType 사용
+import { useDeviceType } from "@/hooks/useDeviceType";
+import { flattenMetadata } from "../utils/metadataUtils";
+import {usePageHook} from "@/components/DynamicEngine/hook/usePageHook";
 
 export default function Sidebar() {
-    const { isDesktop } = useMetadata();
+    // 2. 일관된 기기 판별을 위해 수정
+    const { isMobile } = useDeviceType();
+    const isPc = !isMobile;
+
     const pathname = usePathname();
     const { user, isLoggedIn } = useAuth();
 
-    // [수정 2] 전역 헤더 데이터 가져오기
-    const { metadata, loading } = usePageMetadata("GLOBAL_HEADER", 1, false);
+    // * 메타데이터를 가져옴
+    const { metadata, pageData, loading: metaLoading } =  usePageMetadata("GLOBAL_HEADER",1, false, null);
+    // * 통합 훅 사용  screenId는 "GLOBAL_HEADER"로 전달
+    const { handleAction } = usePageHook("GLOBAL_HEADER", metadata, pageData);
 
-    // [수정 3] flatMeta를 useMemo로 감싸서 metadata가 바뀔 때만 재계산함
-    const flatMeta = useMemo(() => {
-        return metadata ? flattenMetadata(metadata) : EMPTY_ARRAY;
-    }, [metadata]);
 
-    const { handleAction } = usePageActions(flatMeta);
+    // 모든 컴포넌트를 한줄로 쭉 세워서 확인이 필요, 구조를 일렬로 펴줌
+    const flatMeta = useMemo(() => flattenMetadata(metadata), [metadata]);
 
-    // [중요] 훅 호출이 끝난 후 조건부 리턴
-    if (!isDesktop) return null;
+    // 4. 기기 판별 로직을 useDeviceType 기준으로 변경
+    if (!isPc) return null;
+
+    // 5. 로딩 중일 때는 버튼 영역을 비워두거나 스켈레톤을 보여준다.
+    if (metaLoading) return <aside className="pc-sidebar-loading" />;
 
     const getVal = (obj: any, snake: string, camel: string) => obj?.[snake] || obj?.[camel] || "";
     const isRealLoggedIn = isLoggedIn && user?.isLoggedIn === true;
 
+    // 버튼 찾기 로직
     const logoutMeta = flatMeta.find(m =>
         getVal(m, 'component_id', 'componentId') === (user?.socialType === 'K' ? 'header_kakao_logout' : 'header_general_logout')
     );

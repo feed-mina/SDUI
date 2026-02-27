@@ -6,12 +6,13 @@ import DynamicEngine from "@/components/DynamicEngine";
 import Pagination from "@/components/fields/Pagination";
 import FilterToggle from "@/components/utils/FilterToggle";
 import {usePageMetadata} from "@/components/DynamicEngine/hook/usePageMetadata";
-import {usePageActions} from "@/components/DynamicEngine/hook/usePageActions";
+// import {usePageActions} from "@/components/DynamicEngine/hook/usePageActions";
 import Skeleton from "@/components/utils/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import {useRouter} from "next/navigation";
-import {componentMap} from "@/components/DynamicEngine/componentMap";
+import {componentMap} from "@/components/constants/componentMap";
 import {usePageHook} from "@/components/DynamicEngine/hook/usePageHook";
+import {useMetadata} from "@/components/providers/MetadataProvider";
 
 
 
@@ -22,33 +23,21 @@ const PROTECTED_SCREENS = ["MY_PAGE", "DIARY_LIST", "DIARY_WRITE", "DIARY_DETAIL
 // CommonPage 역할 : 전체 화면의 구성, 메타데이터와 데이터를 가져와 엔진에 전달
 export default function CommonPage({params: paramsPromise}: { params: Promise<{ slug: string[] }> }) {
 
-    // Next.js 15에서는 params를 unwrapping 해야 합니다.
-    const params = use(paramsPromise);
-    // /view/DIARY_LIST -> slug: ["DIARY_LIST"]
-    // /view/DIARY_DETAIL/22 -> slug: ["DIARY_DETAIL", "22"]
-    const slug = params.slug || [];
-    // slug[0]은 DIARY_LIST 또는 DIARY_DETAIL (screenId)
-    // slug[1]은 상세 페이지일 때 넘어오는 PK값 (diaryId)
-    console.log("Current Slug:", slug);
-    const screenId = slug[0];
-    const diaryId = slug[1];
+    // 이제 params를 직접 파싱하지 않고 컨텍스트에서 꺼내 쓴다
+    const { screenId, refId } = useMetadata();
+
     const router = useRouter();
-    console.log(`현재 스크린: ${screenId}, 전달된 ID: ${diaryId}`);
     // 인증 상태 가져오기
     const { isLoggedIn, isLoading } = useAuth();
-
-
-// 1. 상태 선언을 훅 호출보다 위로 올림 (중요!)
+    // * 상태 선언(useState)를 훅 호출보다 위로 올림
     const [currentPage, setCurrentPage] = useState(1);
     const [isOnlyMine, setIsOnlyMine] = useState(false);
-    // 2. 사용자 액션 관련 훅 호출 , formData를 꺼내온다
-    // 3. 훅에 모든 조건을 넘겨주면, 가공된 metadata가 나옴
     //   메타데이터 훅 호출 (가공된 metadata를 가져옴)
     const {metadata, pageData, totalCount, loading: dataLoading} = usePageMetadata(
-        screenId,
+        screenId, // MetadataProvider 에서 가져온 screenId
         currentPage,
         isOnlyMine,
-        diaryId
+        refId
     );
     const {formData, handleChange, handleAction, showPassword, pwType} = usePageHook(screenId, metadata, pageData);    //   접근 권한 체크 로직 (로그인 여부 확인)
     useEffect(() => {

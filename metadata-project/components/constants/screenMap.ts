@@ -12,4 +12,4 @@ export const SCREEN_MAP: Record<string, string> = {
     // "/DASHBOARD_PAGE": "DASHBOARD_PAGE",
 };
 
-export const DEFAULT_SCREEN_ID = "COMMON_LAYOUT";
+export const DEFAULT_SCREEN_ID = "MAIN_PAGE";

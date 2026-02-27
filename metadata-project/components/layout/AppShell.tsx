@@ -1,23 +1,26 @@
 'use client';
-import { useMetadata } from "@/components/providers/MetadataProvider";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import RecordTimeComponent from "@/components/fields/RecordTimeComponent";
+import {useDeviceType} from "@/hooks/useDeviceType";
 
-/**
- * AppShell 역할: 디바이스 환경에 따라 최적화된 레이아웃 구조를 렌더링, 레이아웃 중재자, RootLayout 내부에서 MetadataProvider의 데이터를 구독해 전체 뼈대를 결정한다 .
- */
 export default function AppShell({ children }: { children: React.ReactNode }) {
-    const { isDesktop } = useMetadata();
+    // 1. 훅에서 모바일 여부와 클래스명을 동시에 가져온다.
+    const { isMobile, deviceClass } = useDeviceType();
+
+    // 2. 가독성을 위해 PC 여부를 변수로 선언해둔다.
+    const isPc = !isMobile;
 
     return (
-        <div className={`app-wrapper ${isDesktop ? 'is-pc' : 'is-mobile'}`}>
-            {/* [핵심 1] 디바이스에 따른 네비게이션 교체 */}
-            {isDesktop ? <Sidebar /> : <Header />}
+        // 3. 훅에서 이미 정의된 deviceClass('is-pc' 또는 'is-mobile')를 그대로 사용한다.
+        <div className={`app-wrapper ${deviceClass}`}>
+
+            {/* 4. PC일 때는 Sidebar, 모바일일 때는 Header를 보여준다. */}
+            {isPc ? <Sidebar /> : <Header />}
 
             <main className="main-contents-area">
-                {/* [핵심 2] PC 전용 상단 유틸리티 영역 (기록 컴포넌트 배치) */}
-                {isDesktop && (
+                {/* 5. PC 전용 유틸리티 영역 처리 */}
+                {isPc && (
                     <div className="pc-top-utility">
                         <RecordTimeComponent />
                     </div>

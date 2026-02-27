@@ -1,8 +1,9 @@
 // context/AuthContext.tsx
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import api from '@/services/axios';
+import {useRouter} from "next/navigation";
 
 interface User {
     userId?: string;
@@ -10,7 +11,7 @@ interface User {
     email?: string;
     socialType?: string;
     isLoggedIn: boolean;
-    role?: string;
+    role?: string; // RBAC 구분값 (예: 'ADMIN', 'USER', 'GUEST')
 }
 interface AuthContextType {
     user: User | null;
@@ -18,6 +19,8 @@ interface AuthContextType {
     isLoading: boolean;
     updateUser: (userData: User | null) => void;
     login: (userData: any) => void;
+    logout: () => Promise<void>;
+    checkAccess: (allowedRoles?: string | string[]) => boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,12 +29,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
-
+    const router = useRouter();
     // 로그인 성공 시 호출할 함수
     const login = (userData: any) => {
         setUser(userData);
         setIsLoggedIn(true);
     };
+
+
+    //  로그아웃
+    const logout = useCallback(async () => {
+        try {
+            // 1. 서버에 로그아웃 알림 (세션/쿠키 만료 처리 요청)
+            await api.post('/api/auth/logout');
+        } catch (err) {
+            console.error("Logout API error:", err);
+            // 서버 에러가 나더라도 클라이언트 상태는 지우는 게 사용자 입장에서 안전해
+        } finally {
+            //  클라이언트 상태 초기화
+            setUser(null);
+            setIsLoggedIn(false);
+            // 브라우저 저장소나 쿠키 수동 삭제
+            document.cookie = "loginType=; path=/; max-age=0;";
+            // 로그인 페이지로 강제 이동 (필요시)
+            router.push('/view/LOGIN_PAGE');
+        }
+    }, [router]);
+    // * 권한 체크 함수
+    const checkAccess = useCallback((allowedRoles?: string | string[]) => {
+        // 제한이 없으면 누구나 접근 가능
+        if (!allowedRoles || (Array.isArray(allowedRoles) && allowedRoles.length === 0)) return true;
+
+        //  현재 유저의 역할 확인 (없으면 GUEST)
+        const userRole = user?.role || 'GUEST';
+
+        //  배열로 변환해서 포함 여부 확인
+        const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+        return rolesArray.includes(userRole);
+    }, [user]);
+
     const checkLoginStatus = async () => {
         try {
             // /api/auth/me를 호출하면 브라우저가 HttpOnly 쿠키를 자동으로 실어 보냄 
@@ -53,7 +89,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return (
 
-        <AuthContext.Provider value={{ user, isLoggedIn, isLoading, updateUser: setUser, login  }}>
+        <AuthContext.Provider value={{ user, isLoggedIn, isLoading, updateUser: setUser, login, logout,
+            checkAccess  }}>
             {children}
         </AuthContext.Provider>
     );

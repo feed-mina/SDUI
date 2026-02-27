@@ -4,17 +4,19 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext"; // 1. AuthContext 가져오기
 import { useBaseActions } from "./useBaseActions";
+import { flattenMetadata } from "../..//utils/metadataUtils";
+
 export const useBusinessActions = (screenId: string,metadata: any[] = [], initialData: any = {}) => {
     const base = useBaseActions(screenId, metadata, initialData); // screenId 추가 [cite: 2026-02-17]
     const router = useRouter();
+    const flatMeta = useMemo(() => flattenMetadata(metadata), [metadata]);
 
     const handleAction = useCallback(async (meta: any, data?: any) => {
-        if (!meta) return;
 
-        const actionType = meta.action_type || meta.actionType;
-        const actionUrl = meta.action_url || meta.actionUrl;
-        const dataSqlKey = meta.data_sql_key || meta.dataSqlKey;
-        const currentFormData = base.formDataRef.current;
+        const info = base.getMetaInfo(meta);
+        if (!info) return;
+
+        const { actionType, actionUrl, dataSqlKey, currentData } = info;
 
         switch (actionType) {
             case "LINK":
@@ -33,11 +35,10 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                 }
                 break;
             case "SUBMIT": {
-                const allComponents = base.flattenMetadata(metadata);
 
-                // 데이터 정제 및 필수값 체크
-                const submitData = { ...currentFormData };
-
+                const allComponents = flatMeta;
+                //  데이터 필터링 정제값
+                const submitData = { ...currentData };
                 // 수정 모드 시 URL에서 ID 추출 (이전 로직 유지)
                 const pathParts = window.location.pathname.split('/');
                 const idFromUrl = pathParts[pathParts.length - 1];
@@ -46,7 +47,9 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                 }
 
                 // 필수값 검증
-                const requiredFields = allComponents.filter(m => m.isRequired || m.is_required === "true" || m.is_required === true);
+                const requiredFields = allComponents.filter((m: any) =>
+                    m.isRequired || m.is_required === "true" || m.is_required === true
+                );
                 for (const field of requiredFields) {
                     const fieldId = field.componentId || field.component_id;
                     if (!submitData[fieldId]) {

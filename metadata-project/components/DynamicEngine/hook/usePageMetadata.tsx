@@ -6,17 +6,17 @@ import { useMetadata } from "@/components/providers/MetadataProvider";
 import {parseJsonbFields} from "@/components/utils/dataParser";
 
 
-//  @@@@ usePageMetadata 역할 : 메타데이터가져오기 , 원본 데이터 가져오기 , 가져온 데이터를 pageData로 담아줌, 로딩중인지 전체 개수가 몇개인지 같은 페이지의 전역 상태를 관리
-// 매개변수 순서를 screenId, currentPage, isOnlyMine 순으로 변경
+//  @@@@ usePageMetadata 역할 : 데이터 관리자 역할이다. 메타데이터가져오기 , 원본 데이터 가져오기 , 가져온 데이터를 pageData로 담아줌, 로딩중인지 전체 개수가 몇개인지 같은 페이지의 전역 상태를 관리
 export const usePageMetadata = (
     screenId: string,
     currentPage: number,
     isOnlyMine: boolean,
-    diaryId?: string,
+    refId: string | number | null,
     showPassword?: boolean
 ) => {
     const router = useRouter();
     const { user, isLoggedIn } = useAuth();
+
     const { menuTree, isLoading: metaLoading, screenId: providerScreenId } = useMetadata();
 
     const [metadata, setMetadata] = useState<any[]>([]); // 원본 메타데이터
@@ -24,11 +24,16 @@ export const usePageMetadata = (
     const [pageData, setPageData] = useState<any>({});
     const [loading, setLoading] = useState(true);
 
-    // 내부에서 사용하던 overrideScreenId 대신 인자로 받은 screenId를 직접 사용하거나
-    // 우선순위를 결정 (전달받은 screenId || Provider의 screenId)
+    // * 우선순위를 결정 (전달받은 screenId || Provider의 screenId)  > 공통 헤더나 사이드바가 있다
     const finalScreenId = screenId || providerScreenId;
 
-    // [1] 원본 메타데이터 저장
+    useEffect(() => {
+        if (isLoggedIn && finalScreenId?.includes("LOGIN_PAGE")) {
+            router.push("/view/MAIN_PAGE");
+        }
+    }, [isLoggedIn, finalScreenId, router]);
+
+    // ** 로직1:  MetadataProvider에서 context로 가져온 값 menuTree를 metadata라는 로컬상태에 저장한다. (screenId로 화면구분)
     useEffect(() => {
         if (menuTree && menuTree.length > 0) {
             setMetadata(menuTree);
@@ -37,7 +42,7 @@ export const usePageMetadata = (
 
     const pageSize = 5;
 
-    // [2] 필터링된 메타데이터 생성
+    // ** 로직2: 필터링된 메타데이터 생성 : 재귀탐색 함수를 통해 트리구조를 분석한다.
     const filteredMetadata = useMemo(() => {
         const filterRecursive = (items: any[]): any[] => {
             if (!items) return [];
@@ -51,31 +56,30 @@ export const usePageMetadata = (
                         ? (showPassword ? "숨기기" : "보이기")
                         : item.labelText
                 }))
+                // * 버튼 필터링 : 유저의 권한이나 로그인 여부에 따라서 버튼을 보여준다.
                 .filter(item => {
-                    // 가시성 필터링 로직
+                    // 로그인 여부에 따른 버튼 제어
                     const guestButtons = ["go_login_btn", "go_tutorial_btn"];
                     const userButtons = ["go_diary_btn", "view_diary_list_btn"];
 
-                    // 로그인 여부에 따른 버튼 제어
                     if (guestButtons.includes(item.componentId)) return !isLoggedIn;
                     if (userButtons.includes(item.componentId)) return isLoggedIn;
-                    // console.log('usePageMetadata',item);
-                    // 수정하기 버튼 권한 체크 (내 글일 때만)
+
+                    // 수정하기 버튼 권한 체크 (내 글일 때만) pageData 의 ID와 현재 로그인 ID 일치여부
                     if (item.componentId === "go_modify_btn") {
-                        // pageData 루트에 풀린 작성자 ID와 현재 로그인 ID 비교
                         return isLoggedIn && String(user?.userId) === String(pageData?.user_id);
                     }
 
-                    // 데이터 소스는 화면 렌더링에서 제외
+                    // * 데이터 소스는 화면 렌더링에서 제외한다
                     if (item.componentType === "DATA_SOURCE" || item.component_type === "DATA_SOURCE") {
                         return false;
                     }
-
                     return true;
                 });
         };
         return filterRecursive(metadata);
     }, [metadata, isLoggedIn, user, pageData, showPassword]);
+
     const getAllComponents = useCallback((items: any[]): any[] => {
         let res: any[] = [];
         items.forEach(item => {
@@ -85,56 +89,37 @@ export const usePageMetadata = (
         return res;
     }, []);
 
-// 날짜 포맷팅 함수 (YYYY-MM-DD HH:mm)
-    const formatDate = (dateString: string) => {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        return date.toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-    };
-
+    // ** 로직3 : 비즈니스 데이터 호출 준비(fetchBusinessData)
     useEffect(() => {
         const fetchBusinessData = async () => {
+            //  메타데이터가 없다면 안함
             if (!metadata || metadata.length === 0) return;
-
-            if (isLoggedIn && finalScreenId?.includes("LOGIN_PAGE")) {
-                router.push("/view/MAIN_PAGE");
-                return;
-            }
-
             setLoading(true);
             try {
                 const allComponents = getAllComponents(metadata);
+                // * 메타데이터의 필드 타입이 DATA_SOURCE 이고  액션 타입이 AUTO_FETCH(자동호출)이면 페이지가 열리자 말자 바로 가져온다
                 const sources = allComponents.filter((item: any) =>
                     (item.componentType === "DATA_SOURCE" || item.component_type === "DATA_SOURCE") &&
                     (item.actionType === "AUTO_FETCH" || item.action_type === "AUTO_FETCH")
                 );
+                // * 메타데이터에 dataSqlKey가 있다면 /api/execute/{key} 형태로 주소를 보낸다
 
                 const dataPromises = sources.map(async (source: any) => {
-                    let apiUrl = source.dataApiUrl || source.data_api_url;
-
-                    // 수정: apiUrl에 diaryId를 붙이지 않고, sqlKey 기반 URL만 유지
+                    let apiUrl;
+                    //  apiUrl에 sqlKey 기반 URL만 유지
                     if (source.dataSqlKey || source.data_sql_key) {
                         apiUrl = `/api/execute/${source.dataSqlKey || source.data_sql_key}`;
                     }
-
-                    const compId = source.componentId || source.component_id;
-                    // if (compId === "diary_list_source" && isOnlyMine) {
-                        // apiUrl = "/api/diary/member-diaries";
-                        // apiUrl = ""
-                    // }
+                    //  * 서버로 보낼 execute가 없다면 [] 로 빈 배열값이 나온다.
                     if (!apiUrl) return { id: source.componentId, data: [] };
 
+                    // * 메타데이터 중 data_params 는 jsonb 타입이다.
                     const rawParams = source.dataParams || source.data_params || "{}";
+                    //  * 그래도 만약 data_param 값이 string이라면 json으로 변환한다.
                     const parsedParams = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams;
 
-                    // 모든 파라미터를 finalParams에 통합
+                    // * 파라미터 조립 : 모든 파라미터를 finalParams에 통합, 페이지 번호, 한 페이지당 개수(pageSize), 내 글만 보기 여부(isOnlyMine), 상세Id(refId) 등을 하나로 합침
+
                     const finalParams = {
                         ...parsedParams,
                         pageSize,
@@ -142,15 +127,17 @@ export const usePageMetadata = (
                         filterId: isOnlyMine ? user?.userId : "",
                         userId: user?.userId || "guest",
                         userSqno: user?.userSqno,
-                        diaryId: diaryId|| null //  (백엔드 :diaryId와 매핑)
+                        diaryId: refId|| null //  (백엔드 :diaryId와 매핑)
                     };
-                    // console.log('usePageMEtadata_diaryId',diaryId);
-                    // console.log('usePageMEtadata_diaryId',finalParams);
-                    let res;if (finalScreenId?.includes("DIARY_DETAIL") || finalScreenId?.includes("DIARY_MODIFY") || isOnlyMine) {
-                        // 상세 조회나 수정 화면, 내 글 목록은 GET 방식 사용
+
+                    let res;
+
+                    //** 로직4: 데이터 가공 및 바인딩 : screenId(페이지 파라미터 기준) 조건으로get을 사용하는지 post를 방식 결정한다. 서버에서 받아온 rawData를 화면에 쓰기 편하게 가공한다
+                    if (finalScreenId?.includes("DIARY_DETAIL") || finalScreenId?.includes("DIARY_MODIFY") || isOnlyMine) {
+                        // 상세 조회나 수정 하기 전에 보이는 부분, 내 글 목록은 GET 방식 사용
                         res = await axios.get(apiUrl, { params: finalParams });
                     } else {
-                        // 그 외 일반 목록 등은 POST 방식 사용 (else 키워드 반드시 추가)
+                        // 그 외 일반 목록 등은 POST 방식 사용
                         res = await axios.post(apiUrl, finalParams);
                     }
                     return {
@@ -242,7 +229,7 @@ export const usePageMetadata = (
         fetchBusinessData();
 
 
-    }, [metadata, finalScreenId, currentPage, isOnlyMine, diaryId, isLoggedIn, user, getAllComponents, router]);
+    }, [metadata, finalScreenId, currentPage, isOnlyMine, refId, isLoggedIn, user, getAllComponents, router]);
 
     return {
         metadata: filteredMetadata,
