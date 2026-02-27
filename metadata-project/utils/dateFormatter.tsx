@@ -12,7 +12,7 @@ export const dateFormatter = () => {
         const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
         const dayName = dayNames[displayDate.getDay()];
 
-        return `${month}-${day} ${hours}:${minutes} ${dayName}`;
+        return `${month}월 ${day}일${dayName}`;
     };
 
 // [유틸] time포맷함수 (오전/오후 HH:MM)
@@ -26,7 +26,7 @@ export const dateFormatter = () => {
         const ampm = hours >= 12 ? '오후' : '오전';
         const displayHours = hours % 12 || 12;
         const displayMinutes = minutes < 10 ? `0${minutes}` : minutes;
-        return `${ampm} ${displayHours}:${displayMinutes}`;
+        return `${ampm} ${displayHours}시 ${displayMinutes}분`;
     };
 // [유틸] 날짜만 보여주는함수 (YYYY-MM-DD)
     const formatDateOnly = (dateStr: string) => {
