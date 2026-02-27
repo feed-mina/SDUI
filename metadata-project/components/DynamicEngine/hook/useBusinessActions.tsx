@@ -9,6 +9,8 @@ import { flattenMetadata } from "../..//utils/metadataUtils";
 export const useBusinessActions = (screenId: string,metadata: any[] = [], initialData: any = {}) => {
     const base = useBaseActions(screenId, metadata, initialData); // screenId 추가 [cite: 2026-02-17]
     const router = useRouter();
+    // queryClient 선언 (캐시 조작을 위해 필요)
+    const queryClient = useQueryClient();
     const flatMeta = useMemo(() => flattenMetadata(metadata), [metadata]);
 
     const handleAction = useCallback(async (meta: any, data?: any) => {
@@ -58,10 +60,19 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                     }
                 }
 
+
                 const finalUrl = dataSqlKey ? `/api/execute/${dataSqlKey}` : actionUrl;
                 try {
                     const response = await axios.post(finalUrl, submitData);
                     if (response.status === 200 || response.status === 201) {
+
+                        // 시간 저장 API인 경우 관련 캐시 무효화
+                        // URL에 goalTime이 포함되어 있다면 헤더의 데이터를 새로고침하도록 지시함
+                        if (finalUrl.includes('goalTime')) {
+                            await queryClient.invalidateQueries({ queryKey: ['goalTime'] });
+                            await queryClient.invalidateQueries({ queryKey: ['goalList'] });
+                        }
+
                         router.push("/view/DIARY_LIST");
                     }
                 } catch (error) {
