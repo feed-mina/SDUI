@@ -162,14 +162,14 @@ export const usePageMetadata = (
                         if (res.id === "diary_detail_source") {
                             const detailData = Array.isArray(rawResponse) ? rawResponse[0] : (rawResponse.data || rawResponse);
 
-                            console.log('diary_detail_source',detailData);
+                            // console.log('diary_detail_source',detailData);
                             if (detailData) {
                                 // 공통 함수를 사용하여 jsonb 필드들을 일괄 파싱
                                 const processedDetail = parseJsonbFields(detailData);
                                 Object.assign(combinedData, processedDetail);
 
-                                console.log('processedDetail',processedDetail);
-                                console.log('processedDetail.selected_times',processedDetail.selected_times);
+                                // console.log('processedDetail',processedDetail);
+                                // console.log('processedDetail.selected_times',processedDetail.selected_times);
 
 
                                 if (processedDetail.daily_slots && !Array.isArray(processedDetail.daily_slots)) {
@@ -180,14 +180,14 @@ export const usePageMetadata = (
                                 // }
 
                                 // 디버깅용 로그 (이게 보여야 성공이야)
-                                console.log("Final combinedData for binding:", combinedData);
+                                // console.log("Final combinedData for binding:", combinedData);
                             }
                         }
 
                         // 2. 목록 페이지 데이터 처리 (리스트 데이터)
                         else {
                             const realList = Array.isArray(rawResponse) ? rawResponse : (rawResponse.list || rawResponse.data || []);
-                            console.log('realList',realList);
+                            // console.log('realList',realList);
 
                             const unifiedList = realList.map((item: any) => {
                                 // 리스트 내부의 각 아이템들도 jsonb 파싱 적용 (나중에 목록에서 필요할 수 있으니까)
@@ -197,7 +197,7 @@ export const usePageMetadata = (
                                 const rawDate = parsedItem.regDt || parsedItem.reg_dt || "";
                                 const formattedDate = rawDate ? rawDate.split('T')[0].replace(/-/g, '.') : "";
 
-                                console.log('parsedItem',parsedItem);
+                                // console.log('parsedItem',parsedItem);
                                 return {
                                     ...parsedItem,
                                     diary_id: parsedItem.diaryId || parsedItem.diary_id,
