@@ -3,6 +3,7 @@ name: Deploy to AWS with Docker
 on:
   push:
     branches: [ "main" ]
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -10,8 +11,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: ./SDUI-server
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
         working-directory: ./SDUI-server
 
       - name: Login to Docker Hub
@@ -29,17 +41,10 @@ jobs:
           username: ${{ secrets.AWS_USERNAME }}
           key: ${{ secrets.AWS_KEY }}
           script: |
-            # 0. Docker 네트워크 확인 및 생성
             docker network inspect sdui-network >/dev/null 2>&1 || docker network create sdui-network
-
-            # 1. 최신 이미지 가져오기
-            docker pull yerinmin/sdui-app:latest
-
-            # 2. 기존 백엔드 컨테이너가 있다면 중지 및 삭제
+            docker pull ${{ secrets.DOCKER_USERNAME }}/sdui-app:latest
             docker stop sdui-backend || true
             docker rm sdui-backend || true
-
-            # 3. 새 컨테이너 실행 
             docker run -d --name sdui-backend \
               -p 8080:8080 \
               --network sdui-network \
@@ -50,4 +55,4 @@ jobs:
               -e SPRING_DATA_REDIS_HOST=sdui-redis \
               -e SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
               -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
-              yerinmin/sdui-app:latest
+              ${{ secrets.DOCKER_USERNAME }}/sdui-app:latest
