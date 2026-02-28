@@ -5,7 +5,7 @@ export const useDeviceType = () => {
 
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768); // 768px 미만을 모바일로 간주
+            setIsMobile(window.innerWidth < 1000); // 768px 미만을 모바일로 간주
         };
 
         checkMobile();
