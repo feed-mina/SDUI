@@ -23,6 +23,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Map;
@@ -37,6 +38,14 @@ public class KakaoController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final KakaoService kakaoService;
     private final JwtUtil jwtUtil;
+
+
+    @Value("${app.url.web}")
+    private String webUrl;
+
+    @Value("${app.url.mobile}")
+    private String mobileUrl;
+
     @Value("${kakao.client-id}")
     private String clientId;
 
@@ -98,7 +107,7 @@ public class KakaoController {
     }
 
     @GetMapping("/callback")
-    public void getAccessToken(@RequestParam String code, HttpServletResponse response) throws IOException {
+    public void getAccessToken(@RequestParam String code,  @RequestParam(required = false) String state, HttpServletResponse response) throws IOException {
         log.info("KAKAOCONTROLLER-code: " + code);
 
         log.info("KAKAOCONTROLLER-@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -163,10 +172,12 @@ public class KakaoController {
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
+        // state 값이 없으면 기본적으로 'web'으로 간주
+        String platform = (state != null) ? state : "web";
+        String redirectPath = "/view/MAIN_PAGE";
+        String finalRedirectUrl = "mobile".equalsIgnoreCase(platform) ? mobileUrl + redirectPath : webUrl + redirectPath;
 
-        // 6. 프론트엔드 메인 페이지로 리다이렉트 [cite: 2026-01-01]
-        // 쿼리 파라미터로 토큰을 던지지 말고, 쿠키를 믿고 그냥 보내라. 
-        response.sendRedirect("http://localhost:3000/view/MAIN_PAGE");
+        response.sendRedirect(finalRedirectUrl);
     }
 
     @PostMapping("/sendRecord")
