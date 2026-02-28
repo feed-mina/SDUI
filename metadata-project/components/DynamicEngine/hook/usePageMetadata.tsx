@@ -35,10 +35,31 @@ export const usePageMetadata = (
 
     // ** 로직1:  MetadataProvider에서 context로 가져온 값 menuTree를 metadata라는 로컬상태에 저장한다. (screenId로 화면구분)
     useEffect(() => {
-        if (menuTree && menuTree.length > 0) {
-            setMetadata(menuTree);
-        }
-    }, [menuTree]);
+        const loadMetadata = async () => {
+            // 1. 요청한 screenId가 현재 페이지와 같다면 Provider의 캐시를 사용
+            if (screenId === providerScreenId && menuTree && menuTree.length > 0) {
+                setMetadata(menuTree);
+                setLoading(false);
+                return;
+            }
+
+            // 2. 요청한 screenId가 다르거나(예: GLOBAL_HEADER), Provider에 데이터가 없다면 직접 호출
+            if (screenId && screenId !== providerScreenId) {
+                setLoading(true);
+                try {
+                    const res = await axios.get(`/api/ui/${screenId}`);
+                    // 서버 응답 구조 {"status":"success", "data": [...]} 반영
+                    setMetadata(res.data.data || []);
+                } catch (error) {
+                    console.error("Metadata Direct Fetch Error:", error);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+
+        loadMetadata();
+    }, [screenId, providerScreenId, menuTree]); // 의존성 배열에 인자로 받은 screenId 추가
 
     const pageSize = 5;
 
