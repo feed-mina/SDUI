@@ -1,5 +1,7 @@
 package com.domain.demo_backend.domain.user.controller;
 
+import com.domain.demo_backend.domain.user.domain.UserRepository;
+import com.domain.demo_backend.domain.user.dto.RegisterRequest;
 import com.domain.demo_backend.domain.user.service.AuthService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.domain.token.domain.RefreshToken;
@@ -40,11 +42,12 @@ public class AuthController {
     private User user;
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
-
+    private UserRepository userRepository;
     // 생성자 주입
     @Autowired
     public AuthController(AuthService authService, JwtUtil jwtUtil) {
         this.refreshTokenRepository = refreshTokenRepository;
+        this.userRepository = userRepository;
         this.authService = authService;
         this.jwtUtil = jwtUtil;
     }
@@ -120,7 +123,7 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, loginTypeCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, statusCookie.toString())
-                .body(Map.of("message", "로그인 성공")); // 바디에는 토큰을 담지 않음
+                .body(tokenResponse);  //앱 개발 확장 토큰 정보를 포함한 객체 반환
     }
 
     @Operation(summary = "회원 가입페이지에서 회원가입 로직", description = "users 테이블에 insert한다..")
@@ -155,14 +158,14 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/signup")
-    public ResponseEntity<?> sendVerificationCode(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
+    public ResponseEntity<?> sendVerificationCode(@RequestHeader(value = "X-Platform", defaultValue = "web") String platform,  @RequestBody RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
 
         log.info("유효성 평가 ");
 //        authService.beforesendVerificationCode(registerRequest);
         log.info("회원가입 하기 위해 인증코드 전송 ");
         String email = registerRequest.getEmail();
         // 랜덤 인증 코드 생성
-        String verificationCode = authService.sendVerificationCode(email);
+        String verificationCode = authService.sendVerificationCode(email, platform);
         // 인증 코드를 Map에 저장
         emailVerificationMap.put(email, verificationCode);
 
@@ -184,12 +187,12 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @GetMapping("/signUp")
-    public ResponseEntity<?> sendVerificationCodeByGet(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
+    public ResponseEntity<?> sendVerificationCodeByGet(@RequestHeader(value = "X-Platform", defaultValue = "web") String platform, @RequestBody RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
 
         log.info("get 테스트 회원가입 하기 위해 인증코드 전송 ");
         String email = registerRequest.getEmail();
 
-        String verificationCode = authService.sendVerificationCode(email);
+        String verificationCode = authService.sendVerificationCode(email, platform);
         emailVerificationMap.put(email, verificationCode);
 
         return ResponseEntity.ok(Map.of(
@@ -207,12 +210,12 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/verify-code")
-    public ResponseEntity<String> verifyCode(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest request) {
+    public ResponseEntity<String> verifyCode(@RequestHeader(value = "X-Platform", defaultValue = "web") String platform, @RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest request) {
         if (request.getEmail() == null || request.getCode() == null) {
             return ResponseEntity.badRequest().body("이메일 또는 인증 코드가 누락되었습니다.");
         }
 
-        boolean isValid = authService.verifyCode(request.getEmail(), request.getCode());
+        boolean isValid = authService.verifyCode(request.getEmail(), request.getCode(), platform);
         if (isValid) {
             return ResponseEntity.ok("인증 성공!");
         } else {
@@ -296,10 +299,14 @@ public class AuthController {
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<?> refresh(@CookieValue(name = "refreshToken", required = false) String cookieRT ,
+                                     @RequestHeader(value = "Authorization-Refresh", required = false) String headerRT) {
         try {
+            // 1. 쿠키에 없으면 헤더에서 가져온다 (앱 대응)
+            String refreshToken = (cookieRT != null) ? cookieRT : headerRT;
+
             if (refreshToken == null || refreshToken.isBlank()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("쿠키에 refreshToken이 없어요");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 없습니다.");
             }
 
             // 1. 토큰 유효성 먼저 검증 (jwtUtil에서 만료 체크)
@@ -309,22 +316,32 @@ public class AuthController {
             //  2. DB에 저장된 리프레시 토큰과 비교
             log.info("@@@@@ DB에 저장된 리프레시 토큰과 비교");
             RefreshToken saved = refreshTokenRepository.findByEmail(email)
-                    .orElseThrow(() -> new IllegalArgumentException("DB에 토큰이 없어요"));
+                    .orElseThrow(() -> new IllegalArgumentException("로그인 정보가 만료되었습니다."));
 
             if (!saved.getRefreshToken().equals(refreshToken)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("리프레시 토큰이 유효하지 않아요");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다");
             }
             //3. 새 Access Token 발급
             log.info("@@@@@  새 Access Token 발급");
+            // 4.  새 Access Token 발급을 위해 사용자 정보 조회
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
             String newAccessToken = jwtUtil.createAccessToken(user);
-            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+
+            // 5. 웹 ResponseCookie
+            ResponseCookie newAccessCookie = ResponseCookie.from("accessToken", newAccessToken)
+                    .httpOnly(true).path("/").maxAge(60 * 60).build();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, newAccessCookie.toString())
+                    .body(Map.of("accessToken", newAccessToken));
 
         } catch (ExpiredJwtException e) {
             log.info("@@@@@ 리프레시 토큰이 만료");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("리프레시 토큰이 만료됐어요. 다시 로그인 해주세요!");
         } catch (Exception e) {
             log.info("@@@@@ 토큰 오류");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰 오류: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 오류: " + e.getMessage());
         }
     }
 

@@ -25,6 +25,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,6 +42,13 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     private final StringRedisTemplate redisTemplate;
+
+    @Value("${app.url.web}")
+    private String webUrl;
+
+    @Value("${app.url.mobile}")
+    private String mobileUrl;
+
 
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -216,7 +224,7 @@ public class AuthService {
 
 
 
-    public String sendVerificationCode(String email) throws MessagingException {
+    public String sendVerificationCode(String email , String platform) throws MessagingException {
         //랜덤 인등코드 생성
         String verificationCode = generateRendomCode();
         // DB에 인증코드, 만료시간 저장
@@ -225,8 +233,15 @@ public class AuthService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
         helper.setTo(email);
-        //  https://sdui-delta.vercel.app (프론트앤드 vercel 배포 주소)
-        String verifyUrl = "http://localhost:3000/view/VERIFY_CODE_PAGE?email=" + email;
+
+        String baseUrl = platform.equalsIgnoreCase("mobile") ? mobileUrl : webUrl;
+        String verifyUrl = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .path("/VERIFY_CODE_PAGE")
+                .queryParam("email", email)
+                .queryParam("code", verificationCode)
+                .build()
+                .encode()
+                .toUriString();
         helper.setSubject("📨 이메일 인증 코드 발송");
 
         String emailContent = "<div style='padding:20px; font-family:Arial; text-align:center;'>"
@@ -254,7 +269,7 @@ public class AuthService {
 
     // 회원가입 페이지 이후 인증번호 코드 페이지
     @Transactional
-    public boolean verifyCode(String email, String code) {
+    public boolean verifyCode(String email, String code, String platform) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자가 없습니다"));
 
         if (user == null) {
