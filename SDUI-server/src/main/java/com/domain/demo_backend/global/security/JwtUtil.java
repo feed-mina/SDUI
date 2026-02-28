@@ -107,7 +107,6 @@ public class JwtUtil {
     @PostConstruct
     public void init() {
         this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
-        System.out.println("issuer 값: " + issuer);
 
     }
 

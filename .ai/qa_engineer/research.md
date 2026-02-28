@@ -151,3 +151,134 @@ POST /api/diary → { data: { diaryId: 1 } }
 | 날짜 | 분석 내용 | 결론 |
 |------|-----------|------|
 | 2026-02-28 | 전체 테스트 환경 초기 분석 | 위 내용 도출, 커버리지 갭 식별 |
+| 2026-02-28 | [P3] 모달 시스템 버그 추적 | 아래 섹션 참고 |
+
+---
+
+## [P3] 모달 시스템 버그 분석 결과 ← 서브에이전트 분석 (2026-02-28)
+
+### 버그 요약
+`CommonPage`가 `usePageHook`에서 `activeModal`/`closeModal`을 destructure하지 않고
+`DynamicEngine`에도 전달하지 않아, **모든 화면에서 모달이 영구적으로 렌더링되지 않는다.**
+추가로 `usePageHook`의 `isUserDomain` 분기로 인해 비즈니스 화면에서는 `activeModal` 자체가 반환조차 안 된다.
+
+---
+
+### 데이터 흐름 추적 (버그 경로)
+
+```
+activeModal 생성: useUserActions.tsx:17
+  → const [activeModal, setActiveModal] = useState<string | null>(null);
+         ↓
+usePageHook 반환: NO
+  → isUserDomain = false (DIARY_LIST 등)일 때 targetActions = businessActions
+  → businessActions에는 activeModal 상태 없음
+  → usePageHook.tsx:31-34에서 ...targetActions만 spread → activeModal 누락
+         ↓
+CommonPage destructure: NO
+  → page.tsx:42: const {formData, handleChange, handleAction, showPassword, pwType} = usePageHook(...)
+  → activeModal 구조분해 없음
+         ↓
+DynamicEngine prop: NO
+  → page.tsx:80-88에서 activeModal={} closeModal={} 미전달
+  → DynamicEngine은 activeModal = undefined
+         ↓
+renderModals 실행: FAIL
+  → DynamicEngine.tsx:144: undefined === "SOME_ID" → 항상 false → 모달 절대 렌더링 안 됨
+```
+
+---
+
+### 근본 원인 (Root Cause)
+
+#### Primary: usePageHook 도메인 분기 설계 결함 (`usePageHook.tsx:28-34`)
+```typescript
+const isUserDomain = screenId === "REGISTER_PAGE" || screenId.includes("LOGIN");
+const targetActions = isUserDomain ? userActions : businessActions;
+
+return {
+    ...targetActions,     // ← businessActions에는 activeModal 없음
+    handleAction: combinedHandleAction
+};
+```
+
+#### Secondary: CommonPage에서 activeModal 미처리 (`page.tsx:42`)
+```typescript
+const {formData, handleChange, handleAction, showPassword, pwType} = usePageHook(...);
+// activeModal, closeModal 누락
+```
+
+#### Tertiary: DynamicEngine prop 누락 (`page.tsx:80-88`)
+```typescript
+<DynamicEngine ... />
+// activeModal={activeModal}  ← 미전달
+// closeModal={closeModal}    ← 미전달
+```
+
+---
+
+### 부가 버그 발견
+
+#### Bug-1: renderModals의 undefined 반환 (`DynamicEngine.tsx:155`)
+```typescript
+.map(node => {
+    if (activeModal === cid) { return <ModalComponent />; }
+    // return null;  ← 주석 처리됨 → undefined이 배열에 쌓임
+});
+```
+
+#### Bug-2: renderModals가 최상위 레벨만 탐색
+```typescript
+nodes.filter(node => ... === 'MODAL')  // 최상위만 필터 → 중첩 MODAL 발견 불가
+```
+
+---
+
+### 최소 수정 방법
+
+#### 수정 1: `usePageHook.tsx` — activeModal 항상 반환 ★ 핵심
+```typescript
+return {
+    ...targetActions,
+    handleAction: combinedHandleAction,
+    activeModal: userActions.activeModal,  // ← 추가
+    closeModal: userActions.closeModal     // ← 추가
+};
+```
+
+#### 수정 2: `page.tsx:42` — activeModal, closeModal destructure
+```typescript
+const {
+    formData, handleChange, handleAction, showPassword, pwType,
+    activeModal, closeModal   // ← 추가
+} = usePageHook(screenId, metadata, pageData);
+```
+
+#### 수정 3: `page.tsx:80-88` — DynamicEngine에 prop 전달
+```typescript
+<DynamicEngine
+    ...
+    activeModal={activeModal}    // ← 추가
+    closeModal={closeModal}      // ← 추가
+/>
+```
+
+#### 수정 4: `DynamicEngine.tsx:155` — undefined 배열 요소 제거
+```typescript
+// return null;  ← 주석 해제
+return null;
+```
+
+---
+
+### 수정 후 기대 데이터 흐름
+
+```
+activeModal 생성 → usePageHook 반환(YES) → CommonPage destructure(YES)
+→ DynamicEngine prop(YES) → renderModals 매칭 → 모달 렌더링 성공
+```
+
+### 수정 범위
+- 수정 파일 수: 3개 (`usePageHook.tsx`, `page.tsx`, `DynamicEngine.tsx`)
+- 변경 라인 수: 약 7줄 추가, 1줄 주석 해제
+- 기존 LOGIN/REGISTER 화면 동작: 영향 없음 (호환성 유지)

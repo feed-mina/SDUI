@@ -67,13 +67,11 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
 
         switch (actionType) {
             case "LOGIN_SUBMIT":
-                console.log('뭐야 ')
                 try {
                     const loginData = {
                         user_email: `${currentData.user_email}@${currentData.user_email_domain}`,
                         user_pw: currentData.user_pw
                     };
-            console.log('loginData', loginData);
                     const res = await axios.post(actionUrl || '/api/auth/login', loginData);
                     if (res.status === 200) {
                         //   AuthContext의 상태 업데이트

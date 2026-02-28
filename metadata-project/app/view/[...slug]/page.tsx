@@ -39,7 +39,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
         isOnlyMine,
         refId
     );
-    const {formData, handleChange, handleAction, showPassword, pwType} = usePageHook(screenId, metadata, pageData);    //   접근 권한 체크 로직 (로그인 여부 확인)
+    const {formData, handleChange, handleAction, showPassword, pwType, activeModal, closeModal} = usePageHook(screenId, metadata, pageData);    //   접근 권한 체크 로직 (로그인 여부 확인)
     useEffect(() => {
         // 로딩 중이 아닐 때만 판단
         if (!isLoading) {
@@ -85,7 +85,10 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
                 onChange={handleChange}
                 onAction={handleAction}
                 pwType={pwType}
-                showPassword={showPassword}     />
+                showPassword={showPassword}
+                activeModal={activeModal}
+                closeModal={closeModal}
+            />
 
             {/* 리스트 페이지용 페이징 */}
             {screenId === "DIARY_LIST" && (

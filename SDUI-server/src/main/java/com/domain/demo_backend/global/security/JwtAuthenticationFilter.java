@@ -89,8 +89,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String authorizationHeader = request.getHeader("Authorization");
-        System.out.println("@@@@Authorization Header: " + authorizationHeader);
 // [수정] 토큰이 비어있으면 검증하지 않고 다음 필터로 넘김
         if (token == null || token.isEmpty()) {
             filterChain.doFilter(request, response);
@@ -98,13 +96,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
             try {
                 Claims claims = jwtUtil.validateToken(token); // 토큰 검증
-                // 유효하지 않은 토큰 예외 처리
-                System.out.println("@@@@claims: " + claims);
                 String email = claims.getSubject();
-                System.out.println("@@@@email : " + email);
                 String userId = claims.get("userId", String.class);
                 Long userSqno = claims.get("userSqno", Long.class);
-                System.out.println("@@@@실제 userSqno : " + userSqno);
 
                 if (email != null) {
                     /*
@@ -127,14 +121,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         });
                     }
                     List<GrantedAuthority> authorities = List.of(() -> "ROLE_USER");
-                    System.out.println("@@@@authorities: " + authorities);
                     CustomUserDetails userDetails = new CustomUserDetails(user);
-
-
-                    System.out.println("@@@@userDetails: " + userDetails);
                     // 인증 토큰 생성
                     Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    System.out.println("@@@@authentication: " + authentication);
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     handleSlidingExpiration(claims, email);
@@ -148,8 +137,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
         filterChain.doFilter(request, response); // 다음 필터로 이동
-        System.out.println("@@@@request: " + request);
-        System.out.println("@@@@response: " + response);
         }
 
 

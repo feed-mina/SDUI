@@ -72,9 +72,7 @@ public class PasswordUtil {
         // 3. 비밀번호 암호화하기
         String encryptedPassword = encoder.encode(rawPassword);
 
-        // 결과 출력
-        System.out.println("원래 비밀번호: " + rawPassword);
-        System.out.println("암호화된 비밀번호: " + encryptedPassword);
+        // 결과 출력 (민감정보 로깅 제거)
     }
 }
 

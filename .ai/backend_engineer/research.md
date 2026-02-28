@@ -194,3 +194,142 @@ CommonQueryController → QueryMasterService → QueryMasterRepository (query_ma
 | 날짜 | 분석 내용 | 결론 |
 |------|-----------|------|
 | 2026-02-28 | 전체 백엔드 코드 초기 분석 | 위 내용 도출 |
+| 2026-02-28 | [P1] 보안 감사 — anyRequest().permitAll() 위험도 분석 | 아래 섹션 참고 |
+
+---
+
+## [P1] 백엔드 보안 감사 결과 ← 서브에이전트 분석 (2026-02-28)
+
+### 현황 요약
+`SecurityConfig.java:75`의 `.anyRequest().permitAll()` 폴백 규칙으로 인해 명시되지 않은 모든 엔드포인트가
+인증 없이 공개되어 있다. 특히 `/api/execute/{sqlKey}`(동적 SQL 실행),
+`/api/auth/editPassword`(비밀번호 변경), `/api/auth/non-user`(회원탈퇴)가 인증 없이 호출 가능하며,
+새 엔드포인트 추가 시 개발자가 별도로 지정하지 않으면 자동으로 전체 공개된다.
+
+---
+
+### 전체 엔드포인트 인증 재분석 (위험도 포함)
+
+| 엔드포인트 | HTTP | 현재 권한 | 필요 권한 | 위험도 |
+|-----------|------|----------|----------|-------|
+| `/api/auth/login` | POST | permitAll | PUBLIC | 정상 |
+| `/api/auth/register` | POST | permitAll | PUBLIC | 정상 |
+| `/api/auth/me` | GET | permitAll | PUBLIC | 정상 |
+| `/api/auth/refresh` | POST | permitAll | PUBLIC | 정상 |
+| `/api/auth/logout` | POST | permitAll | PUBLIC | 정상 |
+| `/api/auth/verify-code` | POST | permitAll | PUBLIC | 정상 |
+| `/api/auth/resend-code` | POST | permitAll | PUBLIC | 정상 |
+| `/api/auth/confirm-email` | GET | permitAll | PUBLIC | 정상 |
+| `/api/auth/check-verification` | GET | permitAll | PUBLIC | 중간 |
+| **`/api/auth/editPassword`** | POST | **permitAll** | **USER** | **높음** |
+| **`/api/auth/non-user`** | POST | **permitAll** | **USER** | **높음** |
+| `/api/diary/**` | ALL | authenticated | USER | 정상 |
+| **`/api/execute/{sqlKey}`** | GET,POST | **permitAll** | **ADMIN** | **매우높음** |
+| **`/api/goalTime/**`** | ALL | **permitAll** | **USER** | **높음** |
+| `/api/timer/**` | GET | permitAll | PUBLIC | 정상 |
+| `/api/kakao/**` | ALL | permitAll | PUBLIC | 정상 (OAuth) |
+| `/api/ui/**` | GET | permitAll | PUBLIC | 정상 |
+| `/topic/location/**` (WS) | WS | **permitAll** | **USER** | **높음** |
+
+---
+
+### 가장 위험한 엔드포인트 Top 3
+
+#### 1. `POST /api/execute/{sqlKey}` — CRITICAL
+`query_master` 테이블에 등록된 SQL을 인증 없이 실행 가능.
+```bash
+# 공격 예시: 인증 없이 임의 쿼리 실행
+curl -X GET http://localhost:8080/api/execute/user_list
+curl -X POST http://localhost:8080/api/execute/diary_delete -d '{"diaryId":1}'
+```
+
+#### 2. `POST /api/auth/editPassword` — HIGH
+인증 없이 타인의 이메일만 알면 비밀번호 변경 가능.
+```bash
+curl -X POST http://localhost:8080/api/auth/editPassword \
+  -d '{"email":"victim@email.com","newPassword":"hacked123"}'
+```
+
+#### 3. `POST /api/auth/non-user` — HIGH
+인증 없이 타인 계정 삭제 가능 (이메일만 알면 됨).
+```bash
+curl -X POST http://localhost:8080/api/auth/non-user \
+  -d '{"email":"victim@email.com"}'
+```
+
+---
+
+### 근본 원인
+
+```java
+// SecurityConfig.java:71-76
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers("/api/auth/me", "/api/auth/login", ...).permitAll()
+    .requestMatchers("/api/diary/**").authenticated()
+    .anyRequest().permitAll()  // ← 화이트리스트 누락 = 자동 공개
+)
+```
+
+---
+
+### 수정 방향
+
+#### [FIX-1] `anyRequest().denyAll()` 으로 변경 (화이트리스트 방식)
+
+```java
+.authorizeHttpRequests(auth -> auth
+    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+    // PUBLIC
+    .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/signup").permitAll()
+    .requestMatchers("/api/auth/me", "/api/auth/refresh", "/api/auth/logout").permitAll()
+    .requestMatchers("/api/auth/verify-code", "/api/auth/resend-code",
+                     "/api/auth/confirm-email", "/api/auth/check-verification").permitAll()
+    .requestMatchers("/api/kakao/**").permitAll()
+    .requestMatchers("/api/ui/**").permitAll()
+    .requestMatchers("/api/timer/**").permitAll()
+    // USER 인증 필수
+    .requestMatchers("/api/auth/editPassword", "/api/auth/non-user").authenticated()
+    .requestMatchers("/api/diary/**").authenticated()
+    .requestMatchers("/api/goalTime/**").authenticated()
+    // ADMIN 전용
+    .requestMatchers("/api/execute/**").hasRole("ADMIN")
+    // 기본 차단
+    .anyRequest().denyAll()  // ← 핵심 수정
+)
+```
+
+#### [FIX-2] `editPassword` / `non-user` — 본인 인증 추가
+
+```java
+@PostMapping("/editPassword")
+public ResponseEntity<?> editPassword(
+    @RequestBody PasswordDto dto,
+    @AuthenticationPrincipal CustomUserDetails userDetails) {
+    if (userDetails == null) return ResponseEntity.status(401).build();
+    authService.editPassword(dto);
+    return ResponseEntity.ok("비밀번호 변경 성공");
+}
+```
+
+#### [FIX-3] `CommonQueryController` — `@PreAuthorize("hasRole('ADMIN')")`
+
+```java
+@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping(value = "/{sqlKey}", method = {RequestMethod.GET, RequestMethod.POST})
+public ResponseEntity<?> execute(..., Authentication auth) {
+    if (auth == null) return ResponseEntity.status(403).build();
+}
+```
+
+---
+
+### 우선순위 수정 체크리스트
+
+| 항목 | 우선순위 |
+|------|---------|
+| `anyRequest().denyAll()` 로 변경 | **P0 — 즉시** |
+| `/api/execute/**` 관리자 권한 | **P0 — 즉시** |
+| `/api/auth/editPassword` 인증 추가 | **P1** |
+| `/api/auth/non-user` 인증 + 본인 확인 | **P1** |
+| `/api/goalTime/**` authenticated | **P1** |
+| WebSocket 위치 데이터 JWT 검증 | **P2** |

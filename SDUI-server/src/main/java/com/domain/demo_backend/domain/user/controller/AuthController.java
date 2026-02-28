@@ -73,11 +73,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
 
     }
-    @PostConstruct
-    public void init() {
-        System.out.println(" refreshTokenRepository: " + refreshTokenRepository);
-    }
-
     @Operation(summary = "회원 로그인", description = "id와 password와 haspassword가 일치하다면 로그인, 아니면 팝업 경고창이 뜬다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일반 회원 로그인 성공"),
@@ -250,9 +245,11 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/non-user")
-    public ResponseEntity<String> nonUser(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest) {
-        log.info("회원탈퇴 요청 진입: " + registerRequest);
-        log.info("회원탈퇴 진입");
+    public ResponseEntity<String> nonUser(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
         if (registerRequest.getEmail() == null || registerRequest.getEmail().isEmpty()) {
             log.info("회원탈퇴 실패: userId가 비어 있음");
             return ResponseEntity.badRequest().body("회원 아이디가 필요합니다.");
@@ -278,9 +275,11 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/editPassword")
-    public ResponseEntity<?> editPassword(@RequestBody com.domain.demo_backend.domain.user.dto.PasswordDto passwordDto) {
-        log.info("비밀변호 변경 요청 진입: " + passwordDto);
-        log.info("비밀변호 변경 진입");
+    public ResponseEntity<?> editPassword(@RequestBody com.domain.demo_backend.domain.user.dto.PasswordDto passwordDto,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
         if (passwordDto.getEmail() == null || passwordDto.getEmail().isEmpty()) {
             log.info("비밀변호 변경 실패: userId가 비어 있음");
             return ResponseEntity.badRequest().body("회원 아이디가 필요합니다.");

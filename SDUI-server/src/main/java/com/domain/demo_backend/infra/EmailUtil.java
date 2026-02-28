@@ -12,7 +12,6 @@ public class EmailUtil {
     public void sendVerificationCode(String email) {
         String code = generateCode();
         verificationCodes.put(email, code);
-        System.out.println("Verification code for " + email + ":" + code);
     }
 
     public boolean validationVerificationCode(String email, String code) {

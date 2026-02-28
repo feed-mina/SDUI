@@ -30,6 +30,8 @@ export const usePageHook = (screenId: string, metadata: any[], initialData: any)
 
     return {
         ...targetActions,
-        handleAction: combinedHandleAction // 통합 핸들러로 덮어쓰기!
+        handleAction: combinedHandleAction, // 통합 핸들러로 덮어쓰기!
+        activeModal: userActions.activeModal,
+        closeModal: userActions.closeModal
     };
 };

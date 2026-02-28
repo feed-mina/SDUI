@@ -166,3 +166,91 @@ interface Metadata {
 | 날짜 | 분석 내용 | 결론 |
 |------|-----------|------|
 | 2026-02-28 | 전체 프론트엔드 코드 초기 분석 | 위 내용 도출 |
+| 2026-02-28 | [P2] 민감정보 로그 노출 감사 | 아래 섹션 참고 |
+
+---
+
+## [P2] 민감정보 로그 노출 감사 결과 ← 서브에이전트 분석 (2026-02-28)
+
+### 현황 요약
+프로젝트 전체에서 **75개 이상의 민감정보 노출 로그**가 발견되었다. 프론트엔드에서는
+`useUserActions.tsx:76`이 로그인 시 사용자 비밀번호를 `console.log`로 직접 노출하고 있으며,
+백엔드에서는 원본 비밀번호·JWT 클레임·이메일 인증코드·SQL 쿼리+파라미터가 `System.out.println`으로
+서버 로그에 그대로 기록된다. `axios.tsx`의 `localStorage` 기반 JWT 저장은 XSS 공격 시 토큰 탈취를 허용한다.
+
+---
+
+### Critical 위험 목록 (즉시 삭제 필요)
+
+| 파일 | 라인 | 문제 | 수정 방법 |
+|-----|------|-----|---------|
+| `hook/useUserActions.tsx` | 70 | `console.log('뭐야 ')` | 삭제 |
+| **`hook/useUserActions.tsx`** | **76** | **`console.log('loginData', loginData)`** — 이메일+비밀번호 노출 | **즉시 삭제** |
+| `SDUI-server/.../PasswordUtil.java` | **76-77** | `System.out.println("원래 비밀번호: " + rawPassword)` | **즉시 삭제** |
+| `SDUI-server/.../JwtAuthenticationFilter.java` | 93,102-107,130,134,137 | JWT Claims·이메일·userSqno·authorities 로깅 | **즉시 삭제** |
+| `SDUI-server/.../JwtUtil.java` | 110 | `System.out.println("issuer 값: " + issuer)` | 삭제 |
+| `SDUI-server/.../infra/EmailUtil.java` | 15 | 이메일 + 인증코드 평문 노출 | 삭제 |
+| `SDUI-server/.../DynamicExecutor.java` | 26-29 | 실행 SQL 전체 + 바인딩 파라미터 로깅 | 삭제 또는 마스킹 |
+| `SDUI-server/.../KakaoService.java` | 98-101 | 카카오 이메일·userId 로깅 | 삭제 |
+| `SDUI-server/.../QueryMasterService.java` | 30,35 | SQL 쿼리 키 노출 | 삭제 |
+
+**Critical 합계: 19줄**
+
+---
+
+### Warning 목록 (logger.debug()로 교체 권장)
+
+| 파일 | 줄 수 | 내용 |
+|-----|------|-----|
+| `domain/diary/service/DiaryService.java` | 7개 | offset, diaryReq, diary 객체 |
+| `domain/diary/controller/DiaryController.java` | 11개 | 요청 객체, IP, diaryRequest |
+| `domain/query/controller/CommonQueryController.java` | 3개 | SQL 쿼리 및 바인딩 파라미터 |
+| `domain/user/service/AuthService.java` | 4개 | User 객체·에러 메시지 |
+| `domain/time/service/GoalTimeQueryService.java` | 10개 | 캐시 키, SQL, params, targetTime |
+| `domain/time/controller/GoalTimeController.java` | 2개 | targetTime, userSqno |
+| `domain/ui/controller/UiController.java` | 3개 | screenId 요청 로깅 |
+| `domain/ui/service/UiService.java` | 2개 | 컴포넌트 ID |
+
+**Warning 합계: 56줄 | 전체 합계: 75개**
+
+---
+
+### localStorage JWT 저장 문제 (`axios.tsx:19, 49`)
+
+**현재 코드**
+```typescript
+const token = localStorage.getItem('accessToken');   // XSS 시 탈취 가능
+localStorage.setItem('accessToken', newAccessToken); // XSS 시 저장·노출
+```
+
+**위험성**: XSS 공격으로 `localStorage.accessToken` 접근 → JWT 탈취 → 계정 완전 장악
+
+**마이그레이션 방향**
+- 백엔드: `Set-Cookie: accessToken=...; HttpOnly; Secure; SameSite=Strict`
+- 프론트엔드: `axios.tsx` localStorage 코드 제거, `withCredentials: true` 유지
+
+---
+
+### 즉시 삭제해야 할 로그 목록 (파일:라인)
+
+```
+[프론트엔드]
+useUserActions.tsx:70   — console.log('뭐야 ')
+useUserActions.tsx:76   — console.log('loginData', loginData)   ← 최우선
+
+[백엔드 Critical]
+PasswordUtil.java:76-77             — 원본/암호화 비밀번호 출력   ← 최우선
+JwtAuthenticationFilter.java:93,102-107,130,134,137 — JWT 클레임
+JwtUtil.java:110                    — issuer 값
+EmailUtil.java:15                   — 이메일+인증코드
+DynamicExecutor.java:26-29          — SQL+파라미터
+KakaoService.java:98-101            — 카카오 이메일·userId
+QueryMasterService.java:30,35       — SQL 캐시 키
+```
+
+---
+
+### 대응 우선순위
+1. **24시간 내**: `useUserActions.tsx:76`, `PasswordUtil.java:76-77`, `JwtAuthenticationFilter` 전체 민감 로그 삭제
+2. **1주일 내**: 나머지 Warning 로그를 `SLF4J logger.debug()`로 전환, 프로덕션 DEBUG 비활성화
+3. **중기**: localStorage → HttpOnly 쿠키 마이그레이션, CSP 헤더 추가
