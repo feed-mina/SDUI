@@ -32,3 +32,19 @@ global.TextDecoder = TextDecoder;
 if (!Element.prototype.scrollTo) {
     Element.prototype.scrollTo = jest.fn();
 }
+
+// 4. Next.js useRouter 모킹 (AuthProvider, MetadataProvider에서 사용)
+jest.mock('next/navigation', () => ({
+    useRouter: () => ({
+        push: jest.fn(),
+        replace: jest.fn(),
+        prefetch: jest.fn(),
+        back: jest.fn(),
+        pathname: '/',
+        query: {},
+        asPath: '/',
+    }),
+    usePathname: () => '/',
+    useSearchParams: () => new URLSearchParams(),
+    useParams: () => ({ slug: ['MAIN_PAGE'], screenId: 'MAIN_PAGE' }),
+}));

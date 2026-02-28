@@ -198,138 +198,208 @@ CommonQueryController → QueryMasterService → QueryMasterRepository (query_ma
 
 ---
 
-## [P1] 백엔드 보안 감사 결과 ← 서브에이전트 분석 (2026-02-28)
+## [P0] Security Fix 상세 분석 — 코드 재검증 (2026-02-28)
 
-### 현황 요약
-`SecurityConfig.java:75`의 `.anyRequest().permitAll()` 폴백 규칙으로 인해 명시되지 않은 모든 엔드포인트가
-인증 없이 공개되어 있다. 특히 `/api/execute/{sqlKey}`(동적 SQL 실행),
-`/api/auth/editPassword`(비밀번호 변경), `/api/auth/non-user`(회원탈퇴)가 인증 없이 호출 가능하며,
-새 엔드포인트 추가 시 개발자가 별도로 지정하지 않으면 자동으로 전체 공개된다.
+> **⚠️ 상태 업데이트:** 이전 분석([P1])의 `anyRequest().permitAll()` 진단은 구버전 기준.
+> 실제 현재 코드에서는 `anyRequest().denyAll()`이 이미 적용됨. 그러나 새로운 P0 취약점 3개 발견.
 
 ---
 
-### 전체 엔드포인트 인증 재분석 (위험도 포함)
+### 현재 SecurityConfig permitAll 화이트리스트 (실제 코드 기준)
 
-| 엔드포인트 | HTTP | 현재 권한 | 필요 권한 | 위험도 |
-|-----------|------|----------|----------|-------|
-| `/api/auth/login` | POST | permitAll | PUBLIC | 정상 |
-| `/api/auth/register` | POST | permitAll | PUBLIC | 정상 |
-| `/api/auth/me` | GET | permitAll | PUBLIC | 정상 |
-| `/api/auth/refresh` | POST | permitAll | PUBLIC | 정상 |
-| `/api/auth/logout` | POST | permitAll | PUBLIC | 정상 |
-| `/api/auth/verify-code` | POST | permitAll | PUBLIC | 정상 |
-| `/api/auth/resend-code` | POST | permitAll | PUBLIC | 정상 |
-| `/api/auth/confirm-email` | GET | permitAll | PUBLIC | 정상 |
-| `/api/auth/check-verification` | GET | permitAll | PUBLIC | 중간 |
-| **`/api/auth/editPassword`** | POST | **permitAll** | **USER** | **높음** |
-| **`/api/auth/non-user`** | POST | **permitAll** | **USER** | **높음** |
-| `/api/diary/**` | ALL | authenticated | USER | 정상 |
-| **`/api/execute/{sqlKey}`** | GET,POST | **permitAll** | **ADMIN** | **매우높음** |
-| **`/api/goalTime/**`** | ALL | **permitAll** | **USER** | **높음** |
-| `/api/timer/**` | GET | permitAll | PUBLIC | 정상 |
-| `/api/kakao/**` | ALL | permitAll | PUBLIC | 정상 (OAuth) |
-| `/api/ui/**` | GET | permitAll | PUBLIC | 정상 |
-| `/topic/location/**` (WS) | WS | **permitAll** | **USER** | **높음** |
+**파일:** `SecurityConfig.java:72-90`
 
----
+| 경로 패턴 | HTTP Method | 비고 |
+|-----------|------------|------|
+| `/**` | OPTIONS | CORS preflight |
+| `/api/auth/login` | POST | 로그인 |
+| `/api/auth/register` | POST | 회원가입 |
+| `/api/auth/signup`, `/api/auth/signUp` | POST | 이메일 인증 발송 |
+| `/api/auth/me` | GET | 현재 사용자 (게스트 응답 가능) |
+| `/api/auth/refresh` | POST | 토큰 갱신 |
+| `/api/auth/logout` | POST | 로그아웃 |
+| `/api/auth/verify-code` | POST | 인증 코드 검증 |
+| `/api/auth/resend-code` | POST | 인증 코드 재발송 |
+| `/api/auth/confirm-email` | GET | 이메일 확인 링크 |
+| `/api/auth/check-verification` | GET | 인증 상태 확인 |
+| `/api/kakao/**` | ALL | OAuth (공개) |
+| `/api/ui/**` | GET | SDUI 메타데이터 (공개 의도) |
+| `/api/timer/**` | GET | 타이머 (공개) |
+| **`/api/goalTime/**`** | **ALL** | **⚠️ 전체 공개 — 컨트롤러 레벨 인증만 부분 적용** |
+| **`/api/execute/**`** | **GET, POST** | **🔴 CRITICAL — 동적 SQL 무인증 실행 가능** |
 
-### 가장 위험한 엔드포인트 Top 3
+**인증 필수 (SecurityConfig 레벨):**
 
-#### 1. `POST /api/execute/{sqlKey}` — CRITICAL
-`query_master` 테이블에 등록된 SQL을 인증 없이 실행 가능.
-```bash
-# 공격 예시: 인증 없이 임의 쿼리 실행
-curl -X GET http://localhost:8080/api/execute/user_list
-curl -X POST http://localhost:8080/api/execute/diary_delete -d '{"diaryId":1}'
-```
+| 경로 | HTTP | 권한 |
+|------|------|------|
+| `/api/auth/editPassword` | POST | `.authenticated()` ✅ |
+| `/api/auth/non-user` | POST | `.authenticated()` ✅ |
+| `/api/diary/**` | ALL | `.authenticated()` ✅ |
 
-#### 2. `POST /api/auth/editPassword` — HIGH
-인증 없이 타인의 이메일만 알면 비밀번호 변경 가능.
-```bash
-curl -X POST http://localhost:8080/api/auth/editPassword \
-  -d '{"email":"victim@email.com","newPassword":"hacked123"}'
-```
-
-#### 3. `POST /api/auth/non-user` — HIGH
-인증 없이 타인 계정 삭제 가능 (이메일만 알면 됨).
-```bash
-curl -X POST http://localhost:8080/api/auth/non-user \
-  -d '{"email":"victim@email.com"}'
-```
+**기본 정책:** `.anyRequest().denyAll()` ✅ (이미 적용됨)
 
 ---
 
-### 근본 원인
+### 발견된 P0 취약점 3개
+
+#### [P0-1] `GET/POST /api/execute/{sqlKey}` — CRITICAL 🔴
+
+**파일:** `CommonQueryController.java:29`
 
 ```java
-// SecurityConfig.java:71-76
-.authorizeHttpRequests(auth -> auth
-    .requestMatchers("/api/auth/me", "/api/auth/login", ...).permitAll()
-    .requestMatchers("/api/diary/**").authenticated()
-    .anyRequest().permitAll()  // ← 화이트리스트 누락 = 자동 공개
-)
-```
-
----
-
-### 수정 방향
-
-#### [FIX-1] `anyRequest().denyAll()` 으로 변경 (화이트리스트 방식)
-
-```java
-.authorizeHttpRequests(auth -> auth
-    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-    // PUBLIC
-    .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/signup").permitAll()
-    .requestMatchers("/api/auth/me", "/api/auth/refresh", "/api/auth/logout").permitAll()
-    .requestMatchers("/api/auth/verify-code", "/api/auth/resend-code",
-                     "/api/auth/confirm-email", "/api/auth/check-verification").permitAll()
-    .requestMatchers("/api/kakao/**").permitAll()
-    .requestMatchers("/api/ui/**").permitAll()
-    .requestMatchers("/api/timer/**").permitAll()
-    // USER 인증 필수
-    .requestMatchers("/api/auth/editPassword", "/api/auth/non-user").authenticated()
-    .requestMatchers("/api/diary/**").authenticated()
-    .requestMatchers("/api/goalTime/**").authenticated()
-    // ADMIN 전용
-    .requestMatchers("/api/execute/**").hasRole("ADMIN")
-    // 기본 차단
-    .anyRequest().denyAll()  // ← 핵심 수정
-)
-```
-
-#### [FIX-2] `editPassword` / `non-user` — 본인 인증 추가
-
-```java
-@PostMapping("/editPassword")
-public ResponseEntity<?> editPassword(
-    @RequestBody PasswordDto dto,
-    @AuthenticationPrincipal CustomUserDetails userDetails) {
-    if (userDetails == null) return ResponseEntity.status(401).build();
-    authService.editPassword(dto);
-    return ResponseEntity.ok("비밀번호 변경 성공");
-}
-```
-
-#### [FIX-3] `CommonQueryController` — `@PreAuthorize("hasRole('ADMIN')")`
-
-```java
-@PreAuthorize("hasRole('ADMIN')")
+// 현재: @PreAuthorize 없음, Authentication 파라미터는 있으나 null 허용
 @RequestMapping(value = "/{sqlKey}", method = {RequestMethod.GET, RequestMethod.POST})
-public ResponseEntity<?> execute(..., Authentication auth) {
-    if (auth == null) return ResponseEntity.status(403).build();
+public ResponseEntity<?> execute(
+    @PathVariable String sqlKey,
+    @RequestParam(required = false) Map<String, Object> queryParams,
+    @RequestBody(required = false) Map<String, Object> bodyParams,
+    Authentication authentication) {  // null이어도 동작
+
+    if (authentication != null) {  // null 허용 — 인증 없어도 계속 실행
+        params.put("userSqno", userDetails.getUserSqno());
+    }
+    // ... SQL 실행
 }
 ```
+
+**위험:** SecurityConfig Line 85에 `permitAll()` + 컨트롤러 내 인증 체크 없음
+→ 누구나 `query_master` 테이블의 모든 SQL 쿼리 실행 가능
+
+```bash
+# 공격 예시:
+curl -X POST http://localhost:8080/api/execute/user_list
+curl -X GET http://localhost:8080/api/execute/diary_delete?diaryId=1
+```
+
+**권고 수정:**
+```java
+@PreAuthorize("hasRole('ADMIN')")  // 또는 authenticated() + 쿼리별 권한 체크
+@RequestMapping(value = "/{sqlKey}", method = {RequestMethod.GET, RequestMethod.POST})
+public ResponseEntity<?> execute(..., Authentication authentication) {
+    if (authentication == null)
+        return ResponseEntity.status(403).body(Map.of("message", "권한이 없습니다."));
+    // ...
+}
+```
+
+SecurityConfig에서도:
+```java
+.requestMatchers("/api/execute/**").hasRole("ADMIN")  // permitAll 대신
+```
+
+---
+
+#### [P0-2] JwtAuthenticationFilter — DB 역할 무시, ROLE_USER 하드코딩 🔴
+
+**파일:** `JwtAuthenticationFilter.java:123`
+
+```java
+// 현재: DB의 role 필드 무시, 모든 인증 사용자 = ROLE_USER
+List<GrantedAuthority> authorities = List.of(() -> "ROLE_USER");
+```
+
+**영향:**
+- DB에 `ROLE_ADMIN`이 있어도 Spring Security에서는 `ROLE_USER`로만 처리
+- `@PreAuthorize("hasRole('ADMIN')")` 기반 접근 제어가 절대 작동 안 함
+- `/api/execute/**`에 관리자 권한을 추가해도 무의미
+
+**권고 수정:**
+```java
+// JwtAuthenticationFilter.java에서 DB에서 실제 역할 조회:
+User user = userRepository.findByEmail(email).orElse(null);
+String role = (user != null) ? user.getRole() : "ROLE_USER";
+List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+```
+
+---
+
+#### [P0-3] WebSocket 인증 없음 — HIGH 🟠
+
+**파일:** `LocationController.java:22-45`
+
+```java
+@MessageMapping("/location/update")
+public void updateLocation(LocationRequest message) {
+    // JWT 검증 없음 — 누구나 위치 데이터 브로드캐스트 가능
+    stringRedisTemplate.opsForGeo().add("active_workers", ...);
+    messagingTemplate.convertAndSend("/sub/admin/locations", message);
+}
+
+@MessageMapping("/location/emergency")
+public void handleEmergency(LocationRequest message) {
+    // JWT 검증 없음 — 누구나 긴급 신호 발송 가능
+    messagingTemplate.convertAndSend("/sub/admin/emergency", message);
+}
+```
+
+**WebSocketConfig.java:19:** `.setAllowedOriginPatterns("*")` — 모든 도메인 허용
+
+**위험:** 거짓 위치 데이터, 긴급 신호 스팸, 직원 위치 무단 수신
+
+**권고 수정:**
+```java
+@MessageMapping("/location/update")
+public void updateLocation(LocationRequest message,
+        @Header("Authorization") String token) {
+    if (!jwtUtil.validateToken(token)) throw new AccessDeniedException("인증 필요");
+    // ...
+}
+```
+
+---
+
+### /api/auth 취약점 재분석 (구버전 진단 수정)
+
+| 엔드포인트 | 이전 진단 | 실제 현황 | 재진단 |
+|-----------|----------|----------|--------|
+| `/api/auth/editPassword` | ❌ permitAll | ✅ `.authenticated()` + `@AuthenticationPrincipal` null 체크 | 보호됨 |
+| `/api/auth/non-user` | ❌ permitAll | ✅ `.authenticated()` + `@AuthenticationPrincipal` null 체크 | 보호됨 |
+| `/api/execute/{sqlKey}` | ❌ permitAll + 무인증 | ❌ 여전히 permitAll + 무인증 | **CRITICAL** |
+
+**주의:** `editPassword`에 현재 비밀번호 검증 로직이 없음 (인증은 됨).
+
+---
+
+### /api/goalTime/** 부분 인증 현황
+
+| 메서드 | 경로 | @AuthenticationPrincipal | null 허용 | 위험 |
+|--------|------|-------------------------|----------|------|
+| getGoalTime | `/getGoalTime` | ✅ 있음 | ⚠️ null 허용 (삼항 연산자) | 타인 데이터 조회 가능 |
+| saveGoalTime | `/save` | ✅ 있음 | ✅ null 체크 후 401 | 안전 |
+| getGoalList | `/getGoalList` | ✅ 있음 | ⚠️ null 허용 | 타인 데이터 조회 가능 |
+| recordArrival | `/arrival` | ✅ 있음 | ✅ null 체크 후 401 | 안전 |
+
+---
+
+### JwtAuthenticationFilter EXCLUDE_URLS 오타 발견
+
+**파일:** `JwtAuthenticationFilter.java:27-34`
+
+```java
+private static final List<String> EXCLUDE_URLS = List.of(
+    "/api/auth/login",
+    "/api/auth/refresh",
+    "/api/kakao/login",
+    "/api/kakao/callback",
+    "/api/ui/LOGIN_PAGE",
+    "api/ui/MAIN_PAGE"   // ← 오타: 앞에 '/' 없음 → 필터 통과 안 됨
+);
+```
+
+→ `/api/ui/MAIN_PAGE` 요청은 JWT 검증을 받게 되어 토큰 없는 첫 방문자가 차단될 수 있음.
 
 ---
 
 ### 우선순위 수정 체크리스트
 
-| 항목 | 우선순위 |
-|------|---------|
-| `anyRequest().denyAll()` 로 변경 | **P0 — 즉시** |
-| `/api/execute/**` 관리자 권한 | **P0 — 즉시** |
-| `/api/auth/editPassword` 인증 추가 | **P1** |
-| `/api/auth/non-user` 인증 + 본인 확인 | **P1** |
-| `/api/goalTime/**` authenticated | **P1** |
-| WebSocket 위치 데이터 JWT 검증 | **P2** |
+| 항목 | 우선순위 | 상태 |
+|------|---------|------|
+| `/api/execute/**` → `hasRole('ADMIN')` + SecurityConfig permitAll 제거 | **P0 — 즉시** | ❌ 미수정 |
+| JwtAuthenticationFilter 역할 하드코딩 → DB 역할 읽기 | **P0 — 즉시** | ❌ 미수정 |
+| WebSocket 인증 추가 (`/location/update`, `/location/emergency`) | **P0** | ❌ 미수정 |
+| `/api/goalTime/getGoalTime`, `getGoalList` null 체크 강화 | **P1** | ❌ 미수정 |
+| `/api/auth/editPassword` 현재 비밀번호 검증 추가 | **P1** | ❌ 미수정 |
+| JwtAuthenticationFilter EXCLUDE_URLS 오타 수정 (`"api/ui/MAIN_PAGE"`) | **P2** | ❌ 미수정 |
+| WebSocket Origin `*` → 실제 도메인으로 제한 | **P2** | ❌ 미수정 |
+| `anyRequest().denyAll()` 유지 확인 | — | ✅ 이미 적용됨 |
+| `/api/auth/editPassword`, `/api/auth/non-user` authenticated | — | ✅ 이미 적용됨 |

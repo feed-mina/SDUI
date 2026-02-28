@@ -352,9 +352,17 @@ public class AuthService {
             log.info("  250527_비밀변호 변경 실패: 해당 사용자가 존재하지 않습니다.");
             throw new IllegalArgumentException("해당 사용자가 존재하지 않습니다.");
         }
+
+        // 현재 비밀번호 검증 (보안 강화)
+        if (passwordDto.getCurrentPassword() != null && !passwordDto.getCurrentPassword().isEmpty()) {
+            String currentHashedPassword = PasswordUtil.sha256(passwordDto.getCurrentPassword());
+            if (!existingUser.getHashedPassword().equals(currentHashedPassword)) {
+                log.error("  비밀번호 변경 실패: 현재 비밀번호가 일치하지 않습니다.");
+                throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+            }
+        }
+
         // 비밀변호 변경 처리
-        // 현재 있는 비밀번호를 delete 후 값을 새로 insert 해야 할까 아니면
-        // update 쿼리를 써야할까
         existingUser.setUpdatedAt(ldt);
         // 비밀번호 암호화
         String newHashedPassword = PasswordUtil.sha256(passwordDto.getNewPassword());

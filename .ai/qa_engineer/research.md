@@ -46,7 +46,7 @@ npx jest tests/path/to/file.test.tsx  # 단일 파일
 npx playwright test                   # E2E 전체
 ```
 
-### 리포트 위치
+### 리포트 위치 //[매모] 백앤드는 SUDI-server/tests/logs/backend-report.html , 프론트는 metadata-project/tests/logs/frontend-report.html
 - `tests/logs/frontend-report.html`
 
 ---
@@ -55,13 +55,13 @@ npx playwright test                   # E2E 전체
 
 ### DynamicEngine 핵심 테스트 케이스
 
-#### 1. componentMap 매핑 검증
+#### 1. componentMap 매핑 검증 
 ```typescript
 // 모든 component_type이 componentMap에서 올바른 컴포넌트를 반환하는가?
 // 알 수 없는 component_type은 에러 없이 스킵되는가?
 ```
 
-#### 2. 데이터 바인딩 우선순위 검증
+#### 2. 데이터 바인딩 우선순위 검증  
 ```typescript
 // 조건: formData[refId] 있음 → formData 값 사용
 // 조건: formData[refId] 없음, pageData[refId] 있음 → pageData 값 사용
@@ -155,130 +155,114 @@ POST /api/diary → { data: { diaryId: 1 } }
 
 ---
 
-## [P3] 모달 시스템 버그 분석 결과 ← 서브에이전트 분석 (2026-02-28)
+## [P3] 모달 시스템 버그 분석 결과 — 코드 재검증 (2026-02-28)
 
-### 버그 요약
-`CommonPage`가 `usePageHook`에서 `activeModal`/`closeModal`을 destructure하지 않고
-`DynamicEngine`에도 전달하지 않아, **모든 화면에서 모달이 영구적으로 렌더링되지 않는다.**
-추가로 `usePageHook`의 `isUserDomain` 분기로 인해 비즈니스 화면에서는 `activeModal` 자체가 반환조차 안 된다.
+> **⚠️ 상태 업데이트:** 실제 코드를 재분석한 결과, 메인 데이터 파이프라인은 이미 수정되어 있음.
+> 기존 분석은 이전 버전 코드 기준이었으며, 현재 코드 기준으로 갱신함.
 
 ---
 
-### 데이터 흐름 추적 (버그 경로)
+### 현재 파이프라인 상태 (실제 코드 기준)
 
-```
-activeModal 생성: useUserActions.tsx:17
-  → const [activeModal, setActiveModal] = useState<string | null>(null);
-         ↓
-usePageHook 반환: NO
-  → isUserDomain = false (DIARY_LIST 등)일 때 targetActions = businessActions
-  → businessActions에는 activeModal 상태 없음
-  → usePageHook.tsx:31-34에서 ...targetActions만 spread → activeModal 누락
-         ↓
-CommonPage destructure: NO
-  → page.tsx:42: const {formData, handleChange, handleAction, showPassword, pwType} = usePageHook(...)
-  → activeModal 구조분해 없음
-         ↓
-DynamicEngine prop: NO
-  → page.tsx:80-88에서 activeModal={} closeModal={} 미전달
-  → DynamicEngine은 activeModal = undefined
-         ↓
-renderModals 실행: FAIL
-  → DynamicEngine.tsx:144: undefined === "SOME_ID" → 항상 false → 모달 절대 렌더링 안 됨
-```
+| 지점 | 파일 | 라인 | activeModal 포함 | 상태 |
+|------|------|------|-----------------|------|
+| activeModal 생성 | useUserActions.tsx | 17, 20 | YES | ✅ 정상 |
+| usePageHook 반환 | usePageHook.tsx | 34-35 | YES (명시적 추가) | ✅ 수정됨 |
+| CommonPage destructure | page.tsx | 42 | YES | ✅ 수정됨 |
+| DynamicEngine props 전달 | page.tsx | 89-90 | YES | ✅ 수정됨 |
+| DynamicEngine props 수신 | DynamicEngine.tsx | 16 | YES | ✅ 정상 |
+| renderModals() 로직 | DynamicEngine.tsx | 138-157 | YES | ✅ 정상 |
+
+**결론: 핵심 파이프라인 버그는 이미 해결됨. 아래 잔존 이슈만 남아 있음.**
 
 ---
 
-### 근본 원인 (Root Cause)
+### 잔존 이슈 (현재 코드 기준)
 
-#### Primary: usePageHook 도메인 분기 설계 결함 (`usePageHook.tsx:28-34`)
+#### Issue-1 [Medium] useBusinessActions 반환에 modal 상태 누락
+
+**파일:** `metadata-project/components/DynamicEngine/hook/useBusinessActions.tsx`
+**라인:** 104
+
 ```typescript
-const isUserDomain = screenId === "REGISTER_PAGE" || screenId.includes("LOGIN");
-const targetActions = isUserDomain ? userActions : businessActions;
-
-return {
-    ...targetActions,     // ← businessActions에는 activeModal 없음
-    handleAction: combinedHandleAction
-};
+// 현재:
+return { ...base, handleAction };
+// activeModal, closeModal 미포함 → base spread에도 없음
 ```
 
-#### Secondary: CommonPage에서 activeModal 미처리 (`page.tsx:42`)
+**영향:** 비즈니스 도메인 전용 액션에서 모달 트리거 시 일관성 문제.
+현재는 `usePageHook`이 `userActions.activeModal`을 명시적으로 가져오므로 렌더링은 가능하나,
+비즈니스 액션 핸들러 내부에서 `setActiveModal`을 직접 호출하는 로직이 있다면 참조 불일치 발생.
+
+#### Issue-2 [Low] renderModals 최상위 레벨만 필터
+
+**파일:** `metadata-project/components/DynamicEngine/DynamicEngine.tsx`
+**라인:** 141
+
 ```typescript
-const {formData, handleChange, handleAction, showPassword, pwType} = usePageHook(...);
-// activeModal, closeModal 누락
+// 현재:
+nodes.filter(node => (node.componentType || node.component_type) === 'MODAL')
+// 최상위 nodes 배열만 순회 → 중첩 그룹 내 MODAL 발견 불가
 ```
 
-#### Tertiary: DynamicEngine prop 누락 (`page.tsx:80-88`)
-```typescript
-<DynamicEngine ... />
-// activeModal={activeModal}  ← 미전달
-// closeModal={closeModal}    ← 미전달
-```
+**영향:** group 하위에 MODAL이 배치된 경우 절대 렌더링 안 됨.
+현재 DB 구조에서 MODAL이 최상위에만 위치한다면 실질 영향 없음.
+
+#### Issue-3 [Low] Modal.tsx 컴포넌트 버튼/내용 미완성
+
+**파일:** `metadata-project/components/fields/Modal.tsx`
+**라인:** 18-20
+
+**영향:** 모달은 표시되나 버튼 텍스트/내용 렌더링이 불완전할 수 있음.
 
 ---
 
-### 부가 버그 발견
+### 수정이 필요한 잔존 이슈 Diff
 
-#### Bug-1: renderModals의 undefined 반환 (`DynamicEngine.tsx:155`)
-```typescript
-.map(node => {
-    if (activeModal === cid) { return <ModalComponent />; }
-    // return null;  ← 주석 처리됨 → undefined이 배열에 쌓임
-});
+#### 수정 1: `useBusinessActions.tsx` — modal 더미 함수 일관성 보장 (선택)
+```diff
+- return { ...base, handleAction };
++ return {
++     ...base,
++     handleAction,
++     // usePageHook이 userActions에서 직접 가져오므로 필수는 아니나 일관성 유지용
++ };
 ```
+→ 현재 구조상 필수 수정은 아님. usePageHook 설계 의도 확인 후 결정.
 
-#### Bug-2: renderModals가 최상위 레벨만 탐색
+#### 수정 2: `DynamicEngine.tsx` — 재귀적 MODAL 탐색 (필요 시)
 ```typescript
-nodes.filter(node => ... === 'MODAL')  // 최상위만 필터 → 중첩 MODAL 발견 불가
-```
-
----
-
-### 최소 수정 방법
-
-#### 수정 1: `usePageHook.tsx` — activeModal 항상 반환 ★ 핵심
-```typescript
-return {
-    ...targetActions,
-    handleAction: combinedHandleAction,
-    activeModal: userActions.activeModal,  // ← 추가
-    closeModal: userActions.closeModal     // ← 추가
-};
-```
-
-#### 수정 2: `page.tsx:42` — activeModal, closeModal destructure
-```typescript
-const {
-    formData, handleChange, handleAction, showPassword, pwType,
-    activeModal, closeModal   // ← 추가
-} = usePageHook(screenId, metadata, pageData);
-```
-
-#### 수정 3: `page.tsx:80-88` — DynamicEngine에 prop 전달
-```typescript
-<DynamicEngine
-    ...
-    activeModal={activeModal}    // ← 추가
-    closeModal={closeModal}      // ← 추가
-/>
-```
-
-#### 수정 4: `DynamicEngine.tsx:155` — undefined 배열 요소 제거
-```typescript
-// return null;  ← 주석 해제
-return null;
+// 최상위 + 중첩 MODAL 모두 탐색이 필요할 경우:
+const collectModals = (nodes: Metadata[]): Metadata[] =>
+    nodes.flatMap(n => [
+        ...(n.component_type === 'MODAL' ? [n] : []),
+        ...(n.children ? collectModals(n.children) : [])
+    ]);
 ```
 
 ---
 
-### 수정 후 기대 데이터 흐름
+### 이전 분석과의 차이점 요약
 
-```
-activeModal 생성 → usePageHook 반환(YES) → CommonPage destructure(YES)
-→ DynamicEngine prop(YES) → renderModals 매칭 → 모달 렌더링 성공
-```
+| 항목 | 이전 분석 (구버전) | 현재 상태 (재검증) |
+|------|-----------------|-----------------|
+| usePageHook activeModal 반환 | ❌ 누락 | ✅ lines 34-35에서 명시적 반환 |
+| page.tsx destructure | ❌ 누락 | ✅ line 42에서 포함 |
+| DynamicEngine props 전달 | ❌ 미전달 | ✅ lines 89-90에서 전달 |
+| renderModals return null | 주석 처리 의심 | 실제 확인 결과 정상 구현됨 |
 
-### 수정 범위
-- 수정 파일 수: 3개 (`usePageHook.tsx`, `page.tsx`, `DynamicEngine.tsx`)
-- 변경 라인 수: 약 7줄 추가, 1줄 주석 해제
-- 기존 LOGIN/REGISTER 화면 동작: 영향 없음 (호환성 유지)
+---
+
+### 현재 권고사항
+
+1. **즉시 조치 불필요** — 핵심 파이프라인 이미 수정됨
+2. **Issue-1 추적** — 비즈니스 액션에서 모달 트리거 케이스 있으면 수정
+3. **Issue-2 추적** — DB에서 중첩 MODAL 사용 케이스 생기면 수정
+4. **모달 통합 테스트 작성** — 현재 파이프라인이 실제 E2E로 검증되지 않음
+
+### 테스트 체크리스트 (모달 검증용)
+
+- [ ] LOGIN 화면에서 모달 트리거 액션 → 모달 렌더링 확인
+- [ ] DIARY 화면에서 모달 트리거 액션 → 모달 렌더링 확인
+- [ ] 모달 닫기 (closeModal) → 화면 정상 복귀 확인
+- [ ] 여러 모달 ID가 있을 때 올바른 모달만 표시 확인

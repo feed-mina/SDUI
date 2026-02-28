@@ -1,6 +1,7 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/context/AuthContext';
 
 const createTestQueryClient = () => new QueryClient({
     defaultOptions: {
@@ -18,7 +19,9 @@ const renderWithProviders = (
     function Wrapper({ children }: { children: React.ReactNode }) {
         return (
             <QueryClientProvider client={testQueryClient}>
-                {children}
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
             </QueryClientProvider>
         );
     }

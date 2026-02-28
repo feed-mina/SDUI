@@ -141,6 +141,241 @@ http.post('/api/auth/login', () => {
 
 ---
 
-## 현재 계획 없음
+## [P1] Modal 시스템 + 보안 회귀 테스트 계획 — 2026-02-28
 
-아직 작성된 테스트 계획이 없습니다.
+### 배경
+- 요청 출처: research.md `[P3] Modal 시스템 버그 분석`, `[P2] Security Audit` (2026-02-28)
+- **Modal:** 핵심 파이프라인(usePageHook → page.tsx → DynamicEngine)은 이미 수정됨. 실제 동작을 테스트로 검증.
+- **Security:** backend FIX 적용 후 회귀 테스트(인증 보호 엔드포인트 접근 차단), JWT cookie 전환 후 동작 확인.
+
+---
+
+### 테스트 전략
+
+| 레벨 | 도구 | 테스트 대상 |
+|------|------|-----------|
+| 단위 | Jest + RTL | Modal 컴포넌트 자체 렌더링 |
+| 통합 | Jest + MSW | usePageHook → DynamicEngine 모달 파이프라인 |
+| 통합 | Jest + MSW | axios.tsx JWT 쿠키 전환 (토큰 없이 요청, 401 처리) |
+| E2E | Playwright | 로그인 → 모달 트리거 → 닫기 |
+
+---
+
+### 테스트 케이스 목록
+
+#### TC-M001 ~ M005: Modal 컴포넌트 단위 테스트
+
+**파일:** `tests/components/Modal.test.tsx`
+
+```typescript
+describe('Modal 컴포넌트', () => {
+
+  // TC-M001: 비활성 상태 렌더링 안 됨
+  // Given: activeModal="OTHER_MODAL", componentId="MY_MODAL"
+  // When: 렌더링
+  // Then: 모달 DOM 없음 (null 반환)
+
+  // TC-M002: 활성 상태 렌더링 됨
+  // Given: activeModal="MY_MODAL", componentId="MY_MODAL"
+  // When: 렌더링
+  // Then: 모달 DOM 존재
+
+  // TC-M003: onConfirm 콜백
+  // Given: activeModal="MY_MODAL", onConfirm 모킹
+  // When: 확인 버튼 클릭
+  // Then: onConfirm() 1회 호출
+
+  // TC-M004: onClose 콜백
+  // Given: activeModal="MY_MODAL", onClose 모킹
+  // When: 닫기 버튼 클릭
+  // Then: onClose() 1회 호출, 이후 모달 사라짐
+
+  // TC-M005: activeModal null 상태
+  // Given: activeModal=null
+  // When: 렌더링
+  // Then: 에러 없이 렌더링 안 됨
+
+});
+```
+
+---
+
+#### TC-M010 ~ M015: Modal 파이프라인 통합 테스트
+
+**파일:** `tests/integration/modal_pipeline.test.tsx`
+
+```typescript
+// 사용 메타데이터 구조 (mock):
+const mockMetadata = [
+  {
+    component_id: 'confirm_modal',
+    component_type: 'MODAL',
+    label_text: '확인',
+    parent_group_id: null,
+    children: []
+  },
+  {
+    component_id: 'open_btn',
+    component_type: 'BUTTON',
+    label_text: '열기',
+    action_type: 'OPEN_MODAL',
+    parent_group_id: null
+  }
+];
+
+describe('Modal 파이프라인 — usePageHook → DynamicEngine', () => {
+
+  // TC-M010: 버튼 클릭 → 모달 활성화
+  // Given: MSW로 /api/ui/TEST_SCREEN → mockMetadata 반환
+  // When: CommonPage 렌더링 후 '열기' 버튼 클릭
+  // Then: 'confirm_modal' 모달 DOM 나타남
+
+  // TC-M011: 모달 닫기
+  // Given: 모달 활성화 상태
+  // When: 닫기 버튼 클릭
+  // Then: 모달 DOM 사라짐, activeModal = null
+
+  // TC-M012: usePageHook activeModal 반환 확인
+  // Given: usePageHook hook 렌더링
+  // When: 초기 상태
+  // Then: { activeModal: null, closeModal: function } 포함됨
+
+  // TC-M013: 비즈니스 화면(isUserDomain=false)에서도 모달 동작
+  // Given: screenId = "DIARY_WRITE" (비즈니스 도메인)
+  // When: 모달 트리거 액션 실행
+  // Then: activeModal 업데이트 → 모달 표시됨
+
+  // TC-M014: 여러 모달 중 올바른 것만 표시
+  // Given: 메타데이터에 MODAL 2개 (id: 'modal_a', 'modal_b')
+  // When: activeModal = 'modal_a'
+  // Then: 'modal_a'만 표시, 'modal_b'는 숨김
+
+  // TC-M015: DynamicEngine renderModals null safe
+  // Given: metadata.children = undefined
+  // When: DynamicEngine 렌더링
+  // Then: 에러 없이 렌더링 완료 (renderModals가 null 반환)
+
+});
+```
+
+---
+
+#### TC-S001 ~ S006: 인증 보안 회귀 테스트
+
+**파일:** `tests/integration/auth_security.test.tsx`
+
+```typescript
+// backend FIX 적용 후 실행하는 회귀 테스트:
+describe('인증 보안 — API 보호 엔드포인트', () => {
+
+  // TC-S001: 토큰 없이 보호 화면 접근 → 리다이렉트
+  // Given: AuthContext.isLoggedIn = false, screenId in PROTECTED_SCREENS
+  // When: CommonPage 렌더링
+  // Then: router.replace('/view/LOGIN_PAGE') 호출됨
+
+  // TC-S002: 401 자동 갱신 → 성공 시 원래 요청 재시도
+  // Given: MSW 첫 요청 401, refresh 성공, 두 번째 요청 200
+  // When: API 요청
+  // Then: 최종적으로 200 응답 처리됨
+
+  // TC-S003: 401 자동 갱신 → 실패 시 로그인 리다이렉트
+  // Given: MSW refresh 401 반환
+  // When: API 요청 후 refresh 실패
+  // Then: AuthContext.logout() 호출 → LOGIN_PAGE 이동
+
+  // TC-S004: JWT 쿠키 전환 후 — localStorage 미사용 확인
+  // Given: 로그인 성공 MSW 모킹
+  // When: 로그인 처리
+  // Then: localStorage.getItem('accessToken') 호출 안 됨 (spy 확인)
+
+  // TC-S005: axios withCredentials — 쿠키 자동 전송
+  // Given: axios 인스턴스
+  // When: 설정 확인
+  // Then: withCredentials = true 확인
+
+  // TC-S006: PROTECTED_SCREENS에 없는 화면 — 로그아웃 상태로 접근 허용
+  // Given: screenId not in PROTECTED_SCREENS, isLoggedIn = false
+  // When: CommonPage 렌더링
+  // Then: 리다이렉트 없음 (LOGIN_PAGE 자체, MAIN_PAGE 등)
+
+});
+```
+
+---
+
+### MSW 핸들러 추가 목록
+
+```typescript
+// tests/mocks/handlers.ts에 추가:
+
+// 모달 트리거 액션 핸들러 (화면 메타데이터 반환)
+http.get('/api/ui/MODAL_TEST_SCREEN', () =>
+  HttpResponse.json({ data: mockModalMetadata })
+),
+
+// 401 → refresh → 재시도 시나리오
+let callCount = 0;
+http.post('/api/execute/:sqlKey', () => {
+  if (callCount++ === 0) return new HttpResponse(null, { status: 401 });
+  return HttpResponse.json({ data: [] });
+}),
+http.post('/api/auth/refresh', () =>
+  HttpResponse.json({ data: { accessToken: 'new-token' } })
+),
+
+// refresh 실패 시나리오
+http.post('/api/auth/refresh-fail', () =>
+  new HttpResponse(null, { status: 401 })
+),
+```
+
+---
+
+### 테스트 파일 위치
+
+| 파일 | 테스트 유형 |
+|------|-----------|
+| `tests/components/Modal.test.tsx` | 단위 — Modal 컴포넌트 |
+| `tests/integration/modal_pipeline.test.tsx` | 통합 — 모달 파이프라인 전체 |
+| `tests/integration/auth_security.test.tsx` | 통합 — 인증/보안 회귀 |
+
+---
+
+### 성공 기준
+
+| 기준 | 목표 |
+|------|------|
+| Modal 단위 테스트 (TC-M001~M005) | 5/5 통과 |
+| Modal 파이프라인 통합 (TC-M010~M015) | 6/6 통과 |
+| 인증 보안 회귀 (TC-S001~S006) | 6/6 통과 |
+| 기존 테스트 회귀 없음 | `npm run test` 전체 green |
+| frontend-report.html | 모든 케이스 green |
+
+---
+
+### 담당자 협의 사항
+
+- **Frontend Engineer:**
+  - `Modal.tsx` 컴포넌트에 `data-testid` 속성 필요 (`data-testid="modal-{componentId}"`) //[매모]  아직 모달을 사용하는 페이지가 없음
+  - axios.tsx 수정 후 기존 MSW 모킹 테스트 영향 여부 확인 요청 
+
+- **Backend Engineer:**
+  - `/api/execute/**` 권한 적용 후 인증 에러 응답 형식 공유 요청 (MSW 모킹용) //[매모]  우선 '*'로 테스트 
+
+---
+
+### TODO 리스트 (승인 후 순서대로 실행)
+
+- [ ] 1. `tests/components/Modal.test.tsx` — TC-M001~M005 작성 //[매모]  테스트 파일 만들고 실행 결과 표시
+- [ ] 2. `tests/integration/modal_pipeline.test.tsx` — TC-M010~M015 작성 //[매모]  테스트 파일 만들고 실행 결과 표시
+- [ ] 3. `tests/mocks/handlers.ts` — 모달 관련 MSW 핸들러 추가 //[매모]  테스트 파일 만들고 실행 결과 표시
+- [ ] 4. `tests/integration/auth_security.test.tsx` — TC-S001~S006 작성 //[매모]  테스트 파일 만들고 실행 결과 표시
+- [ ] 5. `tests/mocks/handlers.ts` — 401/refresh 시나리오 핸들러 추가 //[매모]  테스트 파일 만들고 실행 결과 표시
+- [ ] 6. `npm run test` 전체 통과 확인 //[매모]  테스트 파일 만들고 실행 결과 표시
+- [ ] 7. `tests/logs/frontend-report.html` 결과 확인 //[매모]  테스트 파일 만들고 실행 결과 표시
+
+---
+
+### 승인 상태
+- [x] 사용자 승인 대기 중
+- 

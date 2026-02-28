@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/kakao/login",
             "/api/kakao/callback",
             "/api/ui/LOGIN_PAGE",
-            "api/ui/MAIN_PAGE"
+            "/api/ui/MAIN_PAGE"
     );
     private final JwtUtil jwtUtil;
     // 2026-01-25 RefreshTokenRepository 주입 성능개선
@@ -120,10 +120,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             refreshTokenRepository.save(existingToken);
                         });
                     }
-                    List<GrantedAuthority> authorities = List.of(() -> "ROLE_USER");
+
+                    // JWT 클레임에서 role 읽기 (DB 역할 체계 반영)
+                    String role = claims.get("role", String.class);
+                    if (role == null || role.isBlank()) {
+                        role = "ROLE_USER"; // 폴백 (기존 토큰 호환)
+                    }
+                    List<GrantedAuthority> authorities = List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
+
                     CustomUserDetails userDetails = new CustomUserDetails(user);
                     // 인증 토큰 생성
-                    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     handleSlidingExpiration(claims, email);

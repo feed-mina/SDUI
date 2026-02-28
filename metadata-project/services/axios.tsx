@@ -13,14 +13,15 @@ const api: AxiosInstance = axios.create({
     withCredentials: true,
 });
 
-// 1. 요청 인터셉터: 웹이라면 localStorage, 앱이라면 각 플랫폼의 저장소에서 토큰을 가져옴
+// 1. 요청 인터셉터: HttpOnly 쿠키로 토큰이 자동 전송됨 (withCredentials: true)
 api.interceptors.request.use(
     (config) => {
-        const token = typeof window !== "undefined" ? localStorage.getItem('accessToken') : null;
-
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
+        // [2026-03-01 보안 강화] localStorage → HttpOnly Cookie 전환
+        // 쿠키가 withCredentials: true로 자동 전송되므로 Authorization 헤더 불필요
+        // const token = typeof window !== "undefined" ? localStorage.getItem('accessToken') : null;
+        // if (token) {
+        //     config.headers['Authorization'] = `Bearer ${token}`;
+        // }
         return config;
     },
     (error) => Promise.reject(error)
@@ -39,22 +40,20 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                // 토큰 재발급 시도
-                const res = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+                // 토큰 재발급 시도 (백엔드가 새 accessToken을 Set-Cookie로 내려줌)
+                await axios.post('/api/auth/refresh', {}, { withCredentials: true });
 
-                const newAccessToken = res.data.accessToken;
+                // [2026-03-01 보안 강화] localStorage 삭제 - 쿠키 자동 관리
+                // 백엔드가 새 토큰을 HttpOnly 쿠키로 설정하므로 클라이언트 코드 불필요
+                // localStorage.setItem('accessToken', newAccessToken);
+                // originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
 
-                if (newAccessToken) {
-                    // 새 토큰 저장 (웹 기준)
-                    localStorage.setItem('accessToken', newAccessToken);
-
-                    // 원래 실패했던 요청의 헤더를 새 토큰으로 교체 후 재시도
-                    originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                    return api(originalRequest);
-                }
+                // 원래 실패했던 요청을 쿠키로 재시도
+                return api(originalRequest);
             } catch (err) {
-                // 재발급 실패 시 저장된 토큰 삭제 및 리다이렉트
-                localStorage.removeItem('accessToken');
+                // 재발급 실패 시 리다이렉트
+                // [2026-03-01 보안 강화] localStorage 삭제 - 쿠키는 백엔드에서 만료 처리
+                // localStorage.removeItem('accessToken');
                 if (currentPath !== "/view/LOGIN_PAGE") {
                     alert("세션이 만료되었습니다. 다시 로그인해주세요.");
                     window.location.href = "/view/LOGIN_PAGE";

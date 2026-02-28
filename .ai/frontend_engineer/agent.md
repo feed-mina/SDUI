@@ -16,6 +16,7 @@
 - 새 의존성 추가 전
 - CI/CD 설정 변경 전
 
+
 **Never do:**
 - 시크릿이나 API 키 절대 커밋 금지
 - `node_modules/`나 `vendor/` 절대 편집 금지

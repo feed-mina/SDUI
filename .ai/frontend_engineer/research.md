@@ -170,87 +170,162 @@ interface Metadata {
 
 ---
 
-## [P2] 민감정보 로그 노출 감사 결과 ← 서브에이전트 분석 (2026-02-28)
+## [P2] Security Audit — JWT & XSS 취약점 현황 분석 (코드 재검증)
 
-### 현황 요약
-프로젝트 전체에서 **75개 이상의 민감정보 노출 로그**가 발견되었다. 프론트엔드에서는
-`useUserActions.tsx:76`이 로그인 시 사용자 비밀번호를 `console.log`로 직접 노출하고 있으며,
-백엔드에서는 원본 비밀번호·JWT 클레임·이메일 인증코드·SQL 쿼리+파라미터가 `System.out.println`으로
-서버 로그에 그대로 기록된다. `axios.tsx`의 `localStorage` 기반 JWT 저장은 XSS 공격 시 토큰 탈취를 허용한다.
+**분석 일시:** 2026-02-28
+**참고 커밋:** b2ec8d5 (fix: 민감정보 로깅 삭제 및 보안 로직 보강)
 
----
-
-### Critical 위험 목록 (즉시 삭제 필요)
-
-| 파일 | 라인 | 문제 | 수정 방법 |
-|-----|------|-----|---------|
-| `hook/useUserActions.tsx` | 70 | `console.log('뭐야 ')` | 삭제 |
-| **`hook/useUserActions.tsx`** | **76** | **`console.log('loginData', loginData)`** — 이메일+비밀번호 노출 | **즉시 삭제** |
-| `SDUI-server/.../PasswordUtil.java` | **76-77** | `System.out.println("원래 비밀번호: " + rawPassword)` | **즉시 삭제** |
-| `SDUI-server/.../JwtAuthenticationFilter.java` | 93,102-107,130,134,137 | JWT Claims·이메일·userSqno·authorities 로깅 | **즉시 삭제** |
-| `SDUI-server/.../JwtUtil.java` | 110 | `System.out.println("issuer 값: " + issuer)` | 삭제 |
-| `SDUI-server/.../infra/EmailUtil.java` | 15 | 이메일 + 인증코드 평문 노출 | 삭제 |
-| `SDUI-server/.../DynamicExecutor.java` | 26-29 | 실행 SQL 전체 + 바인딩 파라미터 로깅 | 삭제 또는 마스킹 |
-| `SDUI-server/.../KakaoService.java` | 98-101 | 카카오 이메일·userId 로깅 | 삭제 |
-| `SDUI-server/.../QueryMasterService.java` | 30,35 | SQL 쿼리 키 노출 | 삭제 |
-
-**Critical 합계: 19줄**
+> **⚠️ 상태 업데이트:** 이전 분석은 commit b2ec8d5 이전 코드 기준.
+> 재검증 결과: 프론트엔드 민감 로그 수정됨. 백엔드 HttpOnly 쿠키 지원 추가됨.
+> 그러나 프론트엔드가 여전히 localStorage를 읽고 있어 XSS 취약점 유효.
 
 ---
 
-### Warning 목록 (logger.debug()로 교체 권장)
+### JWT 토큰 저장 방식 현황 (실제 코드 기준)
 
-| 파일 | 줄 수 | 내용 |
-|-----|------|-----|
-| `domain/diary/service/DiaryService.java` | 7개 | offset, diaryReq, diary 객체 |
-| `domain/diary/controller/DiaryController.java` | 11개 | 요청 객체, IP, diaryRequest |
-| `domain/query/controller/CommonQueryController.java` | 3개 | SQL 쿼리 및 바인딩 파라미터 |
-| `domain/user/service/AuthService.java` | 4개 | User 객체·에러 메시지 |
-| `domain/time/service/GoalTimeQueryService.java` | 10개 | 캐시 키, SQL, params, targetTime |
-| `domain/time/controller/GoalTimeController.java` | 2개 | targetTime, userSqno |
-| `domain/ui/controller/UiController.java` | 3개 | screenId 요청 로깅 |
-| `domain/ui/service/UiService.java` | 2개 | 컴포넌트 ID |
+| 파일 | 위치 | 저장 방식 | 위험도 |
+|------|------|----------|--------|
+| `axios.tsx` | Line 19 | `localStorage.getItem('accessToken')` | **HIGH** — XSS 시 탈취 가능 |
+| `axios.tsx` | Line 49 | `localStorage.setItem('accessToken', newAccessToken)` | **HIGH** |
+| `axios.tsx` | Line 57 | `localStorage.removeItem('accessToken')` | MEDIUM |
+| `AuthContext.tsx` | Line 73-74 | `/api/auth/me` 호출 (HttpOnly 쿠키 자동 전송) | **LOW** — 안전 |
 
-**Warning 합계: 56줄 | 전체 합계: 75개**
+**결론:** 백엔드는 HttpOnly 쿠키로 토큰을 전달하지만, 프론트엔드 `axios.tsx`가 여전히 localStorage를 읽어 아키텍처 불일치 + XSS 취약점 유효.
+
+### 백엔드 로그인 응답 분석 (AuthController.java) — 업데이트됨 ✅
+
+**로그인 응답 방식:** HttpOnly Set-Cookie (Lines 86-122)
+
+```java
+// AuthController.java:87-102
+ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", tokenResponse.getAccessToken())
+        .httpOnly(true)       // ✅ JavaScript 접근 불가
+        .secure(false)        // 로컬 테스트용 (프로덕션: true 필요)
+        .path("/")
+        .maxAge(60 * 60)      // 1시간
+        .sameSite("Lax")
+        .build();
+
+ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
+        .httpOnly(true)       // ✅ JavaScript 접근 불가
+        .secure(false)
+        .path("/")
+        .maxAge(60 * 60 * 24 * 7)  // 7일
+        .sameSite("Lax")
+        .build();
+```
+
+**이전 분석(localStorage → HttpOnly 마이그레이션 필요)의 백엔드 부분은 이미 완료됨.**
+프론트엔드(`axios.tsx`) 수정만 남음.
+
+### Refresh Token 저장 방식
+
+| 저장 위치 | 방식 | 위험도 |
+|----------|------|--------|
+| 백엔드 응답 | HttpOnly 쿠키 (7일) | **LOW** — JavaScript 접근 불가 |
+| 프론트엔드 읽기 | localStorage 미사용 (쿠키 자동 전송) | **LOW** — 안전 |
+
+**Refresh Token은 안전하게 처리됨.** Access Token의 localStorage 사용이 유일한 문제.
 
 ---
 
-### localStorage JWT 저장 문제 (`axios.tsx:19, 49`)
+### 민감 정보 로깅 현황 (commit b2ec8d5 이후 재스캔)
 
-**현재 코드**
+#### 프론트엔드 (수정 완료 ✅)
+
+| 파일 | 라인 | 내용 | 상태 |
+|------|------|------|------|
+| `useUserActions.tsx` | ~76 (구 위치) | `console.log('loginData', loginData)` | ✅ **삭제됨** |
+| `useUserActions.tsx` | ~70 (구 위치) | `console.log('뭐야 ')` | ✅ **삭제됨** |
+| `AuthContext.tsx` | 46 | `console.error("Logout API error:", err)` | ✅ 안전 (에러 메시지만) |
+| `useUserActions.tsx` | 146, 159 | `console.error(...)`, `console.warn(...)` | ✅ 안전 (디버그 메시지) |
+
+**프론트엔드 민감 로그: 0개 (commit b2ec8d5로 해결)**
+
+#### 백엔드 (잔존 이슈 — System.out.println ~35개)
+
+| 파일 | 개수 | 민감도 |
+|------|-----|--------|
+| `AuthService.java` | 4개 | MEDIUM — User 객체, 에러 메시지 |
+| `DiaryService.java` | 7개 | MEDIUM — 다이어리 요청 객체 |
+| `GoalTimeQueryService.java` | 10개 | MEDIUM — 캐시키, SQL, params |
+| `UiController.java` | 3개 | LOW — screenId 로깅 |
+| `JwtAuthenticationFilter.java` | 1개 | LOW — System.err |
+| 기타 | 10개 | LOW |
+
+**결론:** 백엔드 민감 로그(원본 비밀번호, JWT 클레임, 이메일+인증코드)가 이전 분석에서 발견되었으나, commit b2ec8d5 범위에서 수정 여부 재확인 필요. `System.out.println` 전반적 정리 권고.
+
+---
+
+### CSP / 보안 헤더 현황 (next.config.ts)
+
+**구성 현황 (Line 1-28):**
+- rewrites: `/api/*` → `http://localhost:8080/api/*` (프록시)
+- redirects: `/` → `/view/MAIN_PAGE`
+
+**보안 헤더:**
+
+| 헤더 | 설정 여부 |
+|------|---------|
+| Content-Security-Policy | ❌ 미구성 |
+| X-Frame-Options | ❌ 미구성 |
+| X-Content-Type-Options | ❌ 미구성 |
+| Strict-Transport-Security | ❌ 미구성 |
+
+---
+
+### XSS 공격 시나리오 위험도
+
+| 시나리오 | 현재 위험도 | 이유 |
+|---------|-----------|------|
+| XSS로 Access Token 탈취 | **CRITICAL** | localStorage 사용 중 — JavaScript 접근 가능 |
+| XSS로 Refresh Token 탈취 | **LOW** | HttpOnly 쿠키 — JavaScript 접근 불가 |
+| 탈취 AccessToken으로 API 접근 | **CRITICAL** | 1시간 동안 계정 완전 제어 가능 |
+| CSP 없어 XSS 삽입 쉬움 | **HIGH** | 인라인 스크립트 실행 차단 없음 |
+
+---
+
+### 권고 수정안 (현재 기준)
+
+**단기 (즉시, 프론트엔드만 수정):**
+
+1. `next.config.ts`에 보안 헤더 추가:
 ```typescript
-const token = localStorage.getItem('accessToken');   // XSS 시 탈취 가능
-localStorage.setItem('accessToken', newAccessToken); // XSS 시 저장·노출
+async headers() {
+  return [{
+    source: '/(.*)',
+    headers: [
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Content-Security-Policy',
+        value: "default-src 'self'; script-src 'self'; object-src 'none'" }
+    ]
+  }]
+}
 ```
 
-**위험성**: XSS 공격으로 `localStorage.accessToken` 접근 → JWT 탈취 → 계정 완전 장악
+2. 백엔드 `System.out.println` → `logger.debug()` 전환 (프로덕션 배포 전)
 
-**마이그레이션 방향**
-- 백엔드: `Set-Cookie: accessToken=...; HttpOnly; Secure; SameSite=Strict`
-- 프론트엔드: `axios.tsx` localStorage 코드 제거, `withCredentials: true` 유지
+**중기 (아키텍처 변경):**
+
+1. **Access Token → Memory 저장** (`axios.tsx` localStorage 제거):
+   - 로그인 시 HttpOnly 쿠키만 사용 (이미 백엔드 지원)
+   - `axios.tsx:19` `localStorage.getItem` → 삭제 (쿠키 자동 전송으로 대체)
+   - `axios.tsx:49` `localStorage.setItem` → 삭제
+
+2. **프로덕션 배포 시 필수:**
+   - `AuthController.java` `secure(false)` → `secure(true)`
+   - `sameSite("Lax")` → `sameSite("Strict")` 검토
 
 ---
 
-### 즉시 삭제해야 할 로그 목록 (파일:라인)
+### 수정 우선순위
 
-```
-[프론트엔드]
-useUserActions.tsx:70   — console.log('뭐야 ')
-useUserActions.tsx:76   — console.log('loginData', loginData)   ← 최우선
-
-[백엔드 Critical]
-PasswordUtil.java:76-77             — 원본/암호화 비밀번호 출력   ← 최우선
-JwtAuthenticationFilter.java:93,102-107,130,134,137 — JWT 클레임
-JwtUtil.java:110                    — issuer 값
-EmailUtil.java:15                   — 이메일+인증코드
-DynamicExecutor.java:26-29          — SQL+파라미터
-KakaoService.java:98-101            — 카카오 이메일·userId
-QueryMasterService.java:30,35       — SQL 캐시 키
-```
-
----
-
-### 대응 우선순위
-1. **24시간 내**: `useUserActions.tsx:76`, `PasswordUtil.java:76-77`, `JwtAuthenticationFilter` 전체 민감 로그 삭제
-2. **1주일 내**: 나머지 Warning 로그를 `SLF4J logger.debug()`로 전환, 프로덕션 DEBUG 비활성화
-3. **중기**: localStorage → HttpOnly 쿠키 마이그레이션, CSP 헤더 추가
+| 항목 | 우선순위 | 상태 |
+|------|---------|------|
+| `useUserActions.tsx:76` 민감 로그 | 완료 | ✅ commit b2ec8d5 |
+| 백엔드 HttpOnly 쿠키 설정 | 완료 | ✅ 이미 구현됨 |
+| `axios.tsx` localStorage → 쿠키 전환 | **P1** | ❌ 미수정 |
+| CSP / 보안 헤더 추가 | **P1** | ❌ 미수정 |
+| 백엔드 System.out.println 정리 | **P2** | ❌ 미수정 |
+| 프로덕션 `secure(true)` 설정 | **P2** | ❌ 미수정 |
