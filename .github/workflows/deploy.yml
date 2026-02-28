@@ -18,11 +18,19 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+          # 폴더 위치를 찾기 위해 현재 위치와 파일 목록을 출력한다
+      - name: Check directory structure
+        run: |
+          pwd
+          ls -al
+          ls -al SDUI-server || echo "SDUI-server folder not found"
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: ./SDUI-server
 
       - name: Build with Gradle
+          # Gradle 빌드 시 테스트 제외 명령어를 사용한다
         run: ./gradlew clean build -x test
         working-directory: ./SDUI-server
 
