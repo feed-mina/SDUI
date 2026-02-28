@@ -223,18 +223,9 @@
     background-color: #8b5cf6 !important;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 800px) {
     .time-select-wrapper{
         min-width: 700px;
     }
 }
 
-/* 1열부터 3열 선까지 (전체 너비) */ /* 여기만 구분감 위해 살짝 부여 */
-/* [1] TimeSelect: 최상단 전체 너비 확장
-.engine-container.is-desktop .write_section1 > div:has(.sleep_time_select),
-.engine-container.is-desktop .write_section1 > div:has(.time-select-wrapper) {
-    grid-column: 1 / 3;
-    width: 100%;
-    margin-bottom: 20px !important;
-}
-*/
