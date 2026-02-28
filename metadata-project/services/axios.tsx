@@ -9,14 +9,24 @@ interface ErrorResponse {
 
 //   Axios 인스턴스 생성
 const api: AxiosInstance = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: '/',
     withCredentials: true,
 });
-// 브라우저가 HttpOnly 쿠키를 알아서 보냄
+
+// 1. 요청 인터셉터: 웹이라면 localStorage, 앱이라면 각 플랫폼의 저장소에서 토큰을 가져옴
 api.interceptors.request.use(
-    (config) => config,
+    (config) => {
+        const token = typeof window !== "undefined" ? localStorage.getItem('accessToken') : null;
+
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
     (error) => Promise.reject(error)
 );
+
+
 // 3. 응답 인터셉터: 에러 핸들링 및 토큰 재발급 로직 통합
 api.interceptors.response.use(
     (response) => response,
@@ -26,19 +36,25 @@ api.interceptors.response.use(
         const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
 
         if (response?.status === 401 && !originalRequest._retry) {
-            // [방어 로직] 이미 로그인 페이지라면 재발급 시도나 리다이렉트를 하지 않음
-            if (currentPath === "/view/LOGIN_PAGE") {
-                return Promise.reject(error);
-            }
-
             originalRequest._retry = true;
 
             try {
                 // 토큰 재발급 시도
-                await axios.post('http://localhost:8080/api/auth/refresh', {}, { withCredentials: true });
-                return api(originalRequest); // 재발급 성공 시 원래 요청 재시도
+                const res = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+
+                const newAccessToken = res.data.accessToken;
+
+                if (newAccessToken) {
+                    // 새 토큰 저장 (웹 기준)
+                    localStorage.setItem('accessToken', newAccessToken);
+
+                    // 원래 실패했던 요청의 헤더를 새 토큰으로 교체 후 재시도
+                    originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                    return api(originalRequest);
+                }
             } catch (err) {
-                // 재발급 실패 시 로그아웃 처리
+                // 재발급 실패 시 저장된 토큰 삭제 및 리다이렉트
+                localStorage.removeItem('accessToken');
                 if (currentPath !== "/view/LOGIN_PAGE") {
                     alert("세션이 만료되었습니다. 다시 로그인해주세요.");
                     window.location.href = "/view/LOGIN_PAGE";
