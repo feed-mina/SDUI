@@ -96,6 +96,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true); // 쿠키 허용
         configuration.setMaxAge(10800L); // preflight 캐시 3 * 60 (분) * 60(초)
+        configuration.setExposedHeaders(List.of("Authorization", "Authorization-Refresh")); // 앱 개발 - Authorization 헤더  추가
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
