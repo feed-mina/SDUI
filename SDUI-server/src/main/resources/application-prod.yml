@@ -16,5 +16,10 @@ spring:
 jwt:
   secret-key: ${JWT_SECRET_KEY}
 
+app:
+  url:
+    web: ${WEB_URL:http://sdui-delta.vercel.app}
+    mobile: ${MOBILE_URL:http://sdui-delta.vercel.app://}
+
 kakao:
   redirect-uri: http://43.201.237.68:8080/api/kakao/callback

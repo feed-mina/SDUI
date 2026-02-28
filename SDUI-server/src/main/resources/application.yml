@@ -1,7 +1,7 @@
 
 spring:
   application:
-    name: demo_backend
+    name: SDUI-server
   main:
     allow-bean-definition-overriding: true
   web:
@@ -55,6 +55,11 @@ jwt:
   secret-key: d6ac9ecc0a3aa3c395313fb236e0ec10d71ab78fb36f54ba626664eba0b842b1
   issuer: admin
   expiration: 86400000
+
+app:
+  url:
+    web: ${WEB_URL:http://localhost:3000}
+    mobile: ${MOBILE_URL:http://sdui-delta.vercel.app://}
 
 kakao:
   client-id: ${KAKAO_CLIENT_ID:2d22c7fa1d59eb77a5162a3948a0b6fe}
