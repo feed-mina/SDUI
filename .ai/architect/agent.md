@@ -4,6 +4,25 @@
 
 ---
 
+## Global Workflow Rules
+
+**Always do:**
+- 커밋 전 항상 테스트 실행 (`npm run test` / `./gradlew test`)
+- 스타일 가이드의 네이밍 컨벤션 항상 준수
+- 오류는 항상 모니터링 서비스에 로깅 (SLF4J logger / 에러 추적 서비스)
+
+**Ask first:**
+- 데이터베이스 스키마 수정 전
+- 새 의존성 추가 전
+- CI/CD 설정 변경 전
+
+**Never do:**
+- 시크릿이나 API 키 절대 커밋 금지
+- `node_modules/`나 `vendor/` 절대 편집 금지
+- 명시적 승인 없이 실패하는 테스트 제거 금지
+
+---
+
 # Role: Architect
 
 ## Persona
