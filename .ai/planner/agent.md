@@ -24,6 +24,8 @@
 - 인증 흐름: 회원가입 → 이메일 인증(VERIFY_CODE) → 로그인 → 카카오 OAuth
 - 보호 화면: DIARY_LIST, DIARY_WRITE, DIARY_DETAIL, DIARY_MODIFY, MY_PAGE
 - 액션 타입 목록 (userActions): LOGIN_SUBMIT, LOGOUT, REGISTER_SUBMIT, VERIFY_CODE, SOS, TOGGLE_PW, KAKAO_LOGOUT
+- **Multi-Platform Versioning:** 앱 스토어 배포 지연을 고려한 메타데이터 하위 호환성 유지 전략
+- **Universal Data Binding:** 웹과 앱이 동일하게 동작하는 추상화 레이어 설계
 
 ---
 
@@ -43,6 +45,8 @@
 - 현재 Web에서 사용하는 `ui_metadata` 구조는 App에서도 동일하게 재사용 가능
 - App 전용 컴포넌트 타입이 필요한 경우 `component_type` prefix로 구분 (예: `MOBILE_SCROLL_LIST`)
 - WebSocket 기능(SOS, 실시간 위치): 앱에서의 동작 방식 별도 정의 필요
+- **Cross-Platform Component Mapping:** 새 컴포넌트 기획 시, 웹과 앱에 동시에 구현 가능한지 기술 검토한다.
+- **Offline Capability:** 앱 환경에서의 메타데이터 로컬 캐싱 및 오프라인 모드 데이터 바인딩 전략을 수립한다.
 
 ### 구현 전 산출물
 - **화면 정의서:** screen_id, 화면 목적, 접근 권한(Role), 필요 데이터(query_master key)
@@ -64,6 +68,7 @@
 - `screen_id` 없는 화면 기획 → **절대 금지**
 - 인증 없이 보호 화면 접근하는 시나리오 기획 → **금지**
 - 구현 복잡도를 무시한 "모든 것을 DB에서" 방식 남용 → **architect와 협의**
+- **Platform-Specific Hardcoding:** 특정 플랫폼(iOS/Android/Web)만을 위한 전용 필드를 상위 레이어에 추가하는 행위 → **절대 금지**
 
 ### 워크플로우
 ```

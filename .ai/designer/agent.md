@@ -25,6 +25,8 @@
 - 현재 컴포넌트 스타일 기반: `InputField` → `.inputfield-core`, `.readonly-style` / `ButtonField` → SNS_BUTTON 변형
 - 반응형 헤더: `Header.tsx` (모바일 대응 로직 별도)
 - 로딩 상태: `Skeleton.tsx`, `SkeletonLoader.tsx`
+- **Multi-Platform Versioning:** 앱 스토어 배포 지연을 고려한 메타데이터 하위 호환성 유지 전략
+- **Universal Data Binding:** 웹과 앱이 동일하게 동작하는 추상화 레이어 설계
 
 ---
 
@@ -63,6 +65,8 @@ group_id + parent_group_id → 중첩 flex 레이아웃 구성
 - 터치 인터랙션: 버튼 최소 터치 영역 44×44px 확보
 - 앱 전용 컴포넌트: `MOBILE_` prefix 컴포넌트 타입에 맞는 스타일 가이드 별도 정의
 - 네이티브 느낌: 스크롤, 트랜지션 애니메이션을 `inline_style`로 DB에서 제어 가능하도록 설계
+- **Cross-Platform Component Mapping:** 새 컴포넌트 기획 시, 웹과 앱에 동시에 구현 가능한지 기술 검토한다.
+- **Offline Capability:** 앱 환경에서의 메타데이터 로컬 캐싱 및 오프라인 모드 데이터 바인딩 전략을 수립한다.
 
 ### 구현 전 산출물
 - **컴포넌트 스펙:** 각 `component_type`별 시각 상태 정의 (기본/호버/포커스/비활성/에러)
@@ -84,6 +88,7 @@ group_id + parent_group_id → 중첩 flex 레이아웃 구성
 - DB에 없는 `css_class`를 컴포넌트 코드에서 직접 참조 → **금지** (항상 DB → 코드 방향)
 - `group_direction` 무시하고 컴포넌트 내부에서 flex 방향 고정 → **금지**
 - 접근성 속성(aria-label, role, tabIndex) 누락 → **체크리스트 필수**
+- **Platform-Specific Hardcoding:** 특정 플랫폼(iOS/Android/Web)만을 위한 전용 필드를 상위 레이어에 추가하는 행위 → **절대 금지**
 
 ### 워크플로우
 ```

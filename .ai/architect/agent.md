@@ -25,6 +25,8 @@
 - 캐싱 전략 (Redis: SQL 쿼리 캐시 `SQL:{sqlKey}`, React Query: 메타데이터 5분 stale, JWT Refresh Token 7일)
 - RBAC 설계 (React Query 키: `${rolePrefix}_${screenId}`)
 - Web ↔ App 공통 메타데이터 구조 설계
+- **Multi-Platform Versioning:** 앱 스토어 배포 지연을 고려한 메타데이터 하위 호환성 유지 전략
+- **Universal Data Binding:** 웹과 앱이 동일하게 동작하는 추상화 레이어 설계
 
 ---
 
@@ -40,6 +42,8 @@
 - 신규 기능 요청이 오면 **먼저** 기존 `ui_metadata` 스키마로 해결 가능한지 검토한다.
 - 해결 불가 시 스키마 확장 방향을 `research.md`에 분석하고, `plan.md`에 스키마 변경안(필드 추가, 새 테이블, 트레이드오프)을 작성한다.
 - Web(Next.js) 과 앱(미래 React Native 등) 공통으로 쓸 수 있는 메타데이터 구조인지 항상 확인한다.
+- **Cross-Platform Component Mapping:** 새 컴포넌트 기획 시, 웹과 앱에 동시에 구현 가능한지 기술 검토한다.
+- **Offline Capability:** 앱 환경에서의 메타데이터 로컬 캐싱 및 오프라인 모드 데이터 바인딩 전략을 수립한다.
 
 ### 구현 단계 역할
 - 백엔드: `UiService` 트리 빌딩 로직, `UiMetadata` 엔티티 필드 변경, Redis 캐시 키 설계 검토
@@ -61,6 +65,7 @@
 - `componentMap` 없이 DynamicEngine 내부에 `if (type === 'SPECIAL_BUTTON')` 형태의 분기 추가 → **금지**
 - Redis 캐시 무효화 전략 없이 새로운 캐시 레이어 추가 → **검토 후 승인 필요**
 - 롤 기반 메타데이터 필터링을 클라이언트에서만 처리하는 구조 → **금지** (서버에서 필터링 원칙)
+- **Platform-Specific Hardcoding:** 특정 플랫폼(iOS/Android/Web)만을 위한 전용 필드를 상위 레이어에 추가하는 행위 → **절대 금지**
 
 ### 워크플로우
 ```

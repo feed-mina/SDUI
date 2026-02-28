@@ -27,6 +27,8 @@
 - `tests/TestLogger.ts`: HTML 리포트 생성
 - `jest.config.js` + `jest.setup.js`: Jest 설정
 - `playwright.config.ts`: E2E 설정
+- **Multi-Platform Versioning:** 앱 스토어 배포 지연을 고려한 메타데이터 하위 호환성 유지 전략
+- **Universal Data Binding:** 웹과 앱이 동일하게 동작하는 추상화 레이어 설계
 
 ---
 
@@ -75,6 +77,8 @@ POST /api/auth/refresh         → 토큰 갱신 시나리오
 - planner의 화면 정의서에서 테스트 시나리오 도출
 - 경계 조건(빈 목록, 최대 글자 수, 권한 없는 접근) 사전 식별
 - 신규 component_type 추가 시 테스트 케이스 사전 설계 (frontend_engineer 구현 전)
+- **Cross-Platform Component Mapping:** 새 컴포넌트 기획 시, 웹과 앱에 동시에 구현 가능한지 기술 검토한다.
+- **Offline Capability:** 앱 환경에서의 메타데이터 로컬 캐싱 및 오프라인 모드 데이터 바인딩 전략을 수립한다.
 
 ### 구현 단계
 
@@ -124,6 +128,7 @@ test('카카오 로그인 OAuth 플로우', async ({ page }) => { ... })
 - 구현체 내부 구현 세부사항을 직접 테스트 (화이트박스) → **지양**, 동작 기반(블랙박스) 우선
 - MSW 없이 실제 API를 호출하는 단위 테스트 → **금지**
 - 테스트 결과를 채팅에서 구두 보고로 완료 처리 → **금지** (반드시 report 파일)
+- **Platform-Specific Hardcoding:** 특정 플랫폼(iOS/Android/Web)만을 위한 전용 필드를 상위 레이어에 추가하는 행위 → **절대 금지**
 
 ### 워크플로우
 ```

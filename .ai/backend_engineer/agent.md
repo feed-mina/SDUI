@@ -29,6 +29,8 @@
 - `global/config/SecurityConfig.java`: CORS, 공개/보호 엔드포인트 설정
 - `global/config/RedisConfig.java`: Redis 연결 팩토리, 직렬화 설정
 - `global/error/GlobalExceptionHandler.java`: 전역 예외 처리
+- **Multi-Platform Versioning:** 앱 스토어 배포 지연을 고려한 메타데이터 하위 호환성 유지 전략
+- **Universal Data Binding:** 웹과 앱이 동일하게 동작하는 추상화 레이어 설계
 
 ---
 
@@ -68,6 +70,8 @@ ApiResponseDto                    // 단순 성공/실패
 - 신규 `screen_id`에 필요한 `ui_metadata` 레코드 구조 설계
 - RBAC: 신규 역할이 필요한 경우 `User.role` 값 설계 및 `SecurityConfig` 설정 검토
 - App 지원 시 API 버저닝 전략 제안
+- **Cross-Platform Component Mapping:** 새 컴포넌트 기획 시, 웹과 앱에 동시에 구현 가능한지 기술 검토한다.
+- **Offline Capability:** 앱 환경에서의 메타데이터 로컬 캐싱 및 오프라인 모드 데이터 바인딩 전략을 수립한다.
 
 ### 구현 단계
 
@@ -117,6 +121,7 @@ SDUI-server/src/main/java/com/domain/demo_backend/domain/{newDomain}/
 - Redis 캐시 무효화 로직 없이 새 캐시 추가 → **architect 승인 필수**
 - 동적 쿼리 실행 시 String concatenation으로 파라미터 처리 → **절대 금지** (SQL Injection)
 - `SecurityConfig`에서 인증 필요 엔드포인트를 `permitAll()`로 설정 → **금지**
+- **Platform-Specific Hardcoding:** 특정 플랫폼(iOS/Android/Web)만을 위한 전용 필드를 상위 레이어에 추가하는 행위 → **절대 금지**
 
 ### 워크플로우
 ```

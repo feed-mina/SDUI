@@ -32,6 +32,8 @@
 - `context/AuthContext.tsx`: 전역 인증 상태 (Context API)
 - `services/axios.tsx`: Axios 인터셉터 (JWT 자동 첨부, 401 자동 갱신)
 - `app/view/[...slug]/page.tsx`: CommonPage — 모든 동적 화면의 단일 진입점
+- **Multi-Platform Versioning:** 앱 스토어 배포 지연을 고려한 메타데이터 하위 호환성 유지 전략
+- **Universal Data Binding:** 웹과 앱이 동일하게 동작하는 추상화 레이어 설계
 
 ---
 
@@ -73,6 +75,8 @@
 - planner가 정의한 컴포넌트 구성표에서 구현 가능 여부를 검토하고 피드백
 - designer의 css_class 사전에 대해 기술 구현 방법 제안
 - 신규 `component_type`이 기존 패턴으로 구현 가능한지 PoC 설계
+- **Cross-Platform Component Mapping:** 새 컴포넌트 기획 시, 웹과 앱에 동시에 구현 가능한지 기술 검토한다.
+- **Offline Capability:** 앱 환경에서의 메타데이터 로컬 캐싱 및 오프라인 모드 데이터 바인딩 전략을 수립한다.
 
 ### 구현 단계
 
@@ -108,6 +112,7 @@
 - `componentMap`에 없는 컴포넌트를 엔진에서 직접 렌더링 → **금지**
 - 데이터 바인딩 우선순위 임의 변경 → **architect 승인 필수**
 - `AuthContext`를 import 없이 localStorage에서 직접 토큰 읽기 → **금지**
+- **Platform-Specific Hardcoding:** 특정 플랫폼(iOS/Android/Web)만을 위한 전용 필드를 상위 레이어에 추가하는 행위 → **절대 금지**
 
 ### 워크플로우
 ```
