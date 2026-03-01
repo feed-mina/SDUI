@@ -3,11 +3,9 @@ import { http, HttpResponse } from 'msw';
 // 401 재시도 카운터
 let apiCallCount = 0;
 
-const BASE_URL = 'http://localhost';
-
 export const handlers = [
   // 인증 관련 핸들러
-  http.get(`${BASE_URL}/api/auth/me`, () => {
+  http.get('*/api/auth/me', () => {
     return HttpResponse.json(
       {
         userId: 'testuser',
@@ -23,24 +21,22 @@ export const handlers = [
     );
   }),
 
-  http.post(`${BASE_URL}/api/auth/login`, () => {
-    return HttpResponse.json(
-      {
-        data: {
-          accessToken: 'mock-access-token',
-          userId: 'testuser',
-          email: 'test@example.com',
-          role: 'ROLE_USER',
-        },
+  http.post('*/api/auth/login', () => {
+    const body = {
+      data: {
+        accessToken: 'mock-access-token',
+        userId: 'testuser',
+        email: 'test@example.com',
+        role: 'ROLE_USER',
       },
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    };
+    return new HttpResponse(JSON.stringify(body), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }),
 
-  http.post(`${BASE_URL}/api/auth/logout`, () => {
+  http.post('*/api/auth/logout', () => {
     return HttpResponse.json(
       { message: 'Logged out successfully' },
       {
@@ -51,7 +47,7 @@ export const handlers = [
   }),
 
   // TC-S002: 401 → refresh → 재시도 성공 시나리오
-  http.post(`${BASE_URL}/api/execute/:sqlKey`, ({ params }) => {
+  http.post('*/api/execute/:sqlKey', ({ params }) => {
     if (apiCallCount === 0) {
       apiCallCount++;
       return new HttpResponse(null, { status: 401 });
@@ -67,7 +63,7 @@ export const handlers = [
   }),
 
   // TC-S002: refresh 성공
-  http.post(`${BASE_URL}/api/auth/refresh`, () => {
+  http.post('*/api/auth/refresh', () => {
     return HttpResponse.json(
       { data: { accessToken: 'new-access-token' } },
       {
@@ -78,12 +74,12 @@ export const handlers = [
   }),
 
   // TC-S003: refresh 실패 시나리오
-  http.post(`${BASE_URL}/api/auth/refresh-fail`, () => {
+  http.post('*/api/auth/refresh-fail', () => {
     return new HttpResponse(null, { status: 401 });
   }),
 
   // 화면 메타데이터 핸들러
-  http.get(`${BASE_URL}/api/ui/:screenId`, ({ params }) => {
+  http.get('*/api/ui/:screenId', ({ params }) => {
     const { screenId } = params;
     return HttpResponse.json({
       data: [

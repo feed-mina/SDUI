@@ -30,3 +30,17 @@ const renderWithProviders = (
 
 export * from '@testing-library/react';
 export { renderWithProviders };
+
+// 렌더 카운트 헬퍼 함수
+export const getRenderCount = (componentName: string): number => {
+    if (typeof window !== 'undefined' && (window as any).__componentRenderCounts__) {
+        return (window as any).__componentRenderCounts__[componentName] || 0;
+    }
+    return 0;
+};
+
+export const resetRenderCounts = () => {
+    if (typeof window !== 'undefined') {
+        (window as any).__componentRenderCounts__ = {};
+    }
+};

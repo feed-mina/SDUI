@@ -1,5 +1,8 @@
 // jest.setup.js
 
+// ⚠️ 중요: NODE_ENV를 'test'로 설정 (axios baseURL 분기에서 사용)
+process.env.NODE_ENV = 'test';
+
 // ⚠️ 중요: TextEncoder/TextDecoder를 가장 먼저 설정 (MSW가 필요로 함)
 import { TextEncoder, TextDecoder } from 'util';
 global.TextEncoder = TextEncoder;
@@ -38,9 +41,31 @@ if (!Element.prototype.scrollTo) {
 // window.alert 모킹 (axios.tsx에서 사용)
 global.alert = jest.fn();
 
-// window.location.href 모킹
+// window.location 완전 모킹 (MSW URL 파싱 및 리다이렉트 테스트에 필요)
 delete window.location;
-window.location = { href: '', pathname: '/', replace: jest.fn() };
+const locationData = {
+    href: 'http://localhost/',
+    origin: 'http://localhost',
+    protocol: 'http:',
+    host: 'localhost',
+    hostname: 'localhost',
+    port: '',
+    pathname: '/',
+    search: '',
+    hash: '',
+};
+window.location = {
+    ...locationData,
+    replace: jest.fn(),
+    assign: jest.fn(),
+    reload: jest.fn(),
+};
+
+// href setter를 오버라이드하여 리다이렉트를 모킹
+Object.defineProperty(window.location, 'href', {
+    writable: true,
+    value: locationData.href,
+});
 
 // 4. Next.js useRouter 모킹 (AuthProvider, MetadataProvider에서 사용)
 jest.mock('next/navigation', () => ({
