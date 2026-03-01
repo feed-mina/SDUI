@@ -139,6 +139,41 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                 router.push('/view/LOGIN_PAGE');
                 break;
 
+            case "SUBMIT_ADDITIONAL_INFO":
+                try {
+                    // RBAC: 카카오 로그인 후 추가 정보 입력 (2026-03-01 추가)
+                    const phone = currentFormData.PHONE_INPUT;
+                    const roadAddress = currentFormData.road_address;
+                    const detailAddress = currentFormData.detail_address;
+                    const zipCode = currentFormData.zip_code;
+
+                    // 필수 항목 검증
+                    if (!phone || !roadAddress || !zipCode) {
+                        alert('필수 항목을 입력해주세요');
+                        return;
+                    }
+
+                    // 추가 정보 제출
+                    const res = await axios.post('/api/auth/update-profile', {
+                        phone,
+                        roadAddress,
+                        detailAddress,
+                        zipCode
+                    });
+
+                    if (res.status === 200) {
+                        // 사용자 정보 재조회 (role이 ROLE_USER로 업그레이드됨)
+                        const userRes = await axios.get('/api/auth/me');
+                        login(userRes.data); // AuthContext 상태 업데이트
+
+                        alert('정보가 저장되었습니다');
+                        router.push('/view/CONTENT_LIST');
+                    }
+                } catch (error: any) {
+                    alert(error.response?.data?.message || '추가 정보 저장에 실패했습니다');
+                }
+                break;
+
             case "KAKAO_LOGOUT":
                 try {
                     await axios.post('/api/kakao/logout');

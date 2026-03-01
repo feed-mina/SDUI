@@ -20,7 +20,7 @@
 }
 
 /* 이미지 공통 */
-.diaryImg {
+.contentImg {
     border-radius: 3rem;
     max-width: 100%;
     height: auto;
@@ -159,7 +159,7 @@
 }
 
 /* 4. 버튼 공통 스타일 (레퍼런스 다크그린) */
-.diary-nav1, .diary-btn-primary, .diary-btn-secondary {
+.content-nav1, .content-btn-primary, .content-btn-secondary {
     background-color: #007B65 ; /* 레퍼런스 포인트 컬러 */
     color: #ffffff ;
     border-radius: 50px ;
@@ -173,7 +173,7 @@
 }
 
 /* 5. 이미지/아이콘 스타일 */
-.diaryImg {
+.contentImg {
     width: 100%;
     max-width: 220px;
     height: auto;
@@ -219,7 +219,7 @@
         text-align: left ;
     }
 
-    .diaryImg {
+    .contentImg {
         max-width: 350px; /* PC에선 이미지 더 크게 */
     }
 }
@@ -235,19 +235,19 @@
     }
 
     /* 이미지 컴포넌트 (맨 위로) */
-    .group-MAIN_TOP_CARD .diaryImg {
+    .group-MAIN_TOP_CARD .contentImg {
         order: 1 !important;
         width: 120px;
         margin-bottom: 20px;
     }
 
-    /* 일기 보러가기 버튼 (두 번째) */
-    .group-MAIN_TOP_CARD .diary-nav1[id*="view_diary_list_btn"] {
+    /* 콘텐츠 보러가기 버튼 (두 번째) */
+    .group-MAIN_TOP_CARD .content-nav1[id*="view_content_list_btn"] {
         order: 2 !important;
     }
 
-    /* 일기 작성하기 버튼 (세 번째) */
-    .group-MAIN_TOP_CARD .diary-nav1[id*="go_diary_btn"] {
+    /* 콘텐츠 작성하기 버튼 (세 번째) */
+    .group-MAIN_TOP_CARD .content-nav1[id*="go_content_btn"] {
         order: 3 !important;
     }
 }
@@ -401,8 +401,8 @@
         font-size: 1.2rem;
     }
 
-    /* 다이어리 이미지 크기 조정 */
-    .is-pc .diaryImg {
+    /* 콘텐츠 이미지 크기 조정 */
+    .is-pc .contentImg {
         margin-bottom: 0;
         max-width: 500px;
     }
@@ -411,10 +411,10 @@
 
 
 /* =================================================================
-  다이어리 리스트 (Diary List)
+  콘텐츠 리스트 (Diary List)
    ================================================================= */
 
-.page-wrap.DIARY_LIST {
+.page-wrap.CONTENT_LIST {
     display: flex;
     flex-direction: column;
     align-items: center; /* 가로 중앙 정렬 */
@@ -432,7 +432,7 @@
 }
 
 /* 1. 공통 설정 (PC, 모바일 모두 적용) */
-.diaryListSection {
+.contentListSection {
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -460,7 +460,7 @@
 
 
 
-.diaryList {
+.contentList {
     margin-bottom: 4rem;
     display: flex;
     flex-direction: column;
@@ -469,7 +469,7 @@
 }
 
 
-.diary-post {
+.content-post {
     background: var(--background);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -480,11 +480,11 @@
     min-height: 100px;
 }
 
-.diary-post:hover {
+.content-post:hover {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-.diary-card-header {
+.content-card-header {
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -493,8 +493,8 @@
 }
 
 
-/* 일기 카드 전체 */
-.diary-post {
+/* 콘텐츠 카드 전체 */
+.content-post {
     background: #ffffff;
     border: 1px solid #eee;
     border-radius: 12px;
@@ -509,7 +509,7 @@
     position: relative;
 }
 
-.diary-post:hover {
+.content-post:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
     border-color: #a0c4ff;
@@ -606,7 +606,7 @@
 /*    .diaryListSection {*/
 /*        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));*/
 /*    }*/
-/*    .group-DIARYWRITE_BTN_GROUP {*/
+/*    .group-CONTENTWRITE_BTN_GROUP {*/
 /*        position: fixed;*/
 /*        right: 0;*/
 /*        top: 50%;*/
@@ -800,7 +800,7 @@
     grid-column: 2;
     grid-row: 4;
 }
-.group-DIARYWRITE_BTN_GROUP{
+.group-CONTENTWRITE_BTN_GROUP{
     display: flex;
     flex-direction: column;
     align-items: center;

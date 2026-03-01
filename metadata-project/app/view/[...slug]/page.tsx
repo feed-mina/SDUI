@@ -17,7 +17,7 @@ import {useMetadata} from "@/components/providers/MetadataProvider";
 
 
 //  보호가 필요한 스크린 ID 목록 정의
-const PROTECTED_SCREENS = ["MY_PAGE", "DIARY_LIST", "DIARY_WRITE", "DIARY_DETAIL", "DIARY_MODIFY"];
+const PROTECTED_SCREENS = ["MY_PAGE", "CONTENT_LIST", "CONTENT_WRITE", "CONTENT_DETAIL", "CONTENT_MODIFY"];
 
 
 // CommonPage 역할 : 전체 화면의 구성, 메타데이터와 데이터를 가져와 엔진에 전달
@@ -74,7 +74,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
     return (
         <div className={`page-wrap ${screenId}`}>
             {/* 리스트 페이지용 컴포넌트 */}
-            {screenId === "DIARY_LIST" && (
+            {screenId === "CONTENT_LIST" && (
                 <FilterToggle isOnlyMine={isOnlyMine} onToggle={handleToggleMine}/>
             )}
             <DynamicEngine
@@ -91,7 +91,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
             />
 
             {/* 리스트 페이지용 페이징 */}
-            {screenId === "DIARY_LIST" && (
+            {screenId === "CONTENT_LIST" && (
                 <Pagination
                     totalCount={totalCount}
                     pageSize={5}

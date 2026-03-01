@@ -45,7 +45,7 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                 const pathParts = window.location.pathname.split('/');
                 const idFromUrl = pathParts[pathParts.length - 1];
                 if (/^\d+$/.test(idFromUrl)) {
-                    submitData.diary_id = idFromUrl;
+                    submitData.content_id = idFromUrl;
                 }
 
                 // 필수값 검증
@@ -73,7 +73,7 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                             await queryClient.invalidateQueries({ queryKey: ['goalList'] });
                         }
 
-                        router.push("/view/DIARY_LIST");
+                        router.push("/view/CONTENT_LIST");
                     }
                 } catch (error) {
                     console.error("Business Submit Error:", error);
@@ -87,14 +87,14 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                     console.error(`${actionType} 액션 실행 실패: 데이터가 없습니다.`);
                     return;
                 }
-                const diaryId = data.diary_id || data.diaryId;
-                if (diaryId && baseActionUrl) {// /view/DIARY_MODIFY/34 형태로 URL 생성
+                const contentId = data.content_id || data.contentId;
+                if (contentId && baseActionUrl) {// /view/CONTENT_MODIFY/34 형태로 URL 생성
                     const finalPath = baseActionUrl.endsWith('/')
-                        ? `${baseActionUrl}${diaryId}`
-                        : `${baseActionUrl}/${diaryId}`;
+                        ? `${baseActionUrl}${contentId}`
+                        : `${baseActionUrl}/${contentId}`;
                     router.push(finalPath);
                 } else {
-                    console.warn("이동할 경로 또는 ID가 데이터에 없습니다.", { baseActionUrl, diaryId });
+                    console.warn("이동할 경로 또는 ID가 데이터에 없습니다.", { baseActionUrl, contentId });
                 }break;
             default:
                 break;

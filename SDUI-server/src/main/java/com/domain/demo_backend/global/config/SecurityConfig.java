@@ -85,7 +85,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/execute/**").permitAll() // SDUI 데이터 조회 (공개 화면 포함)
                         // AUTHENTICATED — 로그인 필수
                         .requestMatchers("/api/auth/editPassword", "/api/auth/non-user").authenticated()
-                        .requestMatchers("/api/diary/**").authenticated()
+                        .requestMatchers("/api/content/**").authenticated()
                         // DEFAULT — 명시되지 않은 모든 요청 차단
                         .anyRequest().denyAll()
                 )
