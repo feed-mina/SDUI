@@ -1,4 +1,10 @@
 // jest.setup.js
+
+// ⚠️ 중요: TextEncoder/TextDecoder를 가장 먼저 설정 (MSW가 필요로 함)
+import { TextEncoder, TextDecoder } from 'util';
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 import '@testing-library/jest-dom';
 
 // 1. Web Streams API 폴리필 추가 (WritableStream 등)
@@ -22,16 +28,19 @@ if (typeof global.BroadcastChannel === 'undefined') {
     };
 }
 
-// 3. fetch 및 TextEncoder 폴리필 (중요)
+// 3. fetch 폴리필
 import 'whatwg-fetch';
-import { TextEncoder, TextDecoder } from 'util';
-
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
 
 if (!Element.prototype.scrollTo) {
     Element.prototype.scrollTo = jest.fn();
 }
+
+// window.alert 모킹 (axios.tsx에서 사용)
+global.alert = jest.fn();
+
+// window.location.href 모킹
+delete window.location;
+window.location = { href: '', pathname: '/', replace: jest.fn() };
 
 // 4. Next.js useRouter 모킹 (AuthProvider, MetadataProvider에서 사용)
 jest.mock('next/navigation', () => ({
@@ -48,3 +57,6 @@ jest.mock('next/navigation', () => ({
     useSearchParams: () => new URLSearchParams(),
     useParams: () => ({ slug: ['MAIN_PAGE'], screenId: 'MAIN_PAGE' }),
 }));
+
+// 5. MSW 서버 설정은 각 테스트 파일에서 직접 import하여 사용
+// (jest.setup.js에서 import 시 TextEncoder 순서 문제 발생)
