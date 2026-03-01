@@ -1,6 +1,7 @@
 package com.domain.demo_backend.domain.user.controller;
 
 import com.domain.demo_backend.domain.user.domain.UserRepository;
+import com.domain.demo_backend.domain.user.dto.AdditionalInfoRequest;
 import com.domain.demo_backend.domain.user.dto.RegisterRequest;
 import com.domain.demo_backend.domain.user.service.AuthService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
@@ -28,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,11 +75,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
 
     }
-    @PostConstruct
-    public void init() {
-        System.out.println(" refreshTokenRepository: " + refreshTokenRepository);
-    }
-
     @Operation(summary = "회원 로그인", description = "id와 password와 haspassword가 일치하다면 로그인, 아니면 팝업 경고창이 뜬다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일반 회원 로그인 성공"),
@@ -250,9 +247,11 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/non-user")
-    public ResponseEntity<String> nonUser(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest) {
-        log.info("회원탈퇴 요청 진입: " + registerRequest);
-        log.info("회원탈퇴 진입");
+    public ResponseEntity<String> nonUser(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
         if (registerRequest.getEmail() == null || registerRequest.getEmail().isEmpty()) {
             log.info("회원탈퇴 실패: userId가 비어 있음");
             return ResponseEntity.badRequest().body("회원 아이디가 필요합니다.");
@@ -278,9 +277,11 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/editPassword")
-    public ResponseEntity<?> editPassword(@RequestBody com.domain.demo_backend.domain.user.dto.PasswordDto passwordDto) {
-        log.info("비밀변호 변경 요청 진입: " + passwordDto);
-        log.info("비밀변호 변경 진입");
+    public ResponseEntity<?> editPassword(@RequestBody com.domain.demo_backend.domain.user.dto.PasswordDto passwordDto,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
         if (passwordDto.getEmail() == null || passwordDto.getEmail().isEmpty()) {
             log.info("비밀변호 변경 실패: userId가 비어 있음");
             return ResponseEntity.badRequest().body("회원 아이디가 필요합니다.");
@@ -375,6 +376,53 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
         return ResponseEntity.ok().body("로그아웃 성공");
     }
+
+    @Operation(summary = "추가 정보 입력 (RBAC)", description = "카카오 로그인 후 추가 정보 입력 및 ROLE_GUEST → ROLE_USER 승격")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추가 정보 입력 및 권한 업그레이드 성공"),
+            @ApiResponse(responseCode = "400", description = "입력값 오류 또는 이미 정보가 입력된 사용자"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PostMapping("/update-profile")
+    public ResponseEntity<?> updateAdditionalInfo(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestBody AdditionalInfoRequest request
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        String email = userDetails.getUserEmail();
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+
+        // ROLE_GUEST인 경우만 업데이트 허용 (이미 정보가 입력된 사용자는 차단)
+        if (!"ROLE_GUEST".equals(user.getRole())) {
+            log.warn("추가 정보 입력 실패: 이미 정보가 입력된 사용자 (role: {})", user.getRole());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "이미 정보가 입력된 사용자입니다"));
+        }
+
+        // 추가 정보 업데이트
+        user.setPhone(request.getPhone());
+        user.setRoadAddress(request.getRoadAddress());
+        user.setDetailAddress(request.getDetailAddress());
+        user.setZipCode(request.getZipCode());
+
+        // 권한 업그레이드: ROLE_GUEST → ROLE_USER
+        user.setRole("ROLE_USER");
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("추가 정보 입력 완료: email={}, role=ROLE_USER", email);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "추가 정보가 저장되었습니다",
+            "role", "ROLE_USER"
+        ));
+    }
+
     @GetMapping("/check-verification")
     public ResponseEntity<?> checkVerification(@RequestParam String email) {
         // DB나 Redis에서 해당 이메일의 인증 상태를 확인하는 로직

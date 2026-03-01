@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { MetadataProvider } from "@/components/providers/MetadataProvider";
 import DynamicEngine from "@/components/DynamicEngine/DynamicEngine";
-import { renderWithProviders } from "@/tests/test-utils";
+import { renderWithProviders, getRenderCount, resetRenderCounts } from "@/tests/test-utils";
 import { logTestSuccess } from "@/tests/TestLogger";
 import MAIN_PAGE from "@/tests/mocks/MAIN_PAGE.json";
 import LOGIN_PAGE from "@/tests/mocks/LOGIN_PAGE.json";
@@ -42,13 +42,13 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('SDUI 모든 화면 유동적 최적화 검증', () => {
+    beforeEach(() => {
+        resetRenderCounts();
+    });
     //   테스트 실행 전 시간을 충분히 확보 (10초)
     jest.setTimeout(10000);
     // @@@@ 핵심: 데이터셋의 키 값들을 순회하며 테스트 실행 [cite: 2026-02-20]
     test.each(Object.keys(allMockData))('%s 화면 렌더링 및 정렬 상태 확인', async (screenId) => {
-        // @@@@ 이전 테스트 로그를 지운다
-        const consoleSpy = jest.spyOn(console, 'log').mockClear();
-
         renderWithProviders(
             <MetadataProvider screenId={screenId}>
                 <DynamicEngine
@@ -78,16 +78,12 @@ describe('SDUI 모든 화면 유동적 최적화 검증', () => {
         }
 
         // 4. 성능 지표 분석 (최적화 여부)
-        const engineLogs = consoleSpy.mock.calls.filter(c => c[0].includes('DynamicEngine'));
+        const engineRenderCount = getRenderCount(`DynamicEngine (Screen: ${screenId})`);
 
         // 부모 엔진은 초기 마운트 + isDesktop 업데이트로 인해 최대 2회까지 허용한다.
-        expect(engineLogs.length).toBe(2);
-        // @@@@  여러 개 중 첫 번째 입력창만 타겟팅
-        const inputs = screen.queryAllByRole('textbox');
+        expect(engineRenderCount).toBe(2);
 
         // 5. 성공 로그 기록 (전체 요약 리포트에 포함됨) [cite: 2026-02-20]
-        logTestSuccess(`${screenId} - 최적화 통과 (Render Count: ${engineLogs.length})`);
-
-        consoleSpy.mockRestore();
+        logTestSuccess(`${screenId} - 최적화 통과 (Render Count: ${engineRenderCount})`);
     }, 10000);
 });

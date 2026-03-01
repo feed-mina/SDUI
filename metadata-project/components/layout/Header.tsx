@@ -40,7 +40,7 @@ export default function Header() {
     const loginBtnMeta = flatMeta.find(m => getVal(m, 'component_id', 'componentId') === 'header_login_btn');
 
     const isLoginHidden = pathname?.includes('/view/LOGIN_PAGE');
-    const hiddenLogoutPaths = ['/view/DIARY_WRITE', '/view/LOGIN_PAGE'];
+    const hiddenLogoutPaths = ['/view/CONTENT_WRITE', '/view/LOGIN_PAGE'];
     const isLogoutHidden = hiddenLogoutPaths.some(path => pathname?.includes(path));
 
     // 메타데이터 매핑

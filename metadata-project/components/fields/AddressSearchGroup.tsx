@@ -10,8 +10,8 @@ const AddressSearchGroup = ({ props, formData, setFormData, dispatchAction }: an
         // 1. 우편번호와 도로명 주소를 formData에 바인딩
         setFormData((prev: any) => ({
             ...prev,
-            zipCode: data.zonecode,
-            roadAddress: data.address,
+            zip_code: data.zonecode,
+            road_address: data.address,
         }));
 
         // 2. 팝업 닫기
@@ -31,7 +31,7 @@ const AddressSearchGroup = ({ props, formData, setFormData, dispatchAction }: an
             {/* 2. 우편번호 & 검색 버튼 영역 */}
             <div className="flex gap-2 mb-2">
                 <input
-                    value={formData.zipCode || ''}
+                    value={formData.zip_code || ''}
                     readOnly
                     placeholder="우편번호"
                     className="bg-gray-100 p-2 border rounded flex-1 cursor-default focus:outline-none"
@@ -47,7 +47,7 @@ const AddressSearchGroup = ({ props, formData, setFormData, dispatchAction }: an
 
             {/* 3. 도로명 주소창 (수정 불가) */}
             <input
-                value={formData.roadAddress || ''}
+                value={formData.road_address || ''}
                 readOnly
                 placeholder="도로명 주소"
                 className="w-full bg-gray-100 p-2 border rounded mb-2 cursor-default focus:outline-none"
@@ -55,10 +55,10 @@ const AddressSearchGroup = ({ props, formData, setFormData, dispatchAction }: an
 
             {/* 4. 상세 주소창 (직접 입력 가능) */}
             <input
-                value={formData.detailAddress || ''}
+                value={formData.detail_address || ''}
                 placeholder="상세 주소를 입력하세요"
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                onChange={(e) => setFormData((prev: any) => ({ ...prev, detailAddress: e.target.value }))}
+                onChange={(e) => setFormData((prev: any) => ({ ...prev, detail_address: e.target.value }))}
             />
 
             {/* 5. 주소 검색 모달 (팝업) */}

@@ -28,7 +28,7 @@ const ButtonField: React.FC<ButtonFieldProps> = memo(({ meta, data, onAction, ..
 
     // 4. 클래스 병합
     const mergedClassName = cn(
-        "diary-btn",
+        "content-btn",
         rest.className,
         meta?.cssClass,
         meta?.css_class,

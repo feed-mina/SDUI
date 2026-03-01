@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/kakao/login",
             "/api/kakao/callback",
             "/api/ui/LOGIN_PAGE",
-            "api/ui/MAIN_PAGE"
+            "/api/ui/MAIN_PAGE"
     );
     private final JwtUtil jwtUtil;
     // 2026-01-25 RefreshTokenRepository 주입 성능개선
@@ -89,8 +89,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String authorizationHeader = request.getHeader("Authorization");
-        System.out.println("@@@@Authorization Header: " + authorizationHeader);
 // [수정] 토큰이 비어있으면 검증하지 않고 다음 필터로 넘김
         if (token == null || token.isEmpty()) {
             filterChain.doFilter(request, response);
@@ -98,13 +96,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
             try {
                 Claims claims = jwtUtil.validateToken(token); // 토큰 검증
-                // 유효하지 않은 토큰 예외 처리
-                System.out.println("@@@@claims: " + claims);
                 String email = claims.getSubject();
-                System.out.println("@@@@email : " + email);
                 String userId = claims.get("userId", String.class);
                 Long userSqno = claims.get("userSqno", Long.class);
-                System.out.println("@@@@실제 userSqno : " + userSqno);
 
                 if (email != null) {
                     /*
@@ -126,15 +120,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             refreshTokenRepository.save(existingToken);
                         });
                     }
-                    List<GrantedAuthority> authorities = List.of(() -> "ROLE_USER");
-                    System.out.println("@@@@authorities: " + authorities);
+
+                    // JWT 클레임에서 role 읽기 (DB 역할 체계 반영)
+                    String role = claims.get("role", String.class);
+                    if (role == null || role.isBlank()) {
+                        role = "ROLE_USER"; // 폴백 (기존 토큰 호환)
+                    }
+                    List<GrantedAuthority> authorities = List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
+
                     CustomUserDetails userDetails = new CustomUserDetails(user);
-
-
-                    System.out.println("@@@@userDetails: " + userDetails);
                     // 인증 토큰 생성
-                    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    System.out.println("@@@@authentication: " + authentication);
+                    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     handleSlidingExpiration(claims, email);
@@ -148,8 +144,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
         filterChain.doFilter(request, response); // 다음 필터로 이동
-        System.out.println("@@@@request: " + request);
-        System.out.println("@@@@response: " + response);
         }
 
 

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,20 +29,24 @@ public class UiService {
         this.uiMetadataRepository = uiMetadataRepository;
     }
 
+    // 기존 메서드 (하위 호환성 유지) - ROLE_GUEST로 호출
     @Transactional(readOnly = true)
     public List<UiResponseDto> getUiTree(String screenId) {
-        // 모든 엔티티를 DTO로 변환하고 Map에 저장
-        // Collectors.toMap(key 추출, value추출, 중복키처리) 중복 방지 + 정렬 보장 + 정합성 체크
-        //  DTO 변환 및 Map 구성
-        //  LinkedHashMap을 사용하여 DB 정렬 순서를 Map에서도 유지 (O(n))
+        return getUiTree(screenId, "ROLE_GUEST");
+    }
 
+    // RBAC 지원: 역할 기반 필터링 및 오버라이드 적용 (2026-03-01 추가)
+    @Transactional(readOnly = true)
+    public List<UiResponseDto> getUiTree(String screenId, String userRole) {
         // DB에서 정렬된 상태로 전체 데이터 조회
         List<UiMetadata> entities = uiMetadataRepository.findByScreenIdOrderBySortOrderAsc(screenId);
 
-        // 엔티티를 DTO로 변환하며 LinkedHashMap에 저장 (순서 유지및 O(1) 조회)
+        // 1. 역할 기반 필터링 + DTO 변환 (오버라이드 적용)
+        // LinkedHashMap으로 DB 정렬 순서 유지 (O(n))
         Map<String, UiResponseDto> lookup =
                 entities.stream()
-                        .map(UiResponseDto::new)
+                        .filter(entity -> isAccessible(entity, userRole))  // RBAC 필터링
+                        .map(entity -> new UiResponseDto(entity, userRole))  // 역할별 오버라이드 적용
                         .collect(Collectors.toMap(
                                 UiResponseDto::getComponentId, // Key
                                 dto -> dto, // Value
@@ -52,7 +57,7 @@ public class UiService {
                                 LinkedHashMap::new // Map Supplier (구현체 지정)
                         ));
 
-        //  트리 재구성 (O(n)) 및 정합성 체크
+        // 2. 트리 재구성 (O(n)) 및 정합성 체크
         List<UiResponseDto> rootNodes = new ArrayList<>();
         for (UiResponseDto node : lookup.values()) {
             String parentId = node.getParentGroupId();
@@ -66,15 +71,35 @@ public class UiService {
                     // 부모가 존재하면 자식 리스트에 추가 (이미 정렬된 순서대로 추가됨)
                     parent.getChildren().add(node);
                 } else {
-                    // 정합성 체크 : 부모 ID는 있는데 실제 Map(데이터)가 없는 경우 (고아 노드)
-                    // 이 경우 최상위로 올리거나, 버리거나, 에러를 던질 수 있다
-                    System.out.println("데이터 Integrity Warning: Parent" + parentId + " not found for " + node.getComponentId());
+                    // 정합성 체크: 부모 ID는 있는데 실제 Map에 없는 경우 (고아 노드)
+                    // 부모가 권한 필터링으로 제거되었을 수 있으므로 최상위로 올림
+                    System.out.println("데이터 Integrity Warning: Parent " + parentId + " not found for " + node.getComponentId() + " (possibly filtered by RBAC)");
                     rootNodes.add(node);
                 }
             }
         }
 
         return rootNodes;
+    }
+
+    /**
+     * RBAC: 사용자 역할이 컴포넌트에 접근 가능한지 확인
+     * @param entity UI 메타데이터 엔티티
+     * @param userRole 사용자 역할 (예: "ROLE_USER")
+     * @return 접근 가능 여부
+     */
+    private boolean isAccessible(UiMetadata entity, String userRole) {
+        String allowedRoles = entity.getAllowedRoles();
+
+        // NULL이면 모두 허용 (기본값)
+        if (allowedRoles == null || allowedRoles.trim().isEmpty()) {
+            return true;
+        }
+
+        // 쉼표로 구분된 역할 목록에서 사용자 역할이 포함되어 있는지 확인
+        return Arrays.stream(allowedRoles.split(","))
+                .map(String::trim)
+                .anyMatch(role -> role.equals(userRole));
     }
 
 }

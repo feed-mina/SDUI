@@ -27,12 +27,10 @@ public class QueryMasterService {
         // 먼저 Redis에서 해당 키의 SQL이 있는지 확인
         String cachedQuery = stringRedisTemplate.opsForValue().get("SQL:" + sqlKey);
         if (cachedQuery != null) {
-            System.out.println("Redis 캐시에서 쿼리를 찾았습니다 : " + sqlKey);
             return cachedQuery;
         }
 
         // Redis에 없다면 DB에서 찾는다
-        System.out.println("DB에서 쿼리를 조회합니다: " + sqlKey);
         QueryMaster queryMaster = queryMasterRepository.findBySqlKey(sqlKey)
                 .orElseThrow(() -> new RuntimeException("등록되지 않은  sql_key입니다: " + sqlKey));
 

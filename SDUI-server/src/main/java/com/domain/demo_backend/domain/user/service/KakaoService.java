@@ -95,12 +95,6 @@ public class KakaoService {
             log.info("KAKAOSERVICE-properties : " + properties);
 
             log.info("KAKAOSERVICE-nickname : " + nickname);
-            System.out.println("KAKAOSERVICE-@@@email: " + email);
-            System.out.println("KAKAOSERVICE-@@@userId: " + userId);
-            log.info("KAKAOSERVICE-email : " + email);
-            System.out.println("KAKAOSERVICE-@@@KakaoUserInfo.fromMap(body, accessToken): " + KakaoUserInfo.fromMap(body, accessToken));
-            log.info("KAKAOSERVICE-최종 email: " + email);
-            log.info("KAKAOSERVICE-최종 userInfo: " + KakaoUserInfo.fromMap(body, accessToken));
 
         } catch (Exception e) {
             log.error(" 카카오 사용자 정보 가져오기 실패", e);

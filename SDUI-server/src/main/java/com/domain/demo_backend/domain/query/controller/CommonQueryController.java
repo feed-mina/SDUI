@@ -33,8 +33,6 @@ public class CommonQueryController {
             @RequestBody(required = false) Map<String, Object> bodyParams,  // POST 파라미터
             Authentication authentication) {
 
-        System.out.println("@@@ 공통 실행기 진입 sqlkey: " + sqlKey);
-
         //  파라미터 통합 처리 (GET과 POST 데이터 합치기)
         Map<String, Object> params = new HashMap<>();
         if (queryParams != null) params.putAll(queryParams);
@@ -50,15 +48,12 @@ public class CommonQueryController {
         String query = queryMaster.getQueryText();
         String returnType = queryMaster.getReturnType();
 
-        System.out.println("@@@ 실행할 쿼리 : " + query);
         //  보안 파라미터 주입
         if (authentication != null) {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             params.put("userSqno", userDetails.getUserSqno());
             params.put("userId", userDetails.getUserId());
         }
-
-        System.out.println("@@@ 최종 바인딩 파라미터 : " + params);
 
         try {
             Object result;

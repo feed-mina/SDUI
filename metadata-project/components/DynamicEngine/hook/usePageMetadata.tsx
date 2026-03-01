@@ -81,7 +81,7 @@ export const usePageMetadata = (
                 .filter(item => {
                     // 로그인 여부에 따른 버튼 제어
                     const guestButtons = ["go_login_btn", "go_tutorial_btn"];
-                    const userButtons = ["go_diary_btn", "view_diary_list_btn"];
+                    const userButtons = ["go_content_btn", "view_CONTENT_LIST_btn"];
 
                     if (guestButtons.includes(item.componentId)) return !isLoggedIn;
                     if (userButtons.includes(item.componentId)) return isLoggedIn;
@@ -148,13 +148,13 @@ export const usePageMetadata = (
                         filterId: isOnlyMine ? user?.userId : "",
                         userId: user?.userId || "guest",
                         userSqno: user?.userSqno,
-                        diaryId: refId|| null //  (백엔드 :diaryId와 매핑)
+                        contentId: refId|| null //  (백엔드 :contentId와 매핑)
                     };
 
                     let res;
 
                     //** 로직4: 데이터 가공 및 바인딩 : screenId(페이지 파라미터 기준) 조건으로get을 사용하는지 post를 방식 결정한다. 서버에서 받아온 rawData를 화면에 쓰기 편하게 가공한다
-                    if (finalScreenId?.includes("DIARY_DETAIL") || finalScreenId?.includes("DIARY_MODIFY") || isOnlyMine) {
+                    if (finalScreenId?.includes("CONTENT_DETAIL") || finalScreenId?.includes("CONTENT_MODIFY") || isOnlyMine) {
                         // 상세 조회나 수정 하기 전에 보이는 부분, 내 글 목록은 GET 방식 사용
                         res = await axios.get(apiUrl, { params: finalParams });
                     } else {
@@ -180,10 +180,10 @@ export const usePageMetadata = (
                             return;
                         }
                         // 1. 상세 페이지 데이터 처리 (단일 데이터 + 평탄화)
-                        if (res.id === "diary_detail_source") {
+                        if (res.id === "content_detail_source") {
                             const detailData = Array.isArray(rawResponse) ? rawResponse[0] : (rawResponse.data || rawResponse);
 
-                            // console.log('diary_detail_source',detailData);
+                            // console.log('content_detail_source',detailData);
                             if (detailData) {
                                 // 공통 함수를 사용하여 jsonb 필드들을 일괄 파싱
                                 const processedDetail = parseJsonbFields(detailData);
@@ -221,7 +221,7 @@ export const usePageMetadata = (
                                 // console.log('parsedItem',parsedItem);
                                 return {
                                     ...parsedItem,
-                                    diary_id: parsedItem.diaryId || parsedItem.diary_id,
+                                    content_id: parsedItem.contentId || parsedItem.content_id,
                                     user_id: parsedItem.userId || parsedItem.user_id,
                                     reg_dt: formattedDate,
                                 };
@@ -230,7 +230,7 @@ export const usePageMetadata = (
                             combinedData[res.id] = unifiedList;
 
                             // 페이징 카운트 로직 유지
-                            if (res.id === "diary_list_source" || res.id === "diary_total_count") {
+                            if (res.id === "content_list_source" || res.id === "content_total_count") {
                                 detectedTotalCount = rawResponse.total || rawResponse.totalCount || rawResponse.total_count ||
                                     (unifiedList[0] && (unifiedList[0].total_count || unifiedList[0].totalCount)) || 0;
                             }

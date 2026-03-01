@@ -70,9 +70,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/me", "/api/auth/login", "/api/auth/refresh", "/api/kakao/**", "/api/ui/**", "/api/goalTime/**").permitAll()
-                        .requestMatchers("/api/diary/**").authenticated()
-                        .anyRequest().permitAll()
+                        // PUBLIC — 인증 불필요
+                        .requestMatchers(
+                                "/api/auth/login", "/api/auth/register",
+                                "/api/auth/signup", "/api/auth/signUp",
+                                "/api/auth/me", "/api/auth/refresh", "/api/auth/logout",
+                                "/api/auth/verify-code", "/api/auth/resend-code",
+                                "/api/auth/confirm-email", "/api/auth/check-verification"
+                        ).permitAll()
+                        .requestMatchers("/api/kakao/**").permitAll()
+                        .requestMatchers("/api/ui/**").permitAll()
+                        .requestMatchers("/api/timer/**").permitAll()
+                        .requestMatchers("/api/goalTime/**").permitAll() // 컨트롤러 레벨에서 인증 처리
+                        .requestMatchers("/api/execute/**").permitAll() // SDUI 데이터 조회 (공개 화면 포함)
+                        // AUTHENTICATED — 로그인 필수
+                        .requestMatchers("/api/auth/editPassword", "/api/auth/non-user").authenticated()
+                        .requestMatchers("/api/content/**").authenticated()
+                        // DEFAULT — 명시되지 않은 모든 요청 차단
+                        .anyRequest().denyAll()
                 )
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new Http403ForbiddenEntryPoint()))
                 .formLogin(f -> f.disable())
