@@ -29,8 +29,8 @@
           "cssClass": "diary_list_source",
           "actionType": "AUTO_FETCH",
           "actionUrl": null,
-          "dataApiUrl": "/api/execute/GET_DIARY_LIST_PAGE",
-          "dataSqlKey": "GET_DIARY_LIST_PAGE",
+          "dataApiUrl": "/api/execute/GET_CONTENT_LIST_PAGE",
+          "dataSqlKey": "GET_CONTENT_LIST_PAGE",
           "refDataId": null
         },
         {
@@ -163,8 +163,8 @@
           "cssClass": "diary_total_count",
           "actionType": "AUTO_FETCH",
           "actionUrl": null,
-          "dataApiUrl": "/api/execute/COUNT_DIARY_LIST",
-          "dataSqlKey": "COUNT_DIARY_LIST",
+          "dataApiUrl": "/api/execute/COUNT_CONTENT_LIST",
+          "dataSqlKey": "COUNT_CONTENT_LIST",
           "refDataId": null
         },
         {

@@ -8,22 +8,22 @@ import { renderWithProviders, getRenderCount, resetRenderCounts } from "@/tests/
 import { logTestSuccess } from "@/tests/TestLogger";
 import MAIN_PAGE from "@/tests/mocks/MAIN_PAGE.json";
 import LOGIN_PAGE from "@/tests/mocks/LOGIN_PAGE.json";
-import DIARY_LIST from "@/tests/mocks/DIARY_LIST.json";
+import CONTENT_LIST from "@/tests/mocks/CONTENT_LIST.json";
 import SET_TIME_PAGE from "@/tests/mocks/SET_TIME_PAGE.json";
-import DIARY_WRITE from "@/tests/mocks/DIARY_WRITE.json";
+import CONTENT_WRITE from "@/tests/mocks/CONTENT_WRITE.json";
 import { Metadata } from "@/components/DynamicEngine";
 
 
 // 1. 테스트할 모든 화면 데이터 정의 (서버 응답 규격인 menuTree 형태) [cite: 2026-02-20]
-const allMockData: Record<string, any> = { MAIN_PAGE, LOGIN_PAGE, DIARY_LIST, SET_TIME_PAGE, DIARY_WRITE };
+const allMockData: Record<string, any> = { MAIN_PAGE, LOGIN_PAGE, CONTENT_LIST, SET_TIME_PAGE, CONTENT_WRITE };
 
 // @@@@  화면별 필요한 가짜 비즈니스 데이터 정의
 const mockPageData: Record<string, any> = {
-    DIARY_LIST: { diary_list_source: [] },
+    CONTENT_LIST: { content_list_source: [] },
     MAIN_PAGE: {},
     LOGIN_PAGE: {},
     SET_TIME_PAGE: {},
-    DIARY_WRITE: {}
+    CONTENT_WRITE: {}
 };
 
 // 2. 동적 MSW 서버 설정
