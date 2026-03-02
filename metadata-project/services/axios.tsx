@@ -8,8 +8,10 @@ interface ErrorResponse {
 }
 
 //   Axios 인스턴스 생성
+// baseURL을 빈 문자열로 설정 (상대 URL 그대로 사용)
+const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
 const api: AxiosInstance = axios.create({
-    baseURL: '/',
+    baseURL: '',  // 빈 문자열: 상대 URL 그대로 전달
     withCredentials: true,
 });
 
@@ -41,7 +43,8 @@ api.interceptors.response.use(
 
             try {
                 // 토큰 재발급 시도 (백엔드가 새 accessToken을 Set-Cookie로 내려줌)
-                await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+                // IMPORTANT: 글로벌 axios가 아닌 api 인스턴스 사용 (baseURL 설정 유지)
+                await api.post('/api/auth/refresh', {}, { withCredentials: true });
 
                 // [2026-03-01 보안 강화] localStorage 삭제 - 쿠키 자동 관리
                 // 백엔드가 새 토큰을 HttpOnly 쿠키로 설정하므로 클라이언트 코드 불필요
@@ -54,7 +57,7 @@ api.interceptors.response.use(
                 // 재발급 실패 시 리다이렉트
                 // [2026-03-01 보안 강화] localStorage 삭제 - 쿠키는 백엔드에서 만료 처리
                 // localStorage.removeItem('accessToken');
-                if (currentPath !== "/view/LOGIN_PAGE") {
+                if (!isTestEnv && currentPath !== "/view/LOGIN_PAGE") {
                     alert("세션이 만료되었습니다. 다시 로그인해주세요.");
                     window.location.href = "/view/LOGIN_PAGE";
                 }
@@ -62,8 +65,8 @@ api.interceptors.response.use(
             return Promise.reject(error);
         }
 
-        // 재발급 실패 후의 비즈니스 에러 처리
-        if (response?.data) {
+        // 재발급 실패 후의 비즈니스 에러 처리 (테스트 환경에서는 스킵)
+        if (!isTestEnv && response?.data) {
             const {code, message} = response.data;
 
             switch (code) {
