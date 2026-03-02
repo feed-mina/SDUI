@@ -60,3 +60,7 @@ out/
 *.old
 *.vscode/
 *.idea/
+fix_content_list_key_mismatch.sql
+fix_sdui_issues.sql
+SDUI-server/docs/authcontroller_example.java
+diagnose_content_list.sql
