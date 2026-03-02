@@ -36,3 +36,27 @@ video.webm
 target/
 node_modules/
 dist/
+gradle/
+build/
+.gradle/
+out/
+*.class
+*.jar
+*.war
+*.ear
+# 기타
+*.log
+*.tmp
+*.bak
+*.zip
+*.tar.gz
+*.exe
+*.dll
+*.so
+*.pem
+*.key
+*.keystore
+*.bak
+*.old
+*.vscode/
+*.idea/
