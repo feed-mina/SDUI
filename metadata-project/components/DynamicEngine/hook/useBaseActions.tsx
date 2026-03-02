@@ -41,7 +41,12 @@ export const useBaseActions = (screenId: string, metadata: any[] = [], initialDa
 
 
     const handleChange = useCallback((id: string, value: any) => {
-        setFormData((prev: any) => ({ ...prev, [id]: value }));
+        console.log('[useBaseActions] handleChange:', { id, value });
+        setFormData((prev: any) => {
+            const updated = { ...prev, [id]: value };
+            console.log('[useBaseActions] updated formData:', updated);
+            return updated;
+        });
     }, []);
 
 

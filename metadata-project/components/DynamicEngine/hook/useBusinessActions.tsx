@@ -5,6 +5,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext"; // 1. AuthContext 가져오기
 import { useBaseActions } from "./useBaseActions";
 import { flattenMetadata } from "../..//utils/metadataUtils";
+import { handleError, extractErrorMessage } from "@/utils/errorHandler";
 
 export const useBusinessActions = (screenId: string,metadata: any[] = [], initialData: any = {}) => {
     const base = useBaseActions(screenId, metadata, initialData); // screenId 추가 [cite: 2026-02-17]
@@ -73,10 +74,11 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                             await queryClient.invalidateQueries({ queryKey: ['goalList'] });
                         }
 
+                        alert('저장되었습니다');
                         router.push("/view/CONTENT_LIST");
                     }
-                } catch (error) {
-                    console.error("Business Submit Error:", error);
+                } catch (error: any) {
+                    handleError(error, 'BUSINESS_SUBMIT', '저장에 실패했습니다');
                 }
                 break;
             }
