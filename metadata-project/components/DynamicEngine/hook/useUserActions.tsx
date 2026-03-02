@@ -5,6 +5,7 @@ import axios from "@/services/axios";
 import { useAuth } from "@/context/AuthContext";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useBaseActions } from "./useBaseActions";
+import { handleError, extractErrorMessage } from "@/utils/errorHandler";
 
 
 //  @@@@ useUserActions 역할 : 메타데이터의 action_type에 따라 각 타입 설명
@@ -80,7 +81,7 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                         router.push('/view/MAIN_PAGE');
                     }
                 } catch (error: any) {
-                    alert(error.response?.data || "로그인 정보가 올바르지 않아.");
+                    handleError(error, 'LOGIN_SUBMIT', '로그인 정보가 올바르지 않습니다');
                 }
                 break;
             case "REGISTER_SUBMIT":
@@ -99,14 +100,14 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                         // 3. 인증 메일 발송
                         await axios.post('/api/auth/signup?message=welcome', { email: submitData.email });
 
-                        alert("가입 성공! 이메일로 발송된 인증코드를 확인해줘.");
+                        alert("가입 성공! 이메일로 발송된 인증코드를 확인해주세요.");
 
                         // 4. 페이지 이동 (이메일을 쿼리 파라미터로 전달하여 useBaseActions가 useEffect에서 이메일을 자동으로 가져옴
                         const userEmail = submitData.email;
                         router.push(`/view/VERIFY_CODE_PAGE?email=${encodeURIComponent(userEmail)}`);
                     }
                 } catch (error: any) {
-                    alert(error.response?.data || "회원가입 실패.");
+                    handleError(error, 'REGISTER_SUBMIT', '회원가입에 실패했습니다');
                 }
                 break;
 
@@ -142,10 +143,16 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
             case "SUBMIT_ADDITIONAL_INFO":
                 try {
                     // RBAC: 카카오 로그인 후 추가 정보 입력 (2026-03-01 추가)
-                    const phone = currentFormData.PHONE_INPUT;
+                    console.log('[DEBUG] currentFormData:', currentFormData);
+                    console.log('[DEBUG] currentFormData keys:', Object.keys(currentFormData));
+
+                    // ref_data_id에 맞춰 키 수정
+                    const phone = currentFormData.phone;  // "phone" (소문자)
                     const roadAddress = currentFormData.road_address;
                     const detailAddress = currentFormData.detail_address;
                     const zipCode = currentFormData.zip_code;
+
+                    console.log('[DEBUG] 추출된 값:', { phone, roadAddress, detailAddress, zipCode });
 
                     // 필수 항목 검증
                     if (!phone || !roadAddress || !zipCode) {
@@ -170,7 +177,7 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                         router.push('/view/CONTENT_LIST');
                     }
                 } catch (error: any) {
-                    alert(error.response?.data?.message || '추가 정보 저장에 실패했습니다');
+                    handleError(error, 'SUBMIT_ADDITIONAL_INFO', '추가 정보 저장에 실패했습니다');
                 }
                 break;
 

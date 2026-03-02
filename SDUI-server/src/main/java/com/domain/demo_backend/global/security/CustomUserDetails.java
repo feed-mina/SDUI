@@ -27,6 +27,7 @@ public class CustomUserDetails implements UserDetails {
     public String getUserId() { return user.getUserId(); }
     public String getSocialType() { return user.getSocialType(); }
     public String getUserEmail(){ return user.getEmail();}
+    public String getRole() {return user.getRole();}
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -45,5 +46,6 @@ public class CustomUserDetails implements UserDetails {
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
     @Override public boolean isEnabled() { return "N".equals(user.getDelYn()); }
+
 
 }

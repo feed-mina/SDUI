@@ -47,11 +47,16 @@ public class AuthController {
     private UserRepository userRepository;
     // 생성자 주입
     @Autowired
-    public AuthController(AuthService authService, JwtUtil jwtUtil) {
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.userRepository = userRepository;
+    public AuthController(
+        AuthService authService,
+        JwtUtil jwtUtil,
+        RefreshTokenRepository refreshTokenRepository,
+        UserRepository userRepository
+    ) {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.userRepository = userRepository;
     }
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -70,7 +75,7 @@ public class AuthController {
         response.put("userId", userDetails.getUserId());
         response.put("email", userDetails.getUserEmail());
         response.put("socialType", userDetails.getSocialType());
-        response.put("role", "ROLE_USER");
+        response.put("role", userDetails.getRole());
 
         return ResponseEntity.ok(response);
 
@@ -106,11 +111,19 @@ public class AuthController {
 
         // 일반 로그인/카카오 로그인 성공 로직에 추가
         ResponseCookie loginTypeCookie = ResponseCookie.from("loginType", "N")
-                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false 
+                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false
                 .path("/")
                 .maxAge(3600)
                 .build();
 
+        // Role 쿠키 (RBAC용, 프론트엔드 접근 가능)
+        ResponseCookie roleCookie = ResponseCookie.from("role", tokenResponse.getRole())
+                .httpOnly(false)
+                .secure(false)
+                .path("/")
+                .maxAge(60 * 60)
+                .sameSite("Lax")
+                .build();
 
 // 로그인 여부 확인용 (자바스크립트 접근 가능)
         ResponseCookie statusCookie = ResponseCookie.from("isLoggedIn", "true")
@@ -118,6 +131,7 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, roleCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, loginTypeCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, statusCookie.toString())
                 .body(tokenResponse);  //앱 개발 확장 토큰 정보를 포함한 객체 반환

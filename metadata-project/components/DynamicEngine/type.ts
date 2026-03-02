@@ -31,6 +31,7 @@ export interface DynamicEngineProps {
     screenId: string;       // @@@@ 현재 화면의 고유 식별자 추가
     pageData: any;          // 서버에서 가져온 실제 비즈니스 데이터
     formData: any;          // 사용자가 입력 중인 폼 데이터
+    setFormData?: (value: any | ((prev: any) => any)) => void; // formData 업데이트 함수
     onChange: (id: string, value: any) => void;
     onAction: (meta: Metadata, data?: any) => void;// [추가] 모달 관련 프로퍼티 정의
     activeModal?: string | null;
