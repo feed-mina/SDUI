@@ -44,11 +44,12 @@ const nextConfig: NextConfig = {
                         key: 'Content-Security-Policy',
                         value: [
                             "default-src 'self'",
-                            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",  // Next.js 개발 모드 + 런타임 허용
+                            "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://t1.daumcdn.net https://t1.daumcdn.net",  // Next.js + Daum 우편번호 API (http/https)
                             "style-src 'self' 'unsafe-inline'",                  // Tailwind 인라인 스타일 허용
                             "img-src 'self' data: blob: https:",                 // 외부 이미지 허용
                             "connect-src 'self' http://localhost:8080 http://43.201.237.68", // API 서버
                             "font-src 'self' data:",
+                            "frame-src http://postcode.map.daum.net https://postcode.map.daum.net",  // Daum 우편번호 iframe
                             "object-src 'none'",
                             "frame-ancestors 'none'",
                         ].join('; '),

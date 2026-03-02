@@ -2,11 +2,16 @@ import React, { useState } from "react";
 import DaumPostcodeEmbed from "react-daum-postcode";
 
 // @@@@ AddressSearchGroup: 외부 라이브러리 데이터를 엔진의 formData로 넘겨주는 브릿지 컴포넌트
-const AddressSearchGroup = ({ props, formData, setFormData, dispatchAction }: any) => {
+const AddressSearchGroup = ({ meta, formData = {}, setFormData, onAction }: any) => {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 
     // 주소 선택 완료 시 실행되는 핸들러
     const handleComplete = (data: any) => {
+        if (!setFormData) {
+            console.warn('[AddressSearchGroup] setFormData is not provided');
+            return;
+        }
+
         // 1. 우편번호와 도로명 주소를 formData에 바인딩
         setFormData((prev: any) => ({
             ...prev,
@@ -18,20 +23,23 @@ const AddressSearchGroup = ({ props, formData, setFormData, dispatchAction }: an
         setIsPopupOpen(false);
 
         // (선택 사항) 주소 입력이 완료되었다는 액션을 엔진에 알릴 경우
-        if (dispatchAction) {
-            dispatchAction('ADDRESS_COMPLETED', data);
+        if (onAction) {
+            onAction(meta, data);
         }
     };
 
+    // meta에서 label 정보 추출
+    const label = meta?.labelText || meta?.label_text || meta?.label || '';
+
     return (
         <div className="address-group-container space-y-2 mb-4">
-            {/* 1. 라벨 (DB에서 넘어온 props.label 사용) */}
-            {props.label && <label className="text-sm font-bold block mb-1">{props.label}</label>}
+            {/* 1. 라벨 (DB에서 넘어온 meta.labelText 사용) */}
+            {label && <label className="text-sm font-bold block mb-1">{label}</label>}
 
             {/* 2. 우편번호 & 검색 버튼 영역 */}
             <div className="flex gap-2 mb-2">
                 <input
-                    value={formData.zip_code || ''}
+                    value={formData?.zip_code || ''}
                     readOnly
                     placeholder="우편번호"
                     className="bg-gray-100 p-2 border rounded flex-1 cursor-default focus:outline-none"
@@ -47,7 +55,7 @@ const AddressSearchGroup = ({ props, formData, setFormData, dispatchAction }: an
 
             {/* 3. 도로명 주소창 (수정 불가) */}
             <input
-                value={formData.road_address || ''}
+                value={formData?.road_address || ''}
                 readOnly
                 placeholder="도로명 주소"
                 className="w-full bg-gray-100 p-2 border rounded mb-2 cursor-default focus:outline-none"
@@ -55,10 +63,14 @@ const AddressSearchGroup = ({ props, formData, setFormData, dispatchAction }: an
 
             {/* 4. 상세 주소창 (직접 입력 가능) */}
             <input
-                value={formData.detail_address || ''}
+                value={formData?.detail_address || ''}
                 placeholder="상세 주소를 입력하세요"
                 className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
-                onChange={(e) => setFormData((prev: any) => ({ ...prev, detail_address: e.target.value }))}
+                onChange={(e) => {
+                    if (setFormData) {
+                        setFormData((prev: any) => ({ ...prev, detail_address: e.target.value }));
+                    }
+                }}
             />
 
             {/* 5. 주소 검색 모달 (팝업) */}

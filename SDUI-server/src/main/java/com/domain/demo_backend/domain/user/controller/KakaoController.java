@@ -90,11 +90,21 @@ public class KakaoController {
                     .sameSite("Lax")
                     .build();
 
+            // 6. Role 쿠키 생성 (RBAC용)
+            ResponseCookie roleCookie = ResponseCookie.from("role", tokenResponse.getRole())
+                    .httpOnly(false)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(3600)
+                    .sameSite("Lax")
+                    .build();
+
             response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                    .header(HttpHeaders.SET_COOKIE, roleCookie.toString())
                     .body(Map.of(
                             "accessToken", tokenResponse.getAccessToken(),
                             "refreshToken", tokenResponse.getRefreshToken(),
@@ -162,19 +172,32 @@ public class KakaoController {
                 .sameSite("Lax")
                 .build();
 
+        // 6. Role 쿠키 생성 (RBAC용)
+        ResponseCookie roleCookie = ResponseCookie.from("role", jwtToken.getRole())
+                .httpOnly(false)
+                .secure(false)
+                .path("/")
+                .maxAge(3600)
+                .sameSite("Lax")
+                .build();
+
         // 일반 로그인/카카오 로그인 성공 로직에 추가
         ResponseCookie loginTypeCookie = ResponseCookie.from("loginType", "K")
-                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false 
+                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false
                 .path("/")
                 .maxAge(3600)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
 
         // state 값이 없으면 기본적으로 'web'으로 간주
         String platform = (state != null) ? state : "web";
-        String redirectPath = "/view/MAIN_PAGE";
+        // ROLE_GUEST인 경우 추가 정보 입력 페이지로 리다이렉트
+        String redirectPath = "ROLE_GUEST".equals(jwtToken.getRole())
+                ? "/view/ADDITIONAL_INFO_PAGE"
+                : "/view/MAIN_PAGE";
         String finalRedirectUrl = "mobile".equalsIgnoreCase(platform) ? mobileUrl + redirectPath : webUrl + redirectPath;
 
         response.sendRedirect(finalRedirectUrl);

@@ -125,7 +125,7 @@ public class KakaoService {
                             .hashedPassword("")
                             .email(kakaoUserInfo.getEmail())
                             .phone("111-111-111")
-                            .role("ROLE_USER")
+                            .role("ROLE_GUEST")  // 신규 카카오 사용자는 GUEST로 시작
                             .verifyYn("Y")
                             .socialType("K")
                             .delYn("N")
