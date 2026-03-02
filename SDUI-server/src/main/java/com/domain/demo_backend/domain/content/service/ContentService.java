@@ -90,7 +90,7 @@ public class ContentService {
                 .map(content -> {
                     // Content 엔티티를 ContentResponse로 바꾸는 과정이 필요
                     ContentResponse res = new ContentResponse();
-                    res.setcontentId(BigInteger.valueOf(content.getcontentId()));
+                    res.setContentId(BigInteger.valueOf(content.getContentId()));
                     res.setTitle(content.getTitle());
                     return res;
                 }) // 3. 모양을 바꾼다
@@ -100,7 +100,7 @@ public class ContentService {
 
     private ContentResponse convertToDto(Content content) {
         ContentResponse dto = new ContentResponse();
-        dto.setcontentId(BigInteger.valueOf(content.getContentId()));
+        dto.setContentId(BigInteger.valueOf(content.getContentId()));
         dto.setTitle(content.getTitle());
         dto.setContent(content.getContent());
         dto.setRegDt(content.getRegDt());
