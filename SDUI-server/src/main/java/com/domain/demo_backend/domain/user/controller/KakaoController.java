@@ -1,11 +1,11 @@
 package com.domain.demo_backend.domain.user.controller;
 
 
-import com.domain.demo_backend.domain.user.service.KakaoService;
 import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.domain.token.domain.TokenResponse;
 import com.domain.demo_backend.domain.user.dto.KakaoAuthRequest;
 import com.domain.demo_backend.domain.user.dto.KakaoUserInfo;
+import com.domain.demo_backend.domain.user.service.KakaoService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.global.security.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,7 +23,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Map;

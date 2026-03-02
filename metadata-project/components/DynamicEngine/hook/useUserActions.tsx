@@ -20,25 +20,6 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
 // 모달 닫기 함수
     const closeModal = () => setActiveModal(null);
 
-    // 이메일 인증 여부 최종 확인 (모달의 '확인' 버튼 클릭 시 실행)
-    const onConfirmModal = async () => {
-        const currentData = base.formDataRef.current;
-        const email = currentData.reg_email || currentData.email;
-
-        try {
-            const response = await axios.get(`/api/auth/check-verification?email=${email}`);
-            if (response.data.isVerified) {
-                alert("인증 완료! 환영해.");
-                setActiveModal(null);
-                router.push('/view/LOGIN_PAGE');
-            } else {
-                alert("아직 이메일 인증 버튼을 누르지 않았어. 메일함을 확인해줘!");
-            }
-        } catch (error) {
-            alert("인증 확인 중 오류가 발생했어.");
-        }
-    };
-
     // [이동] 회원 전용 URL 파라미터 감지 로직
     useEffect(() => {
         const targetScreens = ['REGISTER_PAGE', 'VERIFY_CODE_PAGE'];
@@ -113,25 +94,40 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
 
             case "VERIFY_CODE":
                 try {
+                    const searchParams = new URLSearchParams(window.location.search);
+                    const urlEmail = searchParams.get('email');
+                    const urlCode = searchParams.get('code');
                     const currentData = base.formDataRef.current;
+                    console.log('currentData',currentData);
 
+                    // [수정] 1. URL 파라미터가 있다면 무조건 그것을 사용 (가장 확실한 데이터)
+                    // [수정] 2. currentData 조회 시 component_id(reg_code)와 ref_data_id(code)를 모두 체크
+                    const finalEmail = urlEmail || currentData.reg_email || currentData.email;
+                    const finalCode = urlCode || currentData.reg_code || currentData.code;
+                    console.log("최종 전송 데이터:", { finalEmail, finalCode });
+                    console.log("currentData:", currentData);
                     // 필수값 체크
-                    if (!currentData.reg_code) {
-                        alert("인증 번호를 입력해줘.");
+                    if (!finalEmail) {
+                        alert("이메일 정보가 없습니다. 다시 시도해주세요.");
+                        return;
+                    }
+                    if (!finalCode) {
+                        alert("인증 번호를 입력해주세요.");
                         return;
                     }
 
+                    // 2. API 호출: 서버 DTO 구조에 맞춰서 전송
                     const res = await axios.post('/api/auth/verify-code', {
-                        email: currentData.reg_email, // 가입 시 썼던 이메일
-                        code: currentData.reg_code    // 사용자가 입력한 코드
+                        email: finalEmail,
+                        code: finalCode
                     });
 
                     if (res.status === 200) {
-                        alert("인증 성공! 이제 로그인이 가능해.");
+                        alert("인증을 성공했습니다..");
                         router.push("/view/LOGIN_PAGE");
                     }
                 } catch (error: any) {
-                    alert(error.response?.data || "인증에 실패했어. 코드를 다시 확인해봐.");
+                    alert(error.response?.data || "인증에 실패했습니다.");
                 }
                 break;
 

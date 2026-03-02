@@ -4,12 +4,10 @@ import com.domain.demo_backend.domain.content.domain.Content;
 import com.domain.demo_backend.domain.content.dto.ContentRequest;
 import com.domain.demo_backend.domain.content.dto.ContentResponse;
 import com.domain.demo_backend.domain.content.service.ContentService;
-import com.domain.demo_backend.domain.user.service.UserInfoHelper;
-import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.domain.user.service.KakaoService;
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.global.security.JwtUtil;
 import com.github.pagehelper.PageInfo;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +18,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 

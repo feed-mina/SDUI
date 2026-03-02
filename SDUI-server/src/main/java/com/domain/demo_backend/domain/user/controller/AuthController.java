@@ -1,14 +1,14 @@
 package com.domain.demo_backend.domain.user.controller;
 
+import com.domain.demo_backend.domain.token.domain.RefreshToken;
+import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
+import com.domain.demo_backend.domain.token.domain.TokenResponse;
+import com.domain.demo_backend.domain.user.domain.User;
 import com.domain.demo_backend.domain.user.domain.UserRepository;
 import com.domain.demo_backend.domain.user.dto.AdditionalInfoRequest;
 import com.domain.demo_backend.domain.user.dto.RegisterRequest;
 import com.domain.demo_backend.domain.user.service.AuthService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
-import com.domain.demo_backend.domain.token.domain.RefreshToken;
-import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
-import com.domain.demo_backend.domain.token.domain.TokenResponse;
-import com.domain.demo_backend.domain.user.domain.User;
 import com.domain.demo_backend.global.security.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -170,22 +169,18 @@ public class AuthController {
     })
     @PostMapping("/signup")
     public ResponseEntity<?> sendVerificationCode(@RequestHeader(value = "X-Platform", defaultValue = "web") String platform,  @RequestBody RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
-
+        log.info("회원가입 인증코드 전송 시작: " + registerRequest.getEmail());
         log.info("유효성 평가 ");
-//        authService.beforesendVerificationCode(registerRequest);
         log.info("회원가입 하기 위해 인증코드 전송 ");
         String email = registerRequest.getEmail();
         // 랜덤 인증 코드 생성
         String verificationCode = authService.sendVerificationCode(email, platform);
-        // 인증 코드를 Map에 저장
-        emailVerificationMap.put(email, verificationCode);
 
         // 이메일 전송 시뮬레이션(실제 서비스에서는 이메일 전송 API)
         log.info("이메일 전송: " + email);
         log.info("메시지: " + message);
 
         String savedCode = emailVerificationMap.get(email);
-//        return "인증 코드가 다음 이메일로 전송되었습니다." + email;
         return ResponseEntity.ok(Map.of("message", "인증 코드가 이메일로 전송되었습니다.", "email", registerRequest.getEmail()));
 
     }
@@ -403,6 +398,8 @@ public class AuthController {
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody AdditionalInfoRequest request
     ) {
+        log.info("수신된 데이터: roadAddress={}, zipCode={}", request.getRoadAddress(), request.getZipCode());
+
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
@@ -446,15 +443,6 @@ public class AuthController {
         result.put("isVerified", verified);
 
         return ResponseEntity.ok(result);
-    }
-    @GetMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(@RequestParam String token) {
-        // 이메일 대신 토큰으로 확인
-        boolean isSuccess = authService.confirmEmailByToken(token);
-        if (isSuccess) {
-            return ResponseEntity.ok("<h1>인증 성공!</h1><p>원래 화면의 확인 버튼을 눌러주세요.</p>");
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않거나 만료된 링크입니다.");
     }
 
 }

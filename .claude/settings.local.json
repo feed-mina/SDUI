@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(export:*)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(ls -la \"C:\\\\Users\\\\Samsung\\\\Documents\\\\Development\\\\Personal_Projects\\\\2026\\\\SDUI\\\\.ai\"\" | grep -E \"^d \")",
+      "Bash(dir \"C:\\\\Users\\\\Samsung\\\\Documents\\\\Development\\\\Personal_Projects\\\\2026\\\\SDUI\\\\.ai\" /B /AD)",
+      "Bash(docker-compose down:*)",
+      "Bash(cmd /c:*)",
+      "Bash(bash gradlew:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(docker stop:*)",
+      "Bash(psql:*)",
+      "Bash(docker exec:*)",
+      "Bash(git add:*)"
     ]
   },
   "outputStyle": "default"

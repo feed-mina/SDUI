@@ -81,7 +81,7 @@ export const usePageMetadata = (
                 .filter(item => {
                     // 로그인 여부에 따른 버튼 제어
                     const guestButtons = ["go_login_btn", "go_tutorial_btn"];
-                    const userButtons = ["go_content_btn", "view_CONTENT_LIST_btn"];
+                    const userButtons = ["go_content_btn", "view_content_list_btn"];
 
                     if (guestButtons.includes(item.componentId)) return !isLoggedIn;
                     if (userButtons.includes(item.componentId)) return isLoggedIn;

@@ -9,7 +9,18 @@ import {useAuth} from "@/context/AuthContext";
 
 // screenId를 인자에 추가해서 어떤 페이지인지 알 수 있게 해
 export const useBaseActions = (screenId: string, metadata: any[] = [], initialData: any = {}) => {
-    const [formData, setFormData] = useState<any>({});
+    const [formData, setFormData] = useState<any>(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                reg_email: params.get("email") || "",
+                reg_code: params.get("code") || "",
+                email: params.get("email") || "",
+                code: params.get("code") || ""
+            };
+        }
+        return {};
+    });
     const [showPassword, setShowPassword] = useState(false);
     const [pwType, setPwType] = useState("password");
 
@@ -19,8 +30,16 @@ export const useBaseActions = (screenId: string, metadata: any[] = [], initialDa
     // 1. Metadata가 바뀌면 (화면 이동 시) 폼 데이터 초기화
     if (metadata !== prevMetadata) {
         setPrevMetadata(metadata);
-        // * 메타데이터를 가진 상태가 다르다면 FromData에 빈객체를 준다.
-        setFormData({});
+        // 화면이 바뀔 때 URL에 데이터가 있으면 지우지 않고 유지한다.
+        const params = new URLSearchParams(window.location.search);
+        const urlEmail = params.get("email");
+        const UrlCode = params.get("code");
+        if (!urlEmail) {
+            setFormData({});
+        } else {
+            // URL 데이터가 있다면 그것만은 살려둔다.
+            setFormData({ reg_email: urlEmail, email: urlEmail, reg_code: UrlCode, code: UrlCode  });
+        }
     }
 
     // 2. * 초기화값이 들어오면 (데이터 로드 성공 시) 폼 데이터 채우기
