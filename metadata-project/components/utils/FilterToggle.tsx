@@ -13,7 +13,7 @@ const FilterToggle: React.FC<FilterToggleProps> = ({isOnlyMine, onToggle}) => {
                 onClick={onToggle}
                 className={`filter-btn ${isOnlyMine ? 'active' : ''}`}
             >
-                {isOnlyMine ? '모든 일기 보기' : '내가 쓴 일기만 보기'}
+                {isOnlyMine ? '모든 콘텐츠 보기' : '내가 쓴 콘텐츠만 보기'}
             </button>
         </div>
     );
