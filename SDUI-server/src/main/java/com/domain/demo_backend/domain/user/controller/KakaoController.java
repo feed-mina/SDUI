@@ -25,7 +25,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/kakao")
@@ -116,7 +118,7 @@ public class KakaoController {
     }
 
     @GetMapping("/callback")
-    public void getAccessToken(@RequestParam String code,  @RequestParam(required = false) String state, HttpServletResponse response) throws IOException {
+    public ResponseEntity<Map<String, Object>> getAccessToken(@RequestParam String code,  @RequestParam(required = false) String state, HttpServletResponse response) {
         log.info("KAKAOCONTROLLER-code: " + code);
 
         log.info("KAKAOCONTROLLER-@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -193,13 +195,18 @@ public class KakaoController {
 
         // state 값이 없으면 기본적으로 'web'으로 간주
         String platform = (state != null) ? state : "web";
-        // ROLE_GUEST인 경우 추가 정보 입력 페이지로 리다이렉트
-        String redirectPath = "ROLE_GUEST".equals(jwtToken.getRole())
-                ? "/view/ADDITIONAL_INFO_PAGE"
-                : "/view/MAIN_PAGE";
-        String finalRedirectUrl = "mobile".equalsIgnoreCase(platform) ? mobileUrl + redirectPath : webUrl + redirectPath;
 
-        response.sendRedirect(finalRedirectUrl);
+        // JSON 응답 반환 (Next.js API Route 호환)
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("accessToken", jwtToken.getAccessToken());
+        responseBody.put("refreshToken", jwtToken.getRefreshToken());
+        responseBody.put("role", jwtToken.getRole());
+        responseBody.put("message", "카카오 로그인 성공");
+        responseBody.put("platform", platform);
+
+        log.info("KAKAOCONTROLLER-response: role={}, platform={}", jwtToken.getRole(), platform);
+
+        return ResponseEntity.ok(responseBody);
     }
 
     @PostMapping("/sendRecord")
