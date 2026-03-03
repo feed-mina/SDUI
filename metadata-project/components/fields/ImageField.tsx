@@ -58,7 +58,7 @@ const ImageField = memo(({ meta, pageData, ...rest }: any) => {
                 className={mergedClassName}
                 style={{ width: "100%", height: "auto", objectFit: "contain" }}
                 priority={meta?.priority === true}
-                unoptimized={false} // Vercel 이미지 최적화 활성화
+                unoptimized={true} // Vercel 이미지 최적화 비활성화 (public 파일 직접 사용)
             />
         </div>
     );
