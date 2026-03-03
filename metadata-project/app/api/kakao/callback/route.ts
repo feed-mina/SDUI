@@ -1,0 +1,64 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+const BACKEND_URL = process.env.NODE_ENV === 'production'
+  ? 'http://43.201.237.68:8081'
+  : 'http://localhost:8080';
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const code = searchParams.get('code');
+
+    console.log('[Kakao Callback] Authorization code:', code);
+
+    if (!code) {
+      return NextResponse.redirect(new URL('/view/LOGIN_PAGE?error=no_code', request.url));
+    }
+
+    // 백엔드로 code 전달
+    console.log('[Kakao Callback] Sending code to backend:', `${BACKEND_URL}/api/kakao/callback`);
+    const response = await fetch(`${BACKEND_URL}/api/kakao/callback?code=${code}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log('[Kakao Callback] Backend response status:', response.status);
+
+    if (!response.ok) {
+      console.error('[Kakao Callback] Backend error:', response.statusText);
+      return NextResponse.redirect(new URL('/view/LOGIN_PAGE?error=backend_error', request.url));
+    }
+
+    // 백엔드에서 Set-Cookie 헤더 추출
+    const setCookieHeaders = response.headers.getSetCookie();
+    console.log('[Kakao Callback] Set-Cookie headers count:', setCookieHeaders.length);
+
+    // 사용자 정보 및 토큰 정보 가져오기
+    const data = await response.json();
+    console.log('[Kakao Callback] User role:', data.role);
+
+    // Redirect URL 결정
+    const redirectUrl = data.role === 'ROLE_GUEST'
+      ? new URL('/view/ADDITIONAL_INFO_PAGE', request.url)
+      : new URL('/view/MAIN_PAGE', request.url);
+
+    // NextResponse 생성 및 쿠키 전달
+    const nextResponse = NextResponse.redirect(redirectUrl);
+
+    // 백엔드에서 받은 모든 Set-Cookie 헤더를 클라이언트로 전달
+    setCookieHeaders.forEach(cookie => {
+      nextResponse.headers.append('Set-Cookie', cookie);
+    });
+
+    console.log('[Kakao Callback] Redirecting to:', redirectUrl.pathname);
+    return nextResponse;
+
+  } catch (error: any) {
+    console.error('[Kakao Callback] Error:', error);
+    return NextResponse.redirect(
+      new URL('/view/LOGIN_PAGE?error=internal_error', request.url)
+    );
+  }
+}
