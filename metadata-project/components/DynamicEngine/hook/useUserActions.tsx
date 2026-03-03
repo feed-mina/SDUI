@@ -77,8 +77,9 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                     // 2. 가입 API 호출
                     const res = await axios.post(actionUrl || '/api/auth/register', submitData);
 
+                    // 3. 성공한 경우에만 인증 메일 발송 및 페이지 이동
                     if (res.status === 201 || res.status === 200) {
-                        // 3. 인증 메일 발송
+                        // 인증 메일 발송
                         await axios.post('/api/auth/signup?message=welcome', { email: submitData.email });
 
                         alert("가입 성공! 이메일로 발송된 인증코드를 확인해주세요.");
@@ -88,7 +89,9 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                         router.push(`/view/VERIFY_CODE_PAGE?email=${encodeURIComponent(userEmail)}`);
                     }
                 } catch (error: any) {
+                    // 에러 발생 시 handleError 호출 후 함수 종료 (이후 코드 실행 방지)
                     handleError(error, 'REGISTER_SUBMIT', '회원가입에 실패했습니다');
+                    return; // 명시적으로 함수 종료
                 }
                 break;
 
