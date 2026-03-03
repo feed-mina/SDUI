@@ -25,19 +25,36 @@ export async function GET(request: NextRequest) {
     });
 
     console.log('[Kakao Callback] Backend response status:', response.status);
+    console.log('[Kakao Callback] Backend response headers:', Object.fromEntries(response.headers));
 
     if (!response.ok) {
-      console.error('[Kakao Callback] Backend error:', response.statusText);
+      const errorText = await response.text();
+      console.error('[Kakao Callback] Backend error status:', response.status);
+      console.error('[Kakao Callback] Backend error body:', errorText);
       return NextResponse.redirect(new URL('/view/LOGIN_PAGE?error=backend_error', request.url));
     }
+
+    // 백엔드 응답 본문 읽기
+    const responseText = await response.text();
+    console.log('[Kakao Callback] Backend response body:', responseText);
+
+    // JSON 파싱 시도
+    let data;
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch (parseError: any) {
+      console.error('[Kakao Callback] JSON parse error:', parseError.message);
+      console.error('[Kakao Callback] Response text:', responseText);
+      return NextResponse.redirect(new URL('/view/LOGIN_PAGE?error=parse_error', request.url));
+    }
+
+    console.log('[Kakao Callback] Parsed data:', data);
+    console.log('[Kakao Callback] User role:', data.role);
 
     // 백엔드에서 Set-Cookie 헤더 추출
     const setCookieHeaders = response.headers.getSetCookie();
     console.log('[Kakao Callback] Set-Cookie headers count:', setCookieHeaders.length);
-
-    // 사용자 정보 및 토큰 정보 가져오기
-    const data = await response.json();
-    console.log('[Kakao Callback] User role:', data.role);
+    console.log('[Kakao Callback] Set-Cookie headers:', setCookieHeaders);
 
     // Redirect URL 결정
     const redirectUrl = data.role === 'ROLE_GUEST'
