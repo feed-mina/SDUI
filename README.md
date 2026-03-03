@@ -5,6 +5,7 @@
  UI의 구조와 비즈니스 로직을 데이터화하여 서버에서 제어 
 ### 기술스택 : Next.js, React, Spring Boot, JPA, Redis, PostgreSQL, AWS EC2, Vercel, Github Actions
 
+배포 주소 : https://sdui-delta.vercel.app/view/MAIN_PAGE
 
 **하드코딩된 UI구조**로 인해 기능 변경시 마다 클라이언트 배포가 필요한 부분을 **서버에서 UI 메타데이터로 전달**하면 클라이언트 엔진에서 이를 해석하여 화면을 그리는 구조슬 설계했습니다.
 
