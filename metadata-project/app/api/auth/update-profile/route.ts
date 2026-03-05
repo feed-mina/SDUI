@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.NODE_ENV === 'production'
-  ? 'http://43.201.237.68:8081'
+  ? 'https://yerin.duckdns.org'
   : 'http://localhost:8080';
 
 export async function POST(request: NextRequest) {
