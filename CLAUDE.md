@@ -139,3 +139,4 @@ Next.js proxies `/api/*` → `http://localhost:8080` (dev) or the production EC2
 - 시크릿이나 API 키 절대 커밋 금지 (`.env`, `application-secret.yml`, 하드코딩된 비밀번호/토큰 등)
 - `node_modules/`나 `vendor/` 절대 편집 금지
 - 명시적 승인 없이 실패하는 테스트 제거 금지
+- 폴더/파일 생성이 필요하다면 우선 .ai 폴더 안에서 생성 후 plan에 필요한 폴더 위치를 설명 ex)SDUI/SDUI-server/src/main/resources/db/migration/
