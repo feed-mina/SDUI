@@ -5,6 +5,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext"; // 1. AuthContext 가져오기
 import { useBaseActions } from "./useBaseActions";
 import { flattenMetadata } from "../..//utils/metadataUtils";
+import { handleError, extractErrorMessage } from "@/utils/errorHandler";
 
 export const useBusinessActions = (screenId: string,metadata: any[] = [], initialData: any = {}) => {
     const base = useBaseActions(screenId, metadata, initialData); // screenId 추가 [cite: 2026-02-17]
@@ -45,7 +46,7 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                 const pathParts = window.location.pathname.split('/');
                 const idFromUrl = pathParts[pathParts.length - 1];
                 if (/^\d+$/.test(idFromUrl)) {
-                    submitData.diary_id = idFromUrl;
+                    submitData.content_id = idFromUrl;
                 }
 
                 // 필수값 검증
@@ -73,10 +74,11 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                             await queryClient.invalidateQueries({ queryKey: ['goalList'] });
                         }
 
-                        router.push("/view/DIARY_LIST");
+                        alert('저장되었습니다');
+                        router.push("/view/CONTENT_LIST");
                     }
-                } catch (error) {
-                    console.error("Business Submit Error:", error);
+                } catch (error: any) {
+                    handleError(error, 'BUSINESS_SUBMIT', '저장에 실패했습니다');
                 }
                 break;
             }
@@ -87,14 +89,14 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                     console.error(`${actionType} 액션 실행 실패: 데이터가 없습니다.`);
                     return;
                 }
-                const diaryId = data.diary_id || data.diaryId;
-                if (diaryId && baseActionUrl) {// /view/DIARY_MODIFY/34 형태로 URL 생성
+                const contentId = data.content_id || data.contentId;
+                if (contentId && baseActionUrl) {// /view/CONTENT_MODIFY/34 형태로 URL 생성
                     const finalPath = baseActionUrl.endsWith('/')
-                        ? `${baseActionUrl}${diaryId}`
-                        : `${baseActionUrl}/${diaryId}`;
+                        ? `${baseActionUrl}${contentId}`
+                        : `${baseActionUrl}/${contentId}`;
                     router.push(finalPath);
                 } else {
-                    console.warn("이동할 경로 또는 ID가 데이터에 없습니다.", { baseActionUrl, diaryId });
+                    console.warn("이동할 경로 또는 ID가 데이터에 없습니다.", { baseActionUrl, contentId });
                 }break;
             default:
                 break;

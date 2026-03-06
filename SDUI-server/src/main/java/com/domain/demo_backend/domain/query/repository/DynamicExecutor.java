@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,11 +22,6 @@ public class DynamicExecutor {
     }
 
     public List<Map<String, Object>> executeList(String sql, Map<String, Object> params) {
-        System.out.println("@@@ DynamicExecutor 실제 DB 쿼리를 실행");
-
-        System.out.println("@@@ 실행 SQL : " + sql);
-        System.out.println("@@@ 바인딩 파라미터 : " + params);
-
         // 1. 파라미터 를 만들고 Map에 있는 모든 값을 넣는다
         // 이때 값이 없는 것은 NULL로 들어간다
         MapSqlParameterSource paramSource = new MapSqlParameterSource();

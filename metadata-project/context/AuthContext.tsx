@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const checkLoginStatus = async () => {
         try {
-            // /api/auth/me를 호출하면 브라우저가 HttpOnly 쿠키를 자동으로 실어 보냄 
+            // /api/auth/me를 호출하면 브라우저가 HttpOnly 쿠키를 자동으로 실어 보냄
             const res = await api.get('/api/auth/me');
             setUser(res.data);
             setIsLoggedIn(res.data.isLoggedIn);
@@ -86,6 +86,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         checkLoginStatus();
     }, []);
+
+    // RBAC: 카카오 로그인 후 ROLE_GUEST이면 추가 정보 입력 페이지로 리다이렉트 (2026-03-01 추가)
+    useEffect(() => {
+        if (!isLoading && user?.role === 'ROLE_GUEST') {
+            const currentPath = window.location.pathname;
+            // 이미 추가 정보 입력 페이지에 있으면 리다이렉트하지 않음 (무한 루프 방지)
+            if (currentPath !== '/view/ADDITIONAL_INFO_PAGE') {
+                console.log('ROLE_GUEST 감지: 추가 정보 입력 페이지로 리다이렉트');
+                router.push('/view/ADDITIONAL_INFO_PAGE');
+            }
+        }
+    }, [isLoading, user, router]);
 
     return (
 

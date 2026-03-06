@@ -94,7 +94,7 @@
           "actionType": "LINK",
           "actionUrl": "/view/DIARY_WRITE",
           "dataApiUrl": "/api/common/fetch-data",
-          "dataSqlKey": "GET_MEMBER_DIARY_LIST",
+          "dataSqlKey": "GET_MEMBER_CONTENT_LIST",
           "refDataId": null
         },
         {
@@ -108,7 +108,7 @@
           "isVisible": "true",
           "cssClass": "diary-nav1",
           "actionType": "LINK",
-          "actionUrl": "/view/DIARY_LIST",
+          "actionUrl": "/view/CONTENT_LIST",
           "dataApiUrl": null,
           "dataSqlKey": null,
           "refDataId": null

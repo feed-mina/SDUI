@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export:*)",
+      "Bash(npx jest:*)",
+      "Bash(ls -la \"C:\\\\Users\\\\Samsung\\\\Documents\\\\Development\\\\Personal_Projects\\\\2026\\\\SDUI\\\\.ai\"\" | grep -E \"^d \")",
+      "Bash(dir \"C:\\\\Users\\\\Samsung\\\\Documents\\\\Development\\\\Personal_Projects\\\\2026\\\\SDUI\\\\.ai\" /B /AD)",
+      "Bash(docker-compose down:*)",
+      "Bash(cmd /c:*)",
+      "Bash(bash gradlew:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(docker stop:*)",
+      "Bash(psql:*)",
+      "Bash(docker exec:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(ssh:*)",
+      "Bash(python:*)",
+      "Bash(where:*)",
+      "Bash(else echo \"PostgreSQL not found in default location\")",
+      "Bash(fi)",
+      "Bash(\"/c/Program Files/PostgreSQL/13/bin/psql.exe\" -h localhost -p 5432 -U postgres -d testdb -c \"SELECT COUNT\\(*\\) AS ui_metadata_count FROM ui_metadata;\")",
+      "Bash(\"/c/Program Files/PostgreSQL/13/bin/psql.exe\" -h localhost -p 5432 -U postgres -d testdb -c \"SELECT COUNT\\(*\\) AS query_master_count FROM query_master;\")",
+      "Bash(\"/c/Program Files/PostgreSQL/13/bin/pg_dump.exe\" -h localhost -p 5432 -U postgres -d testdb --data-only --table=ui_metadata --table=query_master -f local_metadata_export.sql)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/pg_dump.exe\" -h localhost -p 5432 -U postgres -d testdb --data-only --table=ui_metadata --table=query_master -f local_metadata_export.sql)",
+      "Bash(scp:*)",
+      "Bash(curl:*)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -h localhost -p 5432 -U postgres -d testdb -c \"SELECT component_id, action_type, action_url FROM ui_metadata WHERE screen_id = ''LOGIN_PAGE'' AND \\(component_id LIKE ''%KAKAO%'' OR action_type LIKE ''%KAKAO%''\\);\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -h localhost -p 5432 -U postgres -d testdb -c \"SELECT component_id, component_type, action_type, action_url, label_text FROM ui_metadata WHERE screen_id = ''LOGIN_PAGE'' AND component_type = ''BUTTON'' ORDER BY sort_order;\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -h localhost -p 5432 -U postgres -d testdb -c \"SELECT component_id, action_url FROM ui_metadata WHERE component_id = ''kakao_login_btn'';\")",
+      "Bash(./gradlew clean build:*)"
+    ]
+  },
+  "outputStyle": "default"
+}

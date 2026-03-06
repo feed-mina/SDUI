@@ -1,9 +1,9 @@
 package com.domain.demo_backend.domain.time.controller;
 
 
-import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.domain.time.domain.GoalArrivalRequest;
 import com.domain.demo_backend.domain.time.service.GoalTimeQueryService;
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

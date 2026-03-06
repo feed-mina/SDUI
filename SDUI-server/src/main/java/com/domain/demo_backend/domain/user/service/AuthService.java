@@ -7,9 +7,8 @@ import com.domain.demo_backend.domain.user.domain.UserRepository;
 import com.domain.demo_backend.domain.user.dto.LoginRequest;
 import com.domain.demo_backend.domain.user.dto.PasswordDto;
 import com.domain.demo_backend.domain.user.dto.RegisterRequest;
-import com.domain.demo_backend.global.error.BusinessException;
-import com.domain.demo_backend.global.error.DuplicateEmailException;
-import com.domain.demo_backend.global.error.ErrorCode;
+import com.domain.demo_backend.global.exception.BusinessException;
+import com.domain.demo_backend.global.exception.custom.DuplicateEmailException;
 import com.domain.demo_backend.global.security.JwtUtil;
 import com.domain.demo_backend.global.security.PasswordUtil;
 import jakarta.mail.MessagingException;
@@ -85,19 +84,19 @@ public class AuthService {
 
         //  이메일로 사용자 조회
         User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다"));
 
 
         //  이메일 인증 여부 확인 (verifyYn 필드 사용)
         if (!"Y".equals(user.getVerifyYn())) {
-            throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED); // 에러코드 추가 필요
+            throw new IllegalArgumentException("인증이 필요합니다.");
         }
 
 
         //  비밀번호 검증 (PasswordUtil 사용)
         String encryptedInputPw = PasswordUtil.sha256(loginRequest.getPassword());
         if (!user.getHashedPassword().equals(encryptedInputPw)) {
-            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+            throw new IllegalArgumentException("비밀번호가 올바르지 않습니다.");
         }
 
 
@@ -151,7 +150,7 @@ public class AuthService {
                 .zipCode(registerRequest.getZipCode())      // 주소 저장 추가
                 .roadAddress(registerRequest.getRoadAddress())
                 .detailAddress(registerRequest.getDetailAddress())
-                .role("ROLE_USER")
+                .role("ROLE_GUEST")
                 .delYn("N")
                 .verifyYn("N")
                 .socialType("N")
@@ -227,8 +226,11 @@ public class AuthService {
     public String sendVerificationCode(String email , String platform) throws MessagingException {
         //랜덤 인등코드 생성
         String verificationCode = generateRendomCode();
-        // DB에 인증코드, 만료시간 저장
-//        userRepository.updateVerificationCode(email, verificationCode);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        user.setVerificationCode(verificationCode);
+        userRepository.save(user);
         // 이메일 작성 및 전송
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
@@ -236,7 +238,7 @@ public class AuthService {
 
         String baseUrl = platform.equalsIgnoreCase("mobile") ? mobileUrl : webUrl;
         String verifyUrl = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                .path("/VERIFY_CODE_PAGE")
+                .path("/view/VERIFY_CODE_PAGE")
                 .queryParam("email", email)
                 .queryParam("code", verificationCode)
                 .build()
@@ -281,10 +283,9 @@ public class AuthService {
             log.error(" 인증 실패: 코드 불일치 -> 입력한 코드: {}, 저장된 코드: {}", code, user.getVerificationCode());
             return false;
         }
-
-        // 인증 성공 → verifyYn = 'Y'
-//      userRepository.updateVerifyYn(email);
+        user.setRole("ROLE_USER");
         user.setVerifyYn("Y");
+        userRepository.save(user);
         return true; // 코드가 틀리면 false
     }
 
@@ -352,9 +353,17 @@ public class AuthService {
             log.info("  250527_비밀변호 변경 실패: 해당 사용자가 존재하지 않습니다.");
             throw new IllegalArgumentException("해당 사용자가 존재하지 않습니다.");
         }
+
+        // 현재 비밀번호 검증 (보안 강화)
+        if (passwordDto.getCurrentPassword() != null && !passwordDto.getCurrentPassword().isEmpty()) {
+            String currentHashedPassword = PasswordUtil.sha256(passwordDto.getCurrentPassword());
+            if (!existingUser.getHashedPassword().equals(currentHashedPassword)) {
+                log.error("  비밀번호 변경 실패: 현재 비밀번호가 일치하지 않습니다.");
+                throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+            }
+        }
+
         // 비밀변호 변경 처리
-        // 현재 있는 비밀번호를 delete 후 값을 새로 insert 해야 할까 아니면
-        // update 쿼리를 써야할까
         existingUser.setUpdatedAt(ldt);
         // 비밀번호 암호화
         String newHashedPassword = PasswordUtil.sha256(passwordDto.getNewPassword());

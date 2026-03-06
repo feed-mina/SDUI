@@ -13,7 +13,7 @@ import {useDeviceType} from "../../hooks/useDeviceType";
 const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
 
     //  구조 분해 할당 시 screenId 추출
-    const {metadata, screenId, pageData, formData, onChange, onAction, closeModal,activeModal, ...rest} = props;
+    const {metadata, screenId, pageData, formData, setFormData, onChange, onAction, closeModal, activeModal, ...rest} = props;
     //   비즈니스 로직 훅에 필요한 데이터를 넘겨 트리 구조(treeData)를 생성한다.
     const {treeData, getComponentData} = useDynamicEngine(metadata, pageData, formData);
     // * 디바이스 별로 className을 is-pc 또는 is-mobile로 구분
@@ -119,17 +119,22 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
 
             const finalData = getComponentData(node, rowData);
 
-            return (
-                <Component
-                    key={uId}
-                    id={uId}
-                    meta={node}
-                    data={finalData}
-                    onChange={onChange}
-                    onAction={onAction}
-                    {...rest}
-                />
-            );
+            // ADDRESS_SEARCH_GROUP은 setFormData 필요, 다른 컴포넌트는 불필요
+            const componentProps: any = {
+                id: uId,
+                meta: node,
+                data: finalData,
+                onChange,
+                onAction,
+                ...rest
+            };
+
+            if (typeKey === "ADDRESS_SEARCH_GROUP" && setFormData) {
+                componentProps.formData = formData;
+                componentProps.setFormData = setFormData;
+            }
+
+            return <Component key={uId} {...componentProps} />;
         });
     };
 
@@ -152,7 +157,7 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
                         />
                     );
                 }
-                // return null;
+                return null;
             });
     };
 

@@ -21,7 +21,6 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.spec.KeySpec;
-import java.time.ZoneId;
 import java.util.Base64;
 import java.util.Date;
 
@@ -107,7 +106,6 @@ public class JwtUtil {
     @PostConstruct
     public void init() {
         this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
-        System.out.println("issuer 값: " + issuer);
 
     }
 
@@ -173,6 +171,7 @@ public class JwtUtil {
         Claims claims = Jwts.claims().setSubject(user.getEmail());
         claims.put("userId", user.getUserId());
         claims.put("userSqno", user.getUserSqno());
+        claims.put("role", user.getRole()); // 역할 클레임 추가
         Date now = new Date();
         Date accessExp = new Date(now.getTime() + 1000L * 60 * 60); // 1시간
 

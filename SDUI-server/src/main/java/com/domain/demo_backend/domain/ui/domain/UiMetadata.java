@@ -93,6 +93,16 @@ public class UiMetadata {
     @Column(name = "is_visible", length = 50)
     private String isVisible;
 
+    // RBAC 지원 컬럼 (2026-03-01 추가)
+    @Column(name = "allowed_roles", length = 255)
+    private String allowedRoles;
+
+    @Column(name = "label_text_overrides", columnDefinition = "jsonb")
+    private String labelTextOverrides;
+
+    @Column(name = "css_class_overrides", columnDefinition = "jsonb")
+    private String cssClassOverrides;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();

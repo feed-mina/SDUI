@@ -1,13 +1,14 @@
 package com.domain.demo_backend.domain.user.controller;
 
-import com.domain.demo_backend.domain.user.domain.UserRepository;
-import com.domain.demo_backend.domain.user.dto.RegisterRequest;
-import com.domain.demo_backend.domain.user.service.AuthService;
-import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.domain.token.domain.RefreshToken;
 import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.domain.token.domain.TokenResponse;
 import com.domain.demo_backend.domain.user.domain.User;
+import com.domain.demo_backend.domain.user.domain.UserRepository;
+import com.domain.demo_backend.domain.user.dto.AdditionalInfoRequest;
+import com.domain.demo_backend.domain.user.dto.RegisterRequest;
+import com.domain.demo_backend.domain.user.service.AuthService;
+import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.global.security.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -15,7 +16,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,11 +46,16 @@ public class AuthController {
     private UserRepository userRepository;
     // 생성자 주입
     @Autowired
-    public AuthController(AuthService authService, JwtUtil jwtUtil) {
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.userRepository = userRepository;
+    public AuthController(
+        AuthService authService,
+        JwtUtil jwtUtil,
+        RefreshTokenRepository refreshTokenRepository,
+        UserRepository userRepository
+    ) {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.userRepository = userRepository;
     }
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -68,16 +74,11 @@ public class AuthController {
         response.put("userId", userDetails.getUserId());
         response.put("email", userDetails.getUserEmail());
         response.put("socialType", userDetails.getSocialType());
-        response.put("role", "ROLE_USER");
+        response.put("role", userDetails.getRole());
 
         return ResponseEntity.ok(response);
 
     }
-    @PostConstruct
-    public void init() {
-        System.out.println(" refreshTokenRepository: " + refreshTokenRepository);
-    }
-
     @Operation(summary = "회원 로그인", description = "id와 password와 haspassword가 일치하다면 로그인, 아니면 팝업 경고창이 뜬다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "일반 회원 로그인 성공"),
@@ -109,11 +110,19 @@ public class AuthController {
 
         // 일반 로그인/카카오 로그인 성공 로직에 추가
         ResponseCookie loginTypeCookie = ResponseCookie.from("loginType", "N")
-                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false 
+                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false
                 .path("/")
                 .maxAge(3600)
                 .build();
 
+        // Role 쿠키 (RBAC용, 프론트엔드 접근 가능)
+        ResponseCookie roleCookie = ResponseCookie.from("role", tokenResponse.getRole())
+                .httpOnly(false)
+                .secure(false)
+                .path("/")
+                .maxAge(60 * 60)
+                .sameSite("Lax")
+                .build();
 
 // 로그인 여부 확인용 (자바스크립트 접근 가능)
         ResponseCookie statusCookie = ResponseCookie.from("isLoggedIn", "true")
@@ -121,6 +130,7 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, roleCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, loginTypeCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, statusCookie.toString())
                 .body(tokenResponse);  //앱 개발 확장 토큰 정보를 포함한 객체 반환
@@ -159,22 +169,18 @@ public class AuthController {
     })
     @PostMapping("/signup")
     public ResponseEntity<?> sendVerificationCode(@RequestHeader(value = "X-Platform", defaultValue = "web") String platform,  @RequestBody RegisterRequest registerRequest, @RequestParam String message) throws MessagingException {
-
+        log.info("회원가입 인증코드 전송 시작: " + registerRequest.getEmail());
         log.info("유효성 평가 ");
-//        authService.beforesendVerificationCode(registerRequest);
         log.info("회원가입 하기 위해 인증코드 전송 ");
         String email = registerRequest.getEmail();
         // 랜덤 인증 코드 생성
         String verificationCode = authService.sendVerificationCode(email, platform);
-        // 인증 코드를 Map에 저장
-        emailVerificationMap.put(email, verificationCode);
 
         // 이메일 전송 시뮬레이션(실제 서비스에서는 이메일 전송 API)
         log.info("이메일 전송: " + email);
         log.info("메시지: " + message);
 
         String savedCode = emailVerificationMap.get(email);
-//        return "인증 코드가 다음 이메일로 전송되었습니다." + email;
         return ResponseEntity.ok(Map.of("message", "인증 코드가 이메일로 전송되었습니다.", "email", registerRequest.getEmail()));
 
     }
@@ -250,9 +256,11 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/non-user")
-    public ResponseEntity<String> nonUser(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest) {
-        log.info("회원탈퇴 요청 진입: " + registerRequest);
-        log.info("회원탈퇴 진입");
+    public ResponseEntity<String> nonUser(@RequestBody com.domain.demo_backend.domain.user.dto.RegisterRequest registerRequest,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
         if (registerRequest.getEmail() == null || registerRequest.getEmail().isEmpty()) {
             log.info("회원탈퇴 실패: userId가 비어 있음");
             return ResponseEntity.badRequest().body("회원 아이디가 필요합니다.");
@@ -278,9 +286,11 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "서버오류"),
     })
     @PostMapping("/editPassword")
-    public ResponseEntity<?> editPassword(@RequestBody com.domain.demo_backend.domain.user.dto.PasswordDto passwordDto) {
-        log.info("비밀변호 변경 요청 진입: " + passwordDto);
-        log.info("비밀변호 변경 진입");
+    public ResponseEntity<?> editPassword(@RequestBody com.domain.demo_backend.domain.user.dto.PasswordDto passwordDto,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
         if (passwordDto.getEmail() == null || passwordDto.getEmail().isEmpty()) {
             log.info("비밀변호 변경 실패: userId가 비어 있음");
             return ResponseEntity.badRequest().body("회원 아이디가 필요합니다.");
@@ -375,6 +385,55 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
         return ResponseEntity.ok().body("로그아웃 성공");
     }
+
+    @Operation(summary = "추가 정보 입력 (RBAC)", description = "카카오 로그인 후 추가 정보 입력 및 ROLE_GUEST → ROLE_USER 승격")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "추가 정보 입력 및 권한 업그레이드 성공"),
+            @ApiResponse(responseCode = "400", description = "입력값 오류 또는 이미 정보가 입력된 사용자"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PostMapping("/update-profile")
+    public ResponseEntity<?> updateAdditionalInfo(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestBody AdditionalInfoRequest request
+    ) {
+        log.info("수신된 데이터: roadAddress={}, zipCode={}", request.getRoadAddress(), request.getZipCode());
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        String email = userDetails.getUserEmail();
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+
+        // ROLE_GUEST인 경우만 업데이트 허용 (이미 정보가 입력된 사용자는 차단)
+        if (!"ROLE_GUEST".equals(user.getRole())) {
+            log.warn("추가 정보 입력 실패: 이미 정보가 입력된 사용자 (role: {})", user.getRole());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "이미 정보가 입력된 사용자입니다"));
+        }
+
+        // 추가 정보 업데이트
+        user.setPhone(request.getPhone());
+        user.setRoadAddress(request.getRoadAddress());
+        user.setDetailAddress(request.getDetailAddress());
+        user.setZipCode(request.getZipCode());
+
+        // 권한 업그레이드: ROLE_GUEST → ROLE_USER
+        user.setRole("ROLE_USER");
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("추가 정보 입력 완료: email={}, role=ROLE_USER", email);
+
+        return ResponseEntity.ok(Map.of(
+            "message", "추가 정보가 저장되었습니다",
+            "role", "ROLE_USER"
+        ));
+    }
+
     @GetMapping("/check-verification")
     public ResponseEntity<?> checkVerification(@RequestParam String email) {
         // DB나 Redis에서 해당 이메일의 인증 상태를 확인하는 로직
@@ -384,15 +443,6 @@ public class AuthController {
         result.put("isVerified", verified);
 
         return ResponseEntity.ok(result);
-    }
-    @GetMapping("/confirm-email")
-    public ResponseEntity<String> confirmEmail(@RequestParam String token) {
-        // 이메일 대신 토큰으로 확인
-        boolean isSuccess = authService.confirmEmailByToken(token);
-        if (isSuccess) {
-            return ResponseEntity.ok("<h1>인증 성공!</h1><p>원래 화면의 확인 버튼을 눌러주세요.</p>");
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("유효하지 않거나 만료된 링크입니다.");
     }
 
 }

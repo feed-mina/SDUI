@@ -1,7 +1,5 @@
 package com.domain.demo_backend.global.common;
 
-import com.domain.demo_backend.global.common.ApiResponseDto;
-
 public class ApiResponseCode {
 
     public static final ApiResponseDto<String> DEFAULT_OK = new ApiResponseDto<>("Success", "200");

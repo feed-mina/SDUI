@@ -38,6 +38,12 @@ const InputField = memo(({
     ].filter(Boolean).join(" ");
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log('[InputField] handleInputChange:', {
+            targetKey,
+            value: e.target.value,
+            isReadOnly,
+            onChangeFn: typeof onChange
+        });
         if (!isReadOnly) {
             onChange(targetKey, e.target.value);
         }

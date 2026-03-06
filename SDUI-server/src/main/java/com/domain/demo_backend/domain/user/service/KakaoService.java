@@ -17,10 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class KakaoService {
@@ -95,12 +92,6 @@ public class KakaoService {
             log.info("KAKAOSERVICE-properties : " + properties);
 
             log.info("KAKAOSERVICE-nickname : " + nickname);
-            System.out.println("KAKAOSERVICE-@@@email: " + email);
-            System.out.println("KAKAOSERVICE-@@@userId: " + userId);
-            log.info("KAKAOSERVICE-email : " + email);
-            System.out.println("KAKAOSERVICE-@@@KakaoUserInfo.fromMap(body, accessToken): " + KakaoUserInfo.fromMap(body, accessToken));
-            log.info("KAKAOSERVICE-최종 email: " + email);
-            log.info("KAKAOSERVICE-최종 userInfo: " + KakaoUserInfo.fromMap(body, accessToken));
 
         } catch (Exception e) {
             log.error(" 카카오 사용자 정보 가져오기 실패", e);
@@ -131,7 +122,7 @@ public class KakaoService {
                             .hashedPassword("")
                             .email(kakaoUserInfo.getEmail())
                             .phone("111-111-111")
-                            .role("ROLE_USER")
+                            .role("ROLE_GUEST")  // 신규 카카오 사용자는 GUEST로 시작
                             .verifyYn("Y")
                             .socialType("K")
                             .delYn("N")

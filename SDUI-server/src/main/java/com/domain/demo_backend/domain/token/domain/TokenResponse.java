@@ -1,13 +1,9 @@
 package com.domain.demo_backend.domain.token.domain;
 
 
-
 import lombok.AllArgsConstructor;
-
 import lombok.Builder;
-
 import lombok.Data;
-
 import lombok.NoArgsConstructor;
 
 

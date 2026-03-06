@@ -5,6 +5,7 @@ import axios from "@/services/axios";
 import { useAuth } from "@/context/AuthContext";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useBaseActions } from "./useBaseActions";
+import { handleError, extractErrorMessage } from "@/utils/errorHandler";
 
 
 //  @@@@ useUserActions 역할 : 메타데이터의 action_type에 따라 각 타입 설명
@@ -18,25 +19,6 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
 
 // 모달 닫기 함수
     const closeModal = () => setActiveModal(null);
-
-    // 이메일 인증 여부 최종 확인 (모달의 '확인' 버튼 클릭 시 실행)
-    const onConfirmModal = async () => {
-        const currentData = base.formDataRef.current;
-        const email = currentData.reg_email || currentData.email;
-
-        try {
-            const response = await axios.get(`/api/auth/check-verification?email=${email}`);
-            if (response.data.isVerified) {
-                alert("인증 완료! 환영해.");
-                setActiveModal(null);
-                router.push('/view/LOGIN_PAGE');
-            } else {
-                alert("아직 이메일 인증 버튼을 누르지 않았어. 메일함을 확인해줘!");
-            }
-        } catch (error) {
-            alert("인증 확인 중 오류가 발생했어.");
-        }
-    };
 
     // [이동] 회원 전용 URL 파라미터 감지 로직
     useEffect(() => {
@@ -67,13 +49,11 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
 
         switch (actionType) {
             case "LOGIN_SUBMIT":
-                console.log('뭐야 ')
                 try {
                     const loginData = {
                         user_email: `${currentData.user_email}@${currentData.user_email_domain}`,
                         user_pw: currentData.user_pw
                     };
-            console.log('loginData', loginData);
                     const res = await axios.post(actionUrl || '/api/auth/login', loginData);
                     if (res.status === 200) {
                         //   AuthContext의 상태 업데이트
@@ -82,7 +62,7 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                         router.push('/view/MAIN_PAGE');
                     }
                 } catch (error: any) {
-                    alert(error.response?.data || "로그인 정보가 올바르지 않아.");
+                    handleError(error, 'LOGIN_SUBMIT', '로그인 정보가 올바르지 않습니다');
                 }
                 break;
             case "REGISTER_SUBMIT":
@@ -97,48 +77,107 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                     // 2. 가입 API 호출
                     const res = await axios.post(actionUrl || '/api/auth/register', submitData);
 
+                    // 3. 성공한 경우에만 인증 메일 발송 및 페이지 이동
                     if (res.status === 201 || res.status === 200) {
-                        // 3. 인증 메일 발송
+                        // 인증 메일 발송
                         await axios.post('/api/auth/signup?message=welcome', { email: submitData.email });
 
-                        alert("가입 성공! 이메일로 발송된 인증코드를 확인해줘.");
+                        alert("가입 성공! 이메일로 발송된 인증코드를 확인해주세요.");
 
                         // 4. 페이지 이동 (이메일을 쿼리 파라미터로 전달하여 useBaseActions가 useEffect에서 이메일을 자동으로 가져옴
                         const userEmail = submitData.email;
                         router.push(`/view/VERIFY_CODE_PAGE?email=${encodeURIComponent(userEmail)}`);
                     }
                 } catch (error: any) {
-                    alert(error.response?.data || "회원가입 실패.");
+                    // 에러 발생 시 handleError 호출 후 함수 종료 (이후 코드 실행 방지)
+                    handleError(error, 'REGISTER_SUBMIT', '회원가입에 실패했습니다');
+                    return; // 명시적으로 함수 종료
                 }
                 break;
 
             case "VERIFY_CODE":
                 try {
+                    const searchParams = new URLSearchParams(window.location.search);
+                    const urlEmail = searchParams.get('email');
+                    const urlCode = searchParams.get('code');
                     const currentData = base.formDataRef.current;
+                    console.log('currentData',currentData);
 
+                    // [수정] 1. URL 파라미터가 있다면 무조건 그것을 사용 (가장 확실한 데이터)
+                    // [수정] 2. currentData 조회 시 component_id(reg_code)와 ref_data_id(code)를 모두 체크
+                    const finalEmail = urlEmail || currentData.reg_email || currentData.email;
+                    const finalCode = urlCode || currentData.reg_code || currentData.code;
+                    console.log("최종 전송 데이터:", { finalEmail, finalCode });
+                    console.log("currentData:", currentData);
                     // 필수값 체크
-                    if (!currentData.reg_code) {
-                        alert("인증 번호를 입력해줘.");
+                    if (!finalEmail) {
+                        alert("이메일 정보가 없습니다. 다시 시도해주세요.");
+                        return;
+                    }
+                    if (!finalCode) {
+                        alert("인증 번호를 입력해주세요.");
                         return;
                     }
 
+                    // 2. API 호출: 서버 DTO 구조에 맞춰서 전송
                     const res = await axios.post('/api/auth/verify-code', {
-                        email: currentData.reg_email, // 가입 시 썼던 이메일
-                        code: currentData.reg_code    // 사용자가 입력한 코드
+                        email: finalEmail,
+                        code: finalCode
                     });
 
                     if (res.status === 200) {
-                        alert("인증 성공! 이제 로그인이 가능해.");
+                        alert("인증을 성공했습니다..");
                         router.push("/view/LOGIN_PAGE");
                     }
                 } catch (error: any) {
-                    alert(error.response?.data || "인증에 실패했어. 코드를 다시 확인해봐.");
+                    alert(error.response?.data || "인증에 실패했습니다.");
                 }
                 break;
 
             case "LOGOUT":
                 await logout();
                 router.push('/view/LOGIN_PAGE');
+                break;
+
+            case "SUBMIT_ADDITIONAL_INFO":
+                try {
+                    // RBAC: 카카오 로그인 후 추가 정보 입력 (2026-03-01 추가)
+                    console.log('[DEBUG] currentFormData:', currentFormData);
+                    console.log('[DEBUG] currentFormData keys:', Object.keys(currentFormData));
+
+                    // ref_data_id에 맞춰 키 수정
+                    const phone = currentFormData.phone;  // "phone" (소문자)
+                    const roadAddress = currentFormData.road_address;
+                    const detailAddress = currentFormData.detail_address;
+                    const zipCode = currentFormData.zip_code;
+
+                    console.log('[DEBUG] 추출된 값:', { phone, roadAddress, detailAddress, zipCode });
+
+                    // 필수 항목 검증
+                    if (!phone || !roadAddress || !zipCode) {
+                        alert('필수 항목을 입력해주세요');
+                        return;
+                    }
+
+                    // 추가 정보 제출
+                    const res = await axios.post('/api/auth/update-profile', {
+                        phone,
+                        roadAddress,
+                        detailAddress,
+                        zipCode
+                    });
+
+                    if (res.status === 200) {
+                        // 사용자 정보 재조회 (role이 ROLE_USER로 업그레이드됨)
+                        const userRes = await axios.get('/api/auth/me');
+                        login(userRes.data); // AuthContext 상태 업데이트
+
+                        alert('정보가 저장되었습니다');
+                        router.push('/view/CONTENT_LIST');
+                    }
+                } catch (error: any) {
+                    handleError(error, 'SUBMIT_ADDITIONAL_INFO', '추가 정보 저장에 실패했습니다');
+                }
                 break;
 
             case "KAKAO_LOGOUT":

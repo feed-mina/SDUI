@@ -1,6 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
+import Image from 'next/image';
 import { cn } from "@/components/utils/cn";
 
 const ImageField = memo(({ meta, pageData, ...rest }: any) => {
@@ -19,7 +20,13 @@ const ImageField = memo(({ meta, pageData, ...rest }: any) => {
 
     // 3. 이미지 경로 및 파일명 처리
     const label = meta?.label_text || meta?.labelText || "";
-    const imagePath = label ? `/img/${label}` : "/img/default.png";
+    // URL 인코딩 처리 (공백 등 특수문자 처리)
+    const encodedLabel = label ? encodeURIComponent(label) : "";
+    const imagePath = encodedLabel ? `/img/${encodedLabel}` : "/img/default.png";
+
+    // 이미지 크기 설정 (ui_metadata의 inline_style에서 width/height 추출 가능)
+    const width = meta?.width || 800;
+    const height = meta?.height || 600;
 
     // 4. 인라인 스타일 안전하게 파싱
     let customStyle = {};
@@ -41,13 +48,17 @@ const ImageField = memo(({ meta, pageData, ...rest }: any) => {
     );
 
     return (
-        <div style={{ ...customStyle, width: "100%", height: "auto" }} className="image-field-wrapper">
-            <img
-                {...domSafeRest} // 걸러진 안전한 속성들만 전달
+        <div style={{ ...customStyle, width: "100%", position: "relative" }} className="image-field-wrapper">
+            <Image
+                {...domSafeRest}
                 src={imagePath}
-                className={mergedClassName}
                 alt={meta?.altText || "ui-element"}
-                style={{ width: "100%", height: "auto", display: "block" }}
+                width={width}
+                height={height}
+                className={mergedClassName}
+                style={{ width: "100%", height: "auto", objectFit: "contain" }}
+                priority={meta?.priority === true}
+                unoptimized={true} // Vercel 이미지 최적화 비활성화 (public 파일 직접 사용)
             />
         </div>
     );

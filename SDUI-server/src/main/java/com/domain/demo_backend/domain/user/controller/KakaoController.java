@@ -1,11 +1,11 @@
 package com.domain.demo_backend.domain.user.controller;
 
 
-import com.domain.demo_backend.domain.user.service.KakaoService;
 import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.domain.token.domain.TokenResponse;
 import com.domain.demo_backend.domain.user.dto.KakaoAuthRequest;
 import com.domain.demo_backend.domain.user.dto.KakaoUserInfo;
+import com.domain.demo_backend.domain.user.service.KakaoService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.global.security.JwtUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,10 +23,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/kakao")
@@ -90,11 +91,21 @@ public class KakaoController {
                     .sameSite("Lax")
                     .build();
 
+            // 6. Role 쿠키 생성 (RBAC용)
+            ResponseCookie roleCookie = ResponseCookie.from("role", tokenResponse.getRole())
+                    .httpOnly(false)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(3600)
+                    .sameSite("Lax")
+                    .build();
+
             response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                    .header(HttpHeaders.SET_COOKIE, roleCookie.toString())
                     .body(Map.of(
                             "accessToken", tokenResponse.getAccessToken(),
                             "refreshToken", tokenResponse.getRefreshToken(),
@@ -107,7 +118,7 @@ public class KakaoController {
     }
 
     @GetMapping("/callback")
-    public void getAccessToken(@RequestParam String code,  @RequestParam(required = false) String state, HttpServletResponse response) throws IOException {
+    public ResponseEntity<Map<String, Object>> getAccessToken(@RequestParam String code,  @RequestParam(required = false) String state, HttpServletResponse response) {
         log.info("KAKAOCONTROLLER-code: " + code);
 
         log.info("KAKAOCONTROLLER-@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -162,22 +173,40 @@ public class KakaoController {
                 .sameSite("Lax")
                 .build();
 
+        // 6. Role 쿠키 생성 (RBAC용)
+        ResponseCookie roleCookie = ResponseCookie.from("role", jwtToken.getRole())
+                .httpOnly(false)
+                .secure(false)
+                .path("/")
+                .maxAge(3600)
+                .sameSite("Lax")
+                .build();
+
         // 일반 로그인/카카오 로그인 성공 로직에 추가
         ResponseCookie loginTypeCookie = ResponseCookie.from("loginType", "K")
-                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false 
+                .httpOnly(false) // 프론트엔드 자바스크립트가 읽을 수 있어야 하므로 false
                 .path("/")
                 .maxAge(3600)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
 
         // state 값이 없으면 기본적으로 'web'으로 간주
         String platform = (state != null) ? state : "web";
-        String redirectPath = "/view/MAIN_PAGE";
-        String finalRedirectUrl = "mobile".equalsIgnoreCase(platform) ? mobileUrl + redirectPath : webUrl + redirectPath;
 
-        response.sendRedirect(finalRedirectUrl);
+        // JSON 응답 반환 (Next.js API Route 호환)
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("accessToken", jwtToken.getAccessToken());
+        responseBody.put("refreshToken", jwtToken.getRefreshToken());
+        responseBody.put("role", jwtToken.getRole());
+        responseBody.put("message", "카카오 로그인 성공");
+        responseBody.put("platform", platform);
+
+        log.info("KAKAOCONTROLLER-response: role={}, platform={}", jwtToken.getRole(), platform);
+
+        return ResponseEntity.ok(responseBody);
     }
 
     @PostMapping("/sendRecord")

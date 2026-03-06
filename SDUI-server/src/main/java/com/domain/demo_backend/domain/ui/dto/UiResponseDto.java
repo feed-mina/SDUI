@@ -5,12 +5,14 @@ package com.domain.demo_backend.domain.ui.dto;
 
 import com.domain.demo_backend.domain.ui.domain.UiMetadata;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -45,22 +47,63 @@ public class UiResponseDto {
     @JsonInclude(JsonInclude.Include.NON_EMPTY) // 자식이 없을 때 필드 자체를 숨기고 싶다면 사용
     private List<UiResponseDto> children = new ArrayList<>();
 
-    // Entity를 DTO로 변환하는 생성자
+    // Entity를 DTO로 변환하는 생성자 (기존 - 하위 호환성 유지)
     public UiResponseDto(UiMetadata entity) {
+        this(entity, null); // userRole 없이 호출 시 오버라이드 미적용
+    }
+
+    // RBAC 지원: 역할별 오버라이드를 적용하는 생성자 (2026-03-01 추가)
+    public UiResponseDto(UiMetadata entity, String userRole) {
         this.componentId = entity.getComponentId();
         this.parentGroupId = entity.getParentGroupId();
-        this.labelText = entity.getLabelText();
         this.componentType = entity.getComponentType();
         this.sortOrder = entity.getSortOrder();
         this.isRequired = entity.getIsRequired();
         this.isReadonly = entity.getIsReadonly();
         this.isVisible = entity.getIsVisible();
-        this.cssClass = entity.getCssClass();
         this.actionType = entity.getActionType();
         this.actionUrl = entity.getActionUrl();
         this.dataApiUrl = entity.getDataApiUrl();
         this.dataSqlKey = entity.getDataSqlKey();
         this.refDataId = entity.getRefDataId();
+
+        // 역할별 label_text 오버라이드 처리
+        this.labelText = resolveOverriddenValue(
+            entity.getLabelText(),
+            entity.getLabelTextOverrides(),
+            userRole
+        );
+
+        // 역할별 css_class 오버라이드 처리
+        this.cssClass = resolveOverriddenValue(
+            entity.getCssClass(),
+            entity.getCssClassOverrides(),
+            userRole
+        );
+
         // children은 트리 구성 로직에서 별도로 채워짐
+    }
+
+    /**
+     * JSONB 오버라이드 값을 역할에 따라 해석하는 헬퍼 메서드
+     * @param defaultValue 기본값
+     * @param overridesJson JSONB 형식의 오버라이드 맵 (예: {"ROLE_ADMIN":"관리자용","ROLE_USER":"사용자용"})
+     * @param userRole 사용자 역할 (예: "ROLE_USER")
+     * @return 오버라이드된 값 또는 기본값
+     */
+    private String resolveOverriddenValue(String defaultValue, String overridesJson, String userRole) {
+        // overridesJson이 없거나 userRole이 없으면 기본값 반환
+        if (overridesJson == null || overridesJson.trim().isEmpty() || userRole == null) {
+            return defaultValue;
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, String> overrides = mapper.readValue(overridesJson, Map.class);
+            return overrides.getOrDefault(userRole, defaultValue);
+        } catch (Exception e) {
+            // JSON 파싱 실패 시 기본값 반환 (로깅은 생략, 성능 고려)
+            return defaultValue;
+        }
     }
 }
