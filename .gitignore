@@ -65,3 +65,7 @@ fix_sdui_issues.sql
 SDUI-server/docs/authcontroller_example.java
 diagnose_content_list.sql
 *.pem
+
+# Gradle build output
+SDUI-server/bin/
+SDUI-server/build/
