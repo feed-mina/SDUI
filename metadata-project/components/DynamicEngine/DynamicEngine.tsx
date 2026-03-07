@@ -68,7 +68,8 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
                     .trim();
 
                 // * 액션타입으로 액션핸들러를 구분함, hasAction은 True or False
-                const hasAction = !!node.actionType;
+                // camelCase(actionType)와 snake_case(action_type) 모두 지원
+                const hasAction = !!(node.actionType || node.action_type);
 
 
                 // * 리피터 과정 (그룹일 경우 리스트이기 때문에 리피터로 렌더링)

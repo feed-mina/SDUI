@@ -56,8 +56,10 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                     };
                     const res = await axios.post(actionUrl || '/api/auth/login', loginData);
                     if (res.status === 200) {
-                        //   AuthContext의 상태 업데이트
-                        login(res.data);
+                        // LoginResponse는 jwt만 포함 → role이 없음
+                        // /api/auth/me로 전체 사용자 정보(role 포함) 재조회
+                        const userRes = await axios.get('/api/auth/me');
+                        login(userRes.data);
                         alert("로그인 성공!");
                         router.push('/view/MAIN_PAGE');
                     }
