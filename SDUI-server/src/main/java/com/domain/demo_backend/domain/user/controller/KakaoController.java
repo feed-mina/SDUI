@@ -1,6 +1,5 @@
 package com.domain.demo_backend.domain.user.controller;
 
-
 import com.domain.demo_backend.domain.token.domain.RefreshTokenRepository;
 import com.domain.demo_backend.domain.token.domain.TokenResponse;
 import com.domain.demo_backend.domain.user.dto.KakaoAuthRequest;
@@ -25,6 +24,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +39,6 @@ public class KakaoController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final KakaoService kakaoService;
     private final JwtUtil jwtUtil;
-
 
     @Value("${app.url.web}")
     private String webUrl;
@@ -78,9 +77,10 @@ public class KakaoController {
 
             // 2. 사용자 정보를 이용해 DB에 회원가입 또는 조회를 진행해
             // JWT 토큰을 발급받아
-//        String jwtToken = kakaoService.registerKakaoUser(kakaoUserInfo, kakaoAuthRequest.getAccessToken());
-            TokenResponse tokenResponse = kakaoService.registerKakaoUser(kakaoUserInfo, kakaoAuthRequest.getAccessToken());
-
+            // String jwtToken = kakaoService.registerKakaoUser(kakaoUserInfo,
+            // kakaoAuthRequest.getAccessToken());
+            TokenResponse tokenResponse = kakaoService.registerKakaoUser(kakaoUserInfo,
+                    kakaoAuthRequest.getAccessToken());
 
             // 5. Refresh Token 쿠키 생성
             ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
@@ -102,7 +102,6 @@ public class KakaoController {
 
             response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
-
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                     .header(HttpHeaders.SET_COOKIE, roleCookie.toString())
@@ -118,7 +117,8 @@ public class KakaoController {
     }
 
     @GetMapping("/callback")
-    public ResponseEntity<Map<String, Object>> getAccessToken(@RequestParam String code,  @RequestParam(required = false) String state, HttpServletResponse response) {
+    public ResponseEntity<?> getAccessToken(@RequestParam String code, @RequestParam(required = false) String state,
+            HttpServletResponse response) {
         log.info("KAKAOCONTROLLER-code: " + code);
 
         log.info("KAKAOCONTROLLER-@@@@@@@@@@@@@@@@@@@@@@@@");
@@ -145,8 +145,7 @@ public class KakaoController {
                 "https://kauth.kakao.com/oauth/token",
                 HttpMethod.POST,
                 request,
-                Map.class
-        );
+                Map.class);
         String kakaoAccessToken = (String) tokenResponse.getBody().get("access_token");
 
         // 2. 사용자 정보 조회
@@ -158,7 +157,7 @@ public class KakaoController {
         // 4. Access Token 쿠키 생성
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())
                 .httpOnly(true)
-                .secure(false) // 로컬 테스트 시 false로 설정해야 쿠키가 보임 
+                .secure(false) // 로컬 테스트 시 false로 설정해야 쿠키가 보임
                 .path("/")
                 .maxAge(3600)
                 .sameSite("Lax") // 로컬 테스트용
@@ -196,17 +195,20 @@ public class KakaoController {
         // state 값이 없으면 기본적으로 'web'으로 간주
         String platform = (state != null) ? state : "web";
 
-        // JSON 응답 반환 (Next.js API Route 호환)
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("accessToken", jwtToken.getAccessToken());
-        responseBody.put("refreshToken", jwtToken.getRefreshToken());
-        responseBody.put("role", jwtToken.getRole());
-        responseBody.put("message", "카카오 로그인 성공");
-        responseBody.put("platform", platform);
-
-        log.info("KAKAOCONTROLLER-response: role={}, platform={}", jwtToken.getRole(), platform);
-
-        return ResponseEntity.ok(responseBody);
+        if ("mobile".equals(platform)) {
+            // JSON 응답 반환 (Next.js API Route 호환)
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("accessToken", jwtToken.getAccessToken());
+            responseBody.put("refreshToken", jwtToken.getRefreshToken());
+            responseBody.put("role", jwtToken.getRole());
+            responseBody.put("message", "카카오 로그인 성공");
+            responseBody.put("platform", platform);
+            log.info("KAKAOCONTROLLER-response: role={}, platform={}", jwtToken.getRole(), platform);
+            return ResponseEntity.ok(responseBody);
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create(webUrl));
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
     @PostMapping("/sendRecord")
@@ -216,7 +218,7 @@ public class KakaoController {
 
         log.info("KAKAOCONTROLLER- Received Authorization header: {}", authorization);
 
-        //  Authorization 헤더 검증
+        // Authorization 헤더 검증
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             log.error(" Authorization 헤더가 없거나 잘못됨: {}", authorization);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("카카오 토큰이 필요합니다.");
@@ -224,7 +226,7 @@ public class KakaoController {
 
         String kakaoAccessToken = (String) data.get("kakaoAccessToken");
         log.info("KAKAOCONTROLLER-📩 Kakao AccessToken from body: {}", kakaoAccessToken);
-        //  JWT 검증
+        // JWT 검증
         String jwtToken = authorization.substring(7);
         log.info("KAKAOCONTROLLER- Extracted Access Token: {}", jwtToken);
 
@@ -234,7 +236,7 @@ public class KakaoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰");
         }
 
-        //  카카오 사용자 정보 조회
+        // 카카오 사용자 정보 조회
         KakaoUserInfo kakaoUserInfo;
         try {
             kakaoUserInfo = kakaoService.getKakaoUserInfo(kakaoAccessToken);
@@ -247,7 +249,7 @@ public class KakaoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("카카오 사용자 정보 조회 실패");
         }
 
-        //  클라이언트 로그인 유도 (필요 시)
+        // 클라이언트 로그인 유도 (필요 시)
         if (clientId == null || redirectUri == null) {
             String loginUrl = "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id="
                     + clientId + "&redirect_uri=" + redirectUri;
@@ -255,7 +257,7 @@ public class KakaoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(loginUrl);
         }
 
-        //  전송할 데이터 정리
+        // 전송할 데이터 정리
         Integer stopwatchTime = (Integer) data.getOrDefault("stopwatchTime", 0);
         Integer pomodoroCount = (Integer) data.getOrDefault("pomodoroCount", 0);
         Integer pomodoroTotalTime = (Integer) data.getOrDefault("pomodoroTotalTime", 0);
@@ -265,7 +267,7 @@ public class KakaoController {
                 stopwatchTime, pomodoroCount, pomodoroTotalTime);
         log.info("KAKAOCONTROLLER- recordUrl: {}", recordUrl);
 
-        //  메시지 구성
+        // 메시지 구성
         StringBuilder message = new StringBuilder();
 
         if (stopwatchTime > 0) {
@@ -288,19 +290,16 @@ public class KakaoController {
 
         Map<String, Object> messageMap = Map.of(
                 "object_type", "text",
-                "text", messageText,  // 여기 messageText는 그대로 써도 됨 (줄바꿈, 특수문자 포함 가능)
+                "text", messageText, // 여기 messageText는 그대로 써도 됨 (줄바꿈, 특수문자 포함 가능)
                 "link", Map.of(
                         "web_url", recordUrl,
-                        "mobile_web_url", recordUrl
-                )
-        );
+                        "mobile_web_url", recordUrl));
 
         String templateObject = objectMapper.writeValueAsString(messageMap);
 
-
         log.info("KAKAOCONTROLLER- 최종 메시지: {}", messageText);
 
-        //  카카오톡 메시지 전송 준비
+        // 카카오톡 메시지 전송 준비
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + kakaoAccessToken);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -308,12 +307,11 @@ public class KakaoController {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("template_object", templateObject);
 
-
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         log.info("KAKAOCONTROLLER- 카카오 API 요청: {}", request);
 
-        //  카카오 API 요청 전송
+        // 카카오 API 요청 전송
         try {
             ResponseEntity<String> response = new RestTemplate().postForEntity(KAKAO_URL, request, String.class);
             log.info("KAKAOCONTROLLER- 카카오톡 메시지 전송 성공! 응답: {}", response);
@@ -323,15 +321,17 @@ public class KakaoController {
             return ResponseEntity.status(e.getStatusCode()).body("카톡 전송 실패! 오류: " + e.getResponseBodyAsString());
         }
     }
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletResponse response) {
+    public ResponseEntity<?> logout(@AuthenticationPrincipal CustomUserDetails userDetails,
+            HttpServletResponse response) {
         // 1. Redis에서 리프레시 토큰 삭제
         if (userDetails != null) {
             refreshTokenRepository.deleteById(userDetails.getUserSqno()); // 사용자 고유 번호로 토큰 삭제
         }
 
-        // 모든 인증 관련 쿠키 일괄 삭제 
-        String[] cookiesToClear = {"accessToken", "refreshToken", "loginType"};
+        // 모든 인증 관련 쿠키 일괄 삭제
+        String[] cookiesToClear = { "accessToken", "refreshToken", "loginType" };
         for (String cookieName : cookiesToClear) {
             ResponseCookie cookie = ResponseCookie.from(cookieName, "")
                     .path("/")
@@ -344,6 +344,7 @@ public class KakaoController {
 
         return ResponseEntity.ok().body("로컬 로그아웃 성공");
     }
+
     // KakaoController.java 내부 하단에 추가
     private void addAuthCookies(HttpServletResponse response, TokenResponse tokens, String type) {
         // 1. Access Token (HttpOnly)
@@ -354,7 +355,7 @@ public class KakaoController {
         ResponseCookie refresh = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
                 .path("/").maxAge(7 * 24 * 60 * 60).httpOnly(true).secure(false).sameSite("Lax").build();
 
-        // 3. Login Type Flag (일반 쿠키 - 프론트엔드 노출용) 
+        // 3. Login Type Flag (일반 쿠키 - 프론트엔드 노출용)
         ResponseCookie loginType = ResponseCookie.from("loginType", type)
                 .path("/").maxAge(3600).httpOnly(false).build();
 

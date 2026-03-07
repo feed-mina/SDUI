@@ -405,3 +405,18 @@ private static final List<String> EXCLUDE_URLS = List.of(
 | WebSocket Origin `*` → 실제 도메인으로 제한 | **P2** | ❌ 미수정 (WebSocketConfig `setAllowedOriginPatterns("*")` 유지) |
 | `anyRequest().denyAll()` 유지 확인 | — | ✅ 이미 적용됨 |
 | `/api/auth/editPassword`, `/api/auth/non-user` authenticated | — | ✅ 이미 적용됨 |
+
+---
+
+### 2026-03-07: 이슈 및 해결 기록
+
+#### 1. 카카오 로그인 리다이렉트 문제 (해결됨)
+- **현상:** 카카오 로그인 후 백엔드에서 프론트엔드로 리다이렉트되지 않고 JSON 응답이 표시됨 (`/api/kakao/callback`).
+- **원인:** `KakaoController`가 모바일/웹 분기 처리 없이 무조건 JSON(`ResponseEntity.ok`)을 반환하도록 구현되어 있었음.
+- **해결:** `state` 파라미터(platform)를 확인하여 `mobile`이 아닐 경우 `webUrl`로 `302 Found` 리다이렉트하도록 수정함.
+
+#### 2. 배포 후 데이터 불일치 미스터리 (진행 중)
+- **현상:** 배포된 환경에서 일반 로그인은 정상적으로 되는데, DB의 `users` 테이블을 조회하면 데이터가 없음.
+- **가설:**
+    - 애플리케이션이 바라보는 DB(`SDUI_LAB` vs `SDUI_TD`)와 사용자가 직접 조회하는 DB가 다를 가능성이 높음.
+    - `deploy.yml` 설정상 `lab` 브랜치는 `SDUI_LAB` 데이터베이스를 사용하고, `main` 브랜치는 `SDUI_TD`를 사용함.
