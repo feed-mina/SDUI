@@ -1926,3 +1926,103 @@ button:hover {
     color: inherit;
     font-style: normal;
 }
+
+/* ════════════════════════════════════════
+   MAIN_PAGE — 벤토 UI 폴리시 (2026-03-07)
+   ════════════════════════════════════════ */
+
+/* ── 카드 hover 리프트 ── */
+.bento-card {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.bento-card-diary:hover,
+.bento-card-login:hover,
+.bento-card-dark:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+}
+.bento-card-diary  { transition: background 0.2s, transform 0.2s, box-shadow 0.2s; }
+.bento-card-login  { transition: background 0.2s, transform 0.2s, box-shadow 0.2s; }
+.bento-card-dark   { transition: background 0.2s, transform 0.2s, box-shadow 0.2s; }
+
+/* ── 타이포그래피 개선 ── */
+.bento-card-icon  {
+    font-size: 1.9rem;
+    margin-bottom: 12px;
+    line-height: 1;
+}
+.bento-card-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+.bento-card-desc  {
+    font-size: 0.855rem;
+    opacity: 0.78;
+    line-height: 1.6;
+}
+
+/* ── 화살표: 자동으로 카드 하단에 위치 ── */
+.bento-card-arrow {
+    margin-top: auto;
+    padding-top: 16px;
+    transition: transform 0.2s ease;
+}
+.bento-card-diary:hover .bento-card-arrow,
+.bento-card-login:hover .bento-card-arrow {
+    transform: translateX(4px);
+}
+
+/* ── 태그 버튼: 더 선명하고 둥글게 ── */
+.bento-card-tag {
+    margin-top: auto;
+    font-size: 0.76rem;
+    padding: 6px 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: rgba(255, 255, 255, .18);
+    border-radius: 999px;
+}
+
+/* ── 데스크톱: 다크 카드(full-width) 가로 레이아웃 ── */
+@media (min-width: 1000px) {
+    .group-main_bento_view_grp,
+    .group-main_bento_tutorial_grp {
+        flex-direction: row !important;
+        align-items: center;
+        gap: 0;
+    }
+    .group-main_bento_view_body,
+    .group-main_bento_tutorial_body {
+        flex: 1;
+    }
+    .group-main_bento_view_grp > .bento-card-tag,
+    .group-main_bento_view_grp > .ui-text-field,
+    .group-main_bento_tutorial_grp > .bento-card-tag,
+    .group-main_bento_tutorial_grp > .ui-text-field {
+        margin-top: 0;
+        align-self: center;
+        flex-shrink: 0;
+    }
+}
+
+/* ── 모바일: 시간 기록 위젯 레이아웃 개선 ── */
+@media (max-width: 999px) {
+    .main-bento .clock-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding-bottom: 8px;
+    }
+    .main-bento .target-time-label { font-size: 13px; }
+    .main-bento .formatted-time    { font-size: 20px; margin-bottom: 2px; }
+    .main-bento .remain-time       { font-size: 20px; }
+    .main-bento .arrival-button    { width: 100%; padding: 12px 20px; font-size: 15px; }
+    .main-bento .arrival-button-container { width: 100%; }
+}
+
+/* ── 벤토 내 INPUT 라벨 숨김 (구버전 AWS 배포 호환) ──
+   V8 이후 bento에 INPUT 컴포넌트는 없어야 하지만, 아직 미배포 환경 대비 */
+.main-bento .input-group-wrapper { display: none !important; }
