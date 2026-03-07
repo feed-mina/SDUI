@@ -187,15 +187,15 @@ public class KakaoController {
                 .path("/")
                 .maxAge(3600)
                 .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
 
         // state 값이 없으면 기본적으로 'web'으로 간주
         String platform = (state != null) ? state : "web";
 
         if ("mobile".equals(platform)) {
+            response.addHeader(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, roleCookie.toString());
             // JSON 응답 반환 (Next.js API Route 호환)
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("accessToken", jwtToken.getAccessToken());
@@ -208,6 +208,10 @@ public class KakaoController {
         }
         HttpHeaders redirectHeaders = new HttpHeaders();
         redirectHeaders.setLocation(URI.create(webUrl));
+        redirectHeaders.add(HttpHeaders.SET_COOKIE, loginTypeCookie.toString());
+        redirectHeaders.add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        redirectHeaders.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+        redirectHeaders.add(HttpHeaders.SET_COOKIE, roleCookie.toString());
         return new ResponseEntity<>(redirectHeaders, HttpStatus.FOUND);
     }
 
