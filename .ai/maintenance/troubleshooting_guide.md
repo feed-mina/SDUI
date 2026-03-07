@@ -325,6 +325,74 @@ logging:
 
 ---
 
+### 문제 2-4: EC2 디스크 공간 부족 (no space left on device)
+
+**증상**:
+```
+failed to register layer: write /app/app.jar: no space left on device
+Process exited with status 1
+Error: Process completed with exit code 1.
+```
+GitHub Actions 배포 시 Docker 이미지 pull 단계에서 발생.
+
+**실제 발생 사례 (2026-03-07)**:
+- `fix: css/ssr hydration 불일치 해결` 커밋 배포 후 발생
+- `docker system prune -af` 실행 → 752.7MB 확보 → 재배포 성공
+
+**원인**:
+- 누적된 Docker 이미지 레이어, dangling 이미지, 빌드 캐시가 디스크를 점유
+
+**1단계: 디스크 현황 확인**
+```bash
+df -h
+# /dev/root    (또는 /dev/xvda1) 의 Use% 확인 → 90%+ 이면 위험
+```
+
+**2단계: DB 볼륨 타입 확인 (정리 전 필수)**
+```bash
+# 볼륨 목록 확인
+docker volume ls
+
+# DB 컨테이너 마운트 정보 확인
+docker inspect sdui-db | grep -A 10 "Mounts"
+```
+
+**⚠️ EC2 sdui-db 볼륨 정보 (2026-03-07 확인)**:
+```
+"Type": "volume",
+"Name": "fa61ab46cac2510a942d758f53837d8c8851f145e6e4cd29f049a86ce87363fa",
+"Destination": "/var/lib/postgresql/data"
+```
+DB가 **익명 볼륨(Anonymous Volume, 해시 이름)** 을 사용 중.
+→ 이름이 없기 때문에 `docker volume prune` 시 삭제될 위험이 있음.
+
+**3단계: 안전한 공간 확보 (볼륨 제외)**
+```bash
+# 이미지/컨테이너/네트워크/빌드 캐시만 정리 (볼륨 제외 = 기본값)
+docker system prune -af
+```
+`--volumes` 플래그를 붙이지 않으면 볼륨은 삭제되지 않음 → **DB 데이터 안전**.
+
+**절대 실행 금지**:
+```bash
+# ❌ DB 익명 볼륨이 삭제될 수 있음
+docker system prune -af --volumes
+docker volume prune
+```
+
+**4단계: 정리 후 확인 및 재배포**
+```bash
+df -h  # 공간 확보 확인
+# GitHub Actions → Re-run failed jobs
+```
+
+**근본적 해결 (디스크 계속 부족한 경우)**:
+- AWS Console → EC2 → EBS 볼륨 수정으로 용량 증설
+- 또는 Docker 로그 용량 제한 설정 (문제 2-3 참조)
+- **권장**: 현재 DB 볼륨은 익명 볼륨(해시값)입니다. 향후 `docker-compose.yml`에서 Named Volume으로 전환하면 `docker volume prune` 실수로부터 데이터를 보호하고 관리가 용이해집니다. (단, 이 작업은 기존 데이터를 새 볼륨으로 옮기는 마이그레이션 과정이 필요합니다.)
+
+---
+
 ## 3. 데이터베이스 관련 문제
 
 ### 문제 3-1: 데이터베이스가 존재하지 않음
