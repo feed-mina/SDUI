@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 export const useDeviceType = () => {
-    const [isMobile, setIsMobile] = useState(false);
+    const [isMobile, setIsMobile] = useState(true); // 모바일 우선(SSR hydration 플래시 방지)
 
     useEffect(() => {
         const checkMobile = () => {

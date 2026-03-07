@@ -158,9 +158,7 @@ interface Metadata {
 | React.memo / useMemo | 개별 컴포넌트 | 불필요한 리렌더링 방지 |
 | React Query stale 5분 | MetadataProvider | API 중복 호출 방지 |
 | formDataRef | useBaseActions | 클로저 문제 방지 |
-<<<<<<< HEAD
  
-=======
 
 ---
 
@@ -336,8 +334,7 @@ V6 → diary → content 참조 업데이트 (no-op)
 V7 → diary 테이블 삭제
 V8 → MAIN_PAGE 벤토 그리드 삽입 (ROLE_USER 3장 + ROLE_GUEST 3장)
 ```
-
->>>>>>> feature/main_page_product
+ 
 ---
 
 ## [P2] Security Audit — JWT & XSS 취약점 현황 분석 (코드 재검증)
@@ -437,17 +434,14 @@ ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenRes
 
 | 헤더 | 설정 여부 |
 |------|---------|
-<<<<<<< HEAD
 | Content-Security-Policy | ✅ 이미 구현됨 |
 | X-Frame-Options | ✅ 이미 구현됨 |
 | X-Content-Type-Options | ✅ 이미 구현됨 |
 | Strict-Transport-Security | ✅ 이미 구현됨 |
-=======
 | Content-Security-Policy | ✅ 구현됨 (next.config.ts) |
 | X-Frame-Options | ✅ 구현됨 (next.config.ts) |
 | X-Content-Type-Options | ✅ 구현됨 (next.config.ts) |
 | Strict-Transport-Security | ✅ 구현됨 (next.config.ts) |
->>>>>>> feature/main_page_product
 
 ---
 
@@ -505,7 +499,6 @@ async headers() {
 |------|---------|------|
 | `useUserActions.tsx:76` 민감 로그 | 완료 | ✅ commit b2ec8d5 |
 | 백엔드 HttpOnly 쿠키 설정 | 완료 | ✅ 이미 구현됨 |
-<<<<<<< HEAD
 | `axios.tsx` localStorage → 쿠키 전환 | **P1** | ✅ 이미 구현됨 |
 | CSP / 보안 헤더 추가 | **P1** | ✅ 이미 구현됨 |
 | 백엔드 System.out.println 정리 | **P2** | ✅ 이미 구현됨 |
@@ -793,6 +786,31 @@ pages.css 추가 클래스:
 
 
 ---
+
+## 이슈 및 해결 기록
+
+### 2026-03-07: 레이아웃 CSS / SSR Hydration 불일치
+
+- **현상:** 모바일 뷰에서 `pc-top-utility` 안의 `RecordTimeComponent`(⏰ 카드)가 벤토 그리드 위에 중복 표시되는 경우가 간헐적으로 발생. 또한 1000~1023px 구간에서 JS는 PC로 판단하는데 CSS가 모바일 레이아웃을 강제 적용하는 불일치 존재.
+
+- **원인 1 — CSS 미디어 쿼리 불일치:**
+  - `pages.css:229`: `@media (max-width: 1023px)`로 `.group-MAIN_TOP_CARD` 모바일 레이아웃 적용
+  - JS `useDeviceType` 기준은 `< 1000px` (999px 이하가 모바일)
+  - 1000~1023px 구간: JS는 `is-pc` 클래스 부여 → PC 레이아웃 의도, CSS는 여전히 모바일 강제
+
+- **원인 2 — SSR Hydration 플래시:**
+  - `useDeviceType.tsx`: 초기값 `useState(false)` → 서버/첫 렌더링 시 항상 `isMobile = false`
+  - `AppShell`에서 `isPc = true`로 시작 → 모바일 기기에서도 첫 렌더에 `pc-top-utility` + `RecordTimeComponent` 렌더링
+  - `useEffect`가 실행되며 `isMobile = true`로 전환되지만 그 전에 이미 화면에 그려짐
+
+- **해결:**
+  - `pages.css:229`: `@media (max-width: 1023px)` → `@media (max-width: 999px)` (JS 기준 통일)
+  - `useDeviceType.tsx`: 초기값 `false` → `true` (모바일 우선 — SSR 렌더는 모바일 레이아웃으로 시작, 실제 PC라면 `useEffect` 후 전환)
+
+- **관련 파일:**
+  - `metadata-project/app/styles/pages.css` line 229
+  - `metadata-project/hooks/useDeviceType.tsx` line 4
+
 ---
 
 ## 분석 히스토리
@@ -806,9 +824,9 @@ pages.css 추가 클래스:
 | 2026-03-06 | UiService/UiController RBAC 코드 확인             | isAccessible() 구현됨, GUEST 카드 NULL→'ROLE_GUEST' 수정               |
 | 2026-03-06 | componentMap.tsx 확인                             | TIME_RECORD_WIDGET ✅ 등록됨                                            |
 | 2026-03-06 | V8 SQL + pages.css CSS 생성 완료                  | 구현 파일 2개 생성, QA 검증 대기                                        |
-=======
 | `axios.tsx` localStorage → 쿠키 전환 | **P1** | ✅ 수정됨 (2026-03-01, localStorage 라인 주석 처리) |
 | CSP / 보안 헤더 추가 | **P1** | ✅ 구현됨 (next.config.ts `async headers()`) |
 | 백엔드 System.out.println 정리 | **P2** | ❌ 미수정 (backend_engineer 담당) |
 | 프로덕션 `secure(true)` 설정 | **P2** | ❌ 미수정 (AWS 배포 시 적용 필요) |
->>>>>>> feature/main_page_product
+
+---

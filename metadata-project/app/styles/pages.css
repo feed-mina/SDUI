@@ -225,8 +225,8 @@
 }
 
 
-/* 모바일 전용 배치 (검은색 터미널 창 내용 반영) */
-@media (max-width: 1023px) {
+/* 모바일 전용 배치 (useDeviceType 훅의 1000px 기준과 일치) */
+@media (max-width: 999px) {
     .group-MAIN_TOP_CARD {
         display: flex;
         flex-direction: column !important;
