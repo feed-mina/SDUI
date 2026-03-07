@@ -29,8 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/auth/refresh",
             "/api/kakao/login",
             "/api/kakao/callback",
-            "/api/ui/LOGIN_PAGE",
-            "/api/ui/MAIN_PAGE"
+            "/api/ui/LOGIN_PAGE"
     );
     private final JwtUtil jwtUtil;
     // 2026-01-25 RefreshTokenRepository 주입 성능개선
