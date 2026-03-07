@@ -3,9 +3,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    # deploy.yml의 SPRING_DATASOURCE_* 환경변수가 자동으로 적용되므로 제거합니다.
   data:
     redis:
       host: sdui-redis
@@ -28,8 +26,8 @@ jwt:
 
 app:
   url:
-    web: ${WEB_URL:http://sdui-delta.vercel.app}
-    mobile: ${MOBILE_URL:http://sdui-delta.vercel.app://}
+    web: ${WEB_URL:https://sdui-delta.vercel.app}
+    mobile: ${MOBILE_URL:https://sdui-delta.vercel.app}
 
 kakao:
-  redirect-uri: https://sdui-delta.vercel.app/api/kakao/callback
+  redirect-uri: ${KAKAO_REDIRECT_URI}

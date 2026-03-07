@@ -26,8 +26,8 @@ jwt:
 
 app:
   url:
-    web: ${WEB_URL:http://sdui-delta.vercel.app}
-    mobile: ${MOBILE_URL:http://sdui-delta.vercel.app://}
+    web: ${WEB_URL:https://sdui-delta.vercel.app}
+    mobile: ${MOBILE_URL:https://sdui-delta.vercel.app}
 
 kakao:
   redirect-uri: ${KAKAO_REDIRECT_URI}

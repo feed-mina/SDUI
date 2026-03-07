@@ -92,8 +92,9 @@ jobs:
               -e SPRING_DATA_REDIS_HOST=sdui-redis \
               -e SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
               -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
-              -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
               -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
+              -e KAKAO_REDIRECT_URI=https://sdui-delta.vercel.app/api/kakao/callback \
+              -e WEB_URL=https://sdui-delta.vercel.app \
               ${{ secrets.DOCKER_USERNAME }}/sdui-app:${{ env.BRANCH_TAG }}
 
             # 헬스 체크 (30초 대기)

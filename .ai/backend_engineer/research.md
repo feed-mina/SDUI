@@ -410,13 +410,28 @@ private static final List<String> EXCLUDE_URLS = List.of(
 
 ### 2026-03-07: 이슈 및 해결 기록
 
-#### 1. 카카오 로그인 리다이렉트 문제 (해결됨)
-- **현상:** 카카오 로그인 후 백엔드에서 프론트엔드로 리다이렉트되지 않고 JSON 응답이 표시됨 (`/api/kakao/callback`).
-- **원인:** `KakaoController`가 모바일/웹 분기 처리 없이 무조건 JSON(`ResponseEntity.ok`)을 반환하도록 구현되어 있었음.
-- **해결:** `state` 파라미터(platform)를 확인하여 `mobile`이 아닐 경우 `webUrl`로 `302 Found` 리다이렉트하도록 수정함.
+#### 1. 카카오 로그인 리다이렉트 문제 (1차 수정 완료 → 2차 버그 발견)
+- **1차 현상(해결됨):** 카카오 로그인 후 JSON 응답이 표시됨. state 분기 처리로 수정.
+- **2차 현상(2026-03-07 발견):** 배포 후 카카오 로그인 시 로그인이 안되고 바로 메인페이지로 이동.
+- **2차 원인 (쿠키 도메인 불일치):**
+  - `KAKAO_REDIRECT_URI`가 백엔드 직접 URL(`yerin.duckdns.org/api/kakao/callback`)로 설정되어 있었음.
+  - 카카오가 브라우저를 `yerin.duckdns.org`로 직접 리다이렉트 → 백엔드가 쿠키를 `yerin.duckdns.org` 도메인에 설정 후 Vercel(sdui-delta.vercel.app)로 302.
+  - 브라우저가 Vercel에 도착하면 `yerin.duckdns.org` 도메인 쿠키는 전송되지 않음 → `accessToken` 없음 → 로그인 안된 상태로 메인페이지 표시.
+  - `WEB_URL`도 deploy.yml에 미주입, `http://` 기본값 사용.
+- **2차 해결:**
+  - `deploy.yml`: `KAKAO_REDIRECT_URI=https://sdui-delta.vercel.app/api/kakao/callback` (비밀이 아니므로 하드코딩), `WEB_URL=https://sdui-delta.vercel.app` 추가.
+  - `application-prod.yml`: WEB_URL 기본값을 `https://`로 수정.
+  - `V11__fix_kakao_redirect_uri.sql`: DB `ui_metadata`의 카카오 버튼 `action_url`도 새 redirect_uri로 업데이트.
+  - **사용자가 수동으로 해야 할 일**: 카카오 개발자 콘솔에서 `https://sdui-delta.vercel.app/api/kakao/callback`을 Redirect URI로 등록.
+- **동작 원리:** `sdui-delta.vercel.app/api/kakao/callback` → Next.js rewrite → `yerin.duckdns.org/api/kakao/callback` → 백엔드 처리 후 302+Set-Cookie → Next.js가 응답 전달 → 쿠키가 `sdui-delta.vercel.app` 도메인에 설정됨 ✓
 
 #### 2. 배포 후 데이터 불일치 미스터리 (진행 중)
 - **현상:** 배포된 환경에서 일반 로그인은 정상적으로 되는데, DB의 `users` 테이블을 조회하면 데이터가 없음.
 - **가설:**
     - 애플리케이션이 바라보는 DB(`SDUI_LAB` vs `SDUI_TD`)와 사용자가 직접 조회하는 DB가 다를 가능성이 높음.
     - `deploy.yml` 설정상 `lab` 브랜치는 `SDUI_LAB` 데이터베이스를 사용하고, `main` 브랜치는 `SDUI_TD`를 사용함.
+
+#### 3. DB 백업 전략 변경 (2026-03-07)
+- **기존:** `pg_dump` 후 AWS S3 버킷으로 업로드.
+- **변경:** S3 미사용 요청에 따라 **EC2 로컬 저장 + 7일 보관 주기(Retention)** 방식으로 변경.
+- **스크립트:** `.ai/scripts/backup_sdui_db_to_s3.sh` (파일명은 유지하되 내용은 로컬 백업으로 수정됨).
