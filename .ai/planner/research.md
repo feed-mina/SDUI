@@ -4,21 +4,22 @@
 
 ---
 
-## 현재 화면 인벤토리 (2026-02-28 기준)
+## 현재 화면 인벤토리 (2026-03-06 기준)
 
 | screen_id | URL 경로 | 인증 필요 | 설명 |
 |-----------|----------|-----------|------|
-| MAIN_PAGE | `/` | No | 메인 화면 |
+| MAIN_PAGE | `/` 또는 `/MAIN_PAGE` | No | 메인 화면 (벤토 그리드 — V8) |
 | LOGIN_PAGE | `/LOGIN_PAGE` | No | 로그인 화면 |
-| DIARY_LIST | `/DIARY_LIST` | **Yes** | 일기 목록 |
-| DIARY_WRITE | `/DIARY_WRITE` | **Yes** | 일기 작성 |
-| DIARY_DETAIL | `/DIARY_DETAIL` | **Yes** | 일기 상세 |
-| DIARY_MODIFY | `/DIARY_MODIFY` | **Yes** | 일기 수정 |
-| SET_TIME_PAGE | `/SET_TIME_PAGE` | ? | 시간 설정 |
+| CONTENT_LIST | `/CONTENT_LIST` | **Yes** | 콘텐츠 목록 (DIARY_LIST → 변경) |
+| CONTENT_WRITE | `/CONTENT_WRITE` | **Yes** | 콘텐츠 작성 (DIARY_WRITE → 변경) |
+| CONTENT_DETAIL | `/CONTENT_DETAIL` | **Yes** | 콘텐츠 상세 (DIARY_DETAIL → 변경) |
+| CONTENT_MODIFY | `/CONTENT_MODIFY` | **Yes** | 콘텐츠 수정 (DIARY_MODIFY → 변경) |
+| SET_TIME_PAGE | `/SET_TIME_PAGE` | No | 시간 설정 |
 | TUTORIAL_PAGE | `/TUTORIAL_PAGE` | No | 튜토리얼 |
-| (미정) | `/MY_PAGE` | **Yes** | 마이페이지 (코드 참조됨) |
-| (미정) | `/VERIFY_CODE_PAGE` | No | 이메일 인증 (코드 참조됨) |
-| (미정) | `/REGISTER_PAGE` | No | 회원가입 (코드 참조됨) |
+| (미구현) | `/MY_PAGE` | **Yes** | 마이페이지 — screenMap 주석 처리 상태 |
+| (미구현) | `/VERIFY_CODE_PAGE` | No | 이메일 인증 — screenMap 미등록 |
+| (미구현) | `/REGISTER_PAGE` | No | 회원가입 — screenMap 미등록 |
+| (미구현) | `/DASHBOARD_PAGE` | ? | 대시보드 — screenMap 주석 처리 상태 |
 
 ---
 
@@ -97,23 +98,25 @@
 ### 데이터 필요 화면
 | 화면 | 데이터 소스 | 설명 |
 |------|------------|------|
-| DIARY_LIST | query_master (AUTO_FETCH) | 사용자 일기 목록, 페이지네이션 |
-| DIARY_DETAIL | query_master (AUTO_FETCH) | refId로 특정 일기 조회 |
-| DIARY_MODIFY | query_master (AUTO_FETCH) | refId로 수정할 일기 로드 |
+| CONTENT_LIST | query_master (AUTO_FETCH) | 사용자 콘텐츠 목록, 페이지네이션 |
+| CONTENT_DETAIL | query_master (AUTO_FETCH) | refId로 특정 콘텐츠 조회 |
+| CONTENT_MODIFY | query_master (AUTO_FETCH) | refId로 수정할 콘텐츠 로드 |
 
 ---
 
-## 갭(Gap) 분석 — 기획 관점
+## 갭(Gap) 분석 — 기획 관점 (2026-03-06 업데이트)
 
 ### 미구현/미완성 화면
-1. `MY_PAGE` — `PROTECTED_SCREENS`에 정의됨, `screenMap`에 없음
-2. `REGISTER_PAGE` — 코드에서 참조됨, screenMap에 없음
-3. `VERIFY_CODE_PAGE` — 코드에서 참조됨, screenMap에 없음
+1. `MY_PAGE` — `PROTECTED_SCREENS`에 정의됨, `screenMap`은 주석 처리 상태
+2. `DASHBOARD_PAGE` — `screenMap`에 주석으로 등록됨, DB 메타데이터 없음
+3. `REGISTER_PAGE` — 코드에서 참조됨, screenMap 미등록
+4. `VERIFY_CODE_PAGE` — 코드에서 참조됨, screenMap 미등록
 
 ### 잠재적 신규 기능 후보
 - 알림/푸시 기능 (WebSocket 기반 인프라 있음)
 - 관리자 화면 (`ROLE_ADMIN` 역할 코드에 존재)
 - 프로필 설정 (`MY_PAGE`)
+- 대시보드 (`DASHBOARD_PAGE`)
 
 ---
 
@@ -122,3 +125,4 @@
 | 날짜 | 분석 내용 | 결론 |
 |------|-----------|------|
 | 2026-02-28 | 전체 화면/컴포넌트 인벤토리 작성 | 위 내용 도출 |
+| 2026-03-06 | DIARY→CONTENT 마이그레이션 반영, 미구현 화면 재확인 | screenMap 재확인, DASHBOARD_PAGE 추가 식별 |

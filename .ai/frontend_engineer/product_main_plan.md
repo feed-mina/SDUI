@@ -584,8 +584,9 @@ ORDER BY sort_order;
 - [ ] 3. `TUTORIAL_PAGE` screen_id DB 존재 여부 확인 (미실행 — 실행 전 확인 권장)
 - [x] 4. Flyway 마이그레이션 `V8__main_page_bento_grid.sql` 생성 ✅ (2026-03-06)
   - 경로: `SDUI-server/src/main/resources/db/migration/V8__main_page_bento_grid.sql`
-- [x] 5. `app/styles/pages.css` — 벤토 그리드 CSS 추가 ✅ (2026-03-06)
-  - globals.css 아님 → pages.css 하단(line 1715~)에 추가됨
+- [x] 5. `app/styles/pages.css` — 벤토 그리드 CSS 추가 ✅ (2026-03-07 재작업)
+  - pages.css 하단(line 1717~)에 추가됨
+  - flex-col-layout/flex-row-layout 헬퍼 + main-bento 3열 grid + 카드 타입별 + 내부 요소 + RecordTimeComponent override
 - [ ] 6. 로컬 DB에서 Flyway 마이그레이션 실행 → MAIN_PAGE 브라우저 확인
 - [ ] 7. PC 로그인 상태: 약속위젯(col1-2) + 다이어리쓰러가기(col3) + 다이어리보기(full) 확인
 - [ ] 8. PC 비로그인 상태: 시간설정하기(col1-2) + 로그인(col3) + 튜토리얼(full) 확인

@@ -130,10 +130,10 @@ interface Metadata {
 | AddressSearchGroup.tsx | ADDRESS_SEARCH_GROUP | 다음 우편번호 API |
 | EmotionSelectField.tsx | EMOTION_SELECT | 감정 인덱스(정수) |
 | EmailSelectField.tsx | EMAIL_SELECT | 도메인 선택 |
-| PhoneVerify.tsx | (미등록?) | 전화번호 인증 |
-| ArrivalButton.tsx | (미등록?) | 도착 버튼 |
+| PhoneVerify.tsx | ❌ componentMap 미등록 | 전화번호 인증 (직접 임베드 사용) |
+| ArrivalButton.tsx | ❌ componentMap 미등록 | 도착 버튼 (RecordTimeComponent 내부 직접 사용) |
 | RecordTimeComponent.tsx | TIME_RECORD_WIDGET | |
-| Pagination.tsx | (DynamicEngine 외부) | DIARY_LIST에서 직접 사용 |
+| Pagination.tsx | (DynamicEngine 외부) | CONTENT_LIST에서 직접 사용 |
 
 ---
 
@@ -167,6 +167,172 @@ interface Metadata {
 |------|-----------|------|
 | 2026-02-28 | 전체 프론트엔드 코드 초기 분석 | 위 내용 도출 |
 | 2026-02-28 | [P2] 민감정보 로그 노출 감사 | 아래 섹션 참고 |
+| 2026-03-06 | 로컬 Docker DB + Flyway 마이그레이션 완전 수정 | 아래 섹션 참고 |
+
+---
+
+## 로컬 Docker DB 환경 구성 및 Flyway 수정 (2026-03-06)
+
+### 배경 — 포트 충돌 문제
+
+| 서비스 | 포트 |
+|--------|------|
+| PostgreSQL 18 (로컬 설치) | 5432 |
+| PostgreSQL 13 (로컬 설치) | 5433 |
+| Docker sdui-db (변경 후) | **5434** |
+
+로컬 PostgreSQL 13이 5433을 점유하여 `application.yml`의 Docker DB 포트를 **5434로 변경**했다.
+변경 파일 3개: `src/main/resources/application.yml`, `out/production/resources/application.yml`, `bin/main/application.yml`
+
+```yaml
+# 변경 전
+url: jdbc:postgresql://localhost:5433/SDUI_TD
+# 변경 후
+url: jdbc:postgresql://localhost:5434/SDUI_TD
+```
+
+> **AWS 환경**: RDS를 사용하므로 포트 충돌 없음 — 이 변경 불필요.
+
+---
+
+### Flyway 마이그레이션 실패 원인 분석
+
+**현상:** Spring Boot 기동 시 V2 마이그레이션 실패
+```
+WARN  DB: there is already a transaction in progress (SQL State: 25001)
+ERROR Migration of schema "public" to version "2 - create content table" failed!
+       Message: ERROR: relation "users" does not exist
+       Location: db/migration/V2__create_content_table.sql
+       Line: 39
+```
+
+**근본 원인 두 가지:**
+
+1. **`baseline-version: 1` 설정**: V1은 실행 안 되고 V2부터 실행됨
+   → 빈 Docker DB에 `users` 테이블이 없어 V2의 FK 제약 실패
+2. **명시적 `BEGIN;/COMMIT;`**: V2~V8 모두 파일 안에 `BEGIN;/COMMIT;`을 포함
+   → Flyway가 이미 트랜잭션을 시작한 상태에서 중첩 트랜잭션 경고 발생
+
+---
+
+### V1 파일 문제
+
+기존 V1은 **주석/문서 전용** 파일이었다 (실제 SQL 없음).
+`baseline-version: 1`이므로 Flyway는 V1을 baseline marker로만 처리하고 실행하지 않는다.
+결과: 빈 Docker DB에 기본 테이블(`users`, `diary`, `ui_metadata`, `query_master`, `goal_settings`)이 없는 상태에서 V2가 실행되어 실패.
+
+---
+
+### 적용된 수정사항
+
+#### 1. `V1__baseline_schema.sql` — 실제 DDL로 교체
+
+기존 주석 전용 파일을 실제 테이블 생성 SQL로 교체:
+
+| 생성 테이블 | 비고 |
+|------------|------|
+| `users` | `user_sqno BIGSERIAL PK`, 인증·프로필 컬럼 전체 |
+| `diary` | `diary_id BIGSERIAL PK`, V7에서 삭제됨 |
+| `ui_metadata` | `ui_id BIGSERIAL PK`, 화면 메타데이터 |
+| `query_master` | `sql_key VARCHAR PK`, 동적 SQL |
+| `goal_settings` | `id BIGSERIAL PK`, 약속 시간 설정 |
+
+초기 데이터: V8 벤토 그리드 마이그레이션에 필요한 **MAIN_PAGE MAIN_SECTION** root GROUP 삽입
+
+```sql
+INSERT INTO ui_metadata
+  (screen_id, component_id, component_type, parent_group_id, label_text, css_class, sort_order, created_at)
+VALUES
+  ('MAIN_PAGE', 'MAIN_SECTION', 'GROUP', NULL, '메인', 'main-page', 1, NOW());
+```
+
+> `RefreshToken`은 `@RedisHash` → PostgreSQL 테이블 불필요
+
+#### 2. `application.yml` (3개 파일) — `baseline-version: 0`으로 변경
+
+```yaml
+# 변경 전
+baseline-version: 1   # V1은 baseline marker만 (실행 안 됨)
+# 변경 후
+baseline-version: 0   # V0이 baseline → V1부터 실제 실행
+```
+
+> **기존 DB(AWS)**: 이미 `flyway_schema_history`가 있으면 Flyway가 새 baseline을 삽입하지 않으므로 안전.
+
+#### 3. V2~V8 전 파일 — `BEGIN;` / `COMMIT;` 제거
+
+Flyway는 각 마이그레이션을 자체 트랜잭션으로 감싼다.
+파일 내 명시적 `BEGIN;/COMMIT;`은 중첩 트랜잭션 경고를 발생시키고 Flyway 상태를 혼란스럽게 한다.
+
+| 파일 | 처리 |
+|------|------|
+| V2__create_content_table.sql | `BEGIN;` / `COMMIT;` 제거 |
+| V3__migrate_diary_to_content.sql | `BEGIN;` / `COMMIT;` 제거 |
+| V4__update_ui_metadata_rbac.sql | `BEGIN;` / `COMMIT;` 제거 |
+| V5__update_query_master_redis.sql | `BEGIN;` / `COMMIT;` 제거 |
+| V6__update_metadata_content_refs.sql | `BEGIN;` / `COMMIT;` 제거 |
+| V7__drop_diary_table.sql | `BEGIN;` / `COMMIT;` 제거 |
+| V8__main_page_bento_grid.sql | `BEGIN;` / `COMMIT;` 제거 |
+
+---
+
+### docker-compose.yml 서비스 이름 주의
+
+```yaml
+services:
+  db:                      # ← 서비스 이름 (docker-compose 명령에 사용)
+    container_name: sdui-db  # ← 컨테이너 이름 (docker 명령에 사용)
+```
+
+```bash
+# 올바른 명령어
+docker-compose stop db
+docker-compose rm -f db
+docker-compose up -d db
+
+# 틀린 명령어 (에러 발생)
+docker-compose stop sdui-db   # ← no such service: sdui-db
+```
+
+---
+
+### 로컬 테스트 순서 (최종)
+
+```bash
+# 1. Docker DB 초기화 (SDUI 프로젝트 루트에서)
+docker-compose stop db
+docker-compose rm -f db
+docker-compose up -d db
+
+# 2. DB 기동 확인 (5~10초 후)
+docker ps   # sdui-db 컨테이너가 Up 상태인지 확인
+
+# 3. IntelliJ에서 DemoBackendApplication 재기동
+# → Flyway V1~V8 순차 실행
+# → Hibernate validate
+# → 서버 기동 완료 (8080)
+
+# 4. 프론트엔드 기동
+cd metadata-project && npm run dev
+
+# 5. 브라우저에서 확인
+# http://localhost:3000/view/MAIN_PAGE
+# - 비로그인(GUEST): 로그인 유도 카드 3장 (bento grid)
+# - 로그인(USER): 약속 위젯 + 다이어리 카드
+```
+
+### 예상 Flyway 실행 로그
+
+```
+V1 → users, diary, ui_metadata, query_master, goal_settings 생성 + MAIN_SECTION 삽입
+V2 → content 테이블 생성 (users FK 정상 참조)
+V3 → diary → content 데이터 이전 (빈 DB라 no-op)
+V4 → ui_metadata RBAC 컬럼 추가 (allowed_roles, label_text_overrides, css_class_overrides)
+V5 → query_master Redis 컬럼 추가 (use_redis_yn, redis_ttl_sec, param_mapping)
+V6 → diary → content 참조 업데이트 (no-op)
+V7 → diary 테이블 삭제
+V8 → MAIN_PAGE 벤토 그리드 삽입 (ROLE_USER 3장 + ROLE_GUEST 3장)
+```
 
 ---
 
@@ -253,7 +419,7 @@ ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenRes
 | `JwtAuthenticationFilter.java` | 1개 | LOW — System.err |
 | 기타 | 10개 | LOW |
 
-**결론:** 백엔드 민감 로그(원본 비밀번호, JWT 클레임, 이메일+인증코드)가 이전 분석에서 발견되었으나, commit b2ec8d5 범위에서 수정 여부 재확인 필요. `System.out.println` 전반적 정리 권고.
+**결론:** 프론트엔드 민감 로그는 commit b2ec8d5로 모두 삭제됨 (확인 완료). 백엔드 `System.out.println` (~35개) 미정리 — backend_engineer 담당 (P2).
 
 ---
 
@@ -267,10 +433,10 @@ ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenRes
 
 | 헤더 | 설정 여부 |
 |------|---------|
-| Content-Security-Policy | ❌ 미구성 |
-| X-Frame-Options | ❌ 미구성 |
-| X-Content-Type-Options | ❌ 미구성 |
-| Strict-Transport-Security | ❌ 미구성 |
+| Content-Security-Policy | ✅ 구현됨 (next.config.ts) |
+| X-Frame-Options | ✅ 구현됨 (next.config.ts) |
+| X-Content-Type-Options | ✅ 구현됨 (next.config.ts) |
+| Strict-Transport-Security | ✅ 구현됨 (next.config.ts) |
 
 ---
 
@@ -278,10 +444,10 @@ ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenRes
 
 | 시나리오 | 현재 위험도 | 이유 |
 |---------|-----------|------|
-| XSS로 Access Token 탈취 | **CRITICAL** | localStorage 사용 중 — JavaScript 접근 가능 |
+| XSS로 Access Token 탈취 | **LOW** | localStorage 제거됨 — HttpOnly 쿠키 전환 완료 (2026-03-01) |
 | XSS로 Refresh Token 탈취 | **LOW** | HttpOnly 쿠키 — JavaScript 접근 불가 |
-| 탈취 AccessToken으로 API 접근 | **CRITICAL** | 1시간 동안 계정 완전 제어 가능 |
-| CSP 없어 XSS 삽입 쉬움 | **HIGH** | 인라인 스크립트 실행 차단 없음 |
+| 탈취 AccessToken으로 API 접근 | **LOW** | 쿠키 기반 전환으로 XSS 탈취 불가 |
+| CSP 없어 XSS 삽입 쉬움 | **LOW** | CSP 헤더 구현됨 (next.config.ts) |
 
 ---
 
@@ -319,13 +485,16 @@ async headers() {
 
 ---
 
+
+// [메모] Sidebar에서 약속관리 항목 로그인 할때만 보이도록 한다.  추가로 GLOBAL_HEAD는 allowd_role 과 관련이 있을까?
+
 ### 수정 우선순위
 
 | 항목 | 우선순위 | 상태 |
 |------|---------|------|
 | `useUserActions.tsx:76` 민감 로그 | 완료 | ✅ commit b2ec8d5 |
 | 백엔드 HttpOnly 쿠키 설정 | 완료 | ✅ 이미 구현됨 |
-| `axios.tsx` localStorage → 쿠키 전환 | **P1** | ❌ 미수정 |
-| CSP / 보안 헤더 추가 | **P1** | ❌ 미수정 |
-| 백엔드 System.out.println 정리 | **P2** | ❌ 미수정 |
-| 프로덕션 `secure(true)` 설정 | **P2** | ❌ 미수정 |
+| `axios.tsx` localStorage → 쿠키 전환 | **P1** | ✅ 수정됨 (2026-03-01, localStorage 라인 주석 처리) |
+| CSP / 보안 헤더 추가 | **P1** | ✅ 구현됨 (next.config.ts `async headers()`) |
+| 백엔드 System.out.println 정리 | **P2** | ❌ 미수정 (backend_engineer 담당) |
+| 프로덕션 `secure(true)` 설정 | **P2** | ❌ 미수정 (AWS 배포 시 적용 필요) |

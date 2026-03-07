@@ -95,6 +95,7 @@ submit_group_separator (제출 구분자)
 | 키 패턴 | 값 | TTL | 무효화 시점 |
 |---------|----|-----|------------|
 | `SQL:{sqlKey}` | query_master.query_text | 영구 | query_master 변경 시 수동 삭제 |
+| `ui:metadata:{screenId}` | List&lt;UiMetadata&gt; JSON | **1시간** | 수동 삭제 (`UiMetadataService`) |
 | `{userId}` (Refresh Token) | RefreshToken 객체 | 7일 | logout, 토큰 재발급 |
 
 ### React Query 캐시 키 구조
@@ -103,32 +104,37 @@ submit_group_separator (제출 구분자)
 |---------|------------|------------|
 | `[metadata, {rolePrefix}_{screenId}]` | 5분 | SUBMIT 액션 후 invalidate |
 
-### componentMap 현황 (17개 타입)
+### componentMap 현황 (18개 타입) — 2026-03-06 확인
 
 ```
-MODAL, INPUT, TEXT, PASSWORD, BUTTON, SNS_BUTTON, IMAGE,
+MODAL, INPUT, TEXT, PASSWORD, BUTTON, SNS_BUTTON, LINK_BUTTON, IMAGE,
 EMAIL_SELECT, EMOTION_SELECT, SELECT, TEXTAREA,
 TIME_RECORD_WIDGET, DATETIME_PICKER, TIME_SELECT,
 TIME_SLOT_RECORD, ADDRESS_SEARCH_GROUP, GROUP
 ```
 
-### screenMap 현황 (8개 화면)
+> LINK_BUTTON 추가(ButtonField 재사용), GROUP(GroupComponent)으로 18개
+
+### screenMap 현황 (9개 경로, 8개 screen_id) — 2026-03-06 확인
 
 ```
-"/"              → MAIN_PAGE
-"/LOGIN_PAGE"    → LOGIN_PAGE
-"/DIARY_LIST"    → DIARY_LIST
-"/DIARY_WRITE"   → DIARY_WRITE
-"/DIARY_DETAIL"  → DIARY_DETAIL
-"/DIARY_MODIFY"  → DIARY_MODIFY
-"/SET_TIME_PAGE" → SET_TIME_PAGE
-"/TUTORIAL_PAGE" → TUTORIAL_PAGE
+"/"                → MAIN_PAGE
+"/MAIN_PAGE"       → MAIN_PAGE  (추가됨)
+"/LOGIN_PAGE"      → LOGIN_PAGE
+"/SET_TIME_PAGE"   → SET_TIME_PAGE
+"/TUTORIAL_PAGE"   → TUTORIAL_PAGE
+"/CONTENT_LIST"    → CONTENT_LIST   (DIARY_LIST → 변경)
+"/CONTENT_WRITE"   → CONTENT_WRITE  (DIARY_WRITE → 변경)
+"/CONTENT_DETAIL"  → CONTENT_DETAIL (DIARY_DETAIL → 변경)
+"/CONTENT_MODIFY"  → CONTENT_MODIFY (DIARY_MODIFY → 변경)
+// "/MY_PAGE"      → MY_PAGE (주석 처리 — 미구현)
+// "/DASHBOARD_PAGE" → DASHBOARD_PAGE (주석 처리 — 미구현)
 ```
 
-### 보호 화면 목록 (인증 필요)
+### 보호 화면 목록 (인증 필요) — 2026-03-06 확인
 
 ```
-DIARY_LIST, DIARY_WRITE, DIARY_DETAIL, DIARY_MODIFY, MY_PAGE
+MY_PAGE, CONTENT_LIST, CONTENT_WRITE, CONTENT_DETAIL, CONTENT_MODIFY
 ```
 
 ### 인증 플로우 분석
@@ -155,4 +161,5 @@ DIARY_LIST, DIARY_WRITE, DIARY_DETAIL, DIARY_MODIFY, MY_PAGE
 
 | 날짜 | 분석 내용 | 결론 |
 |------|-----------|------|
-| 2026-02-28 | 전체 코드베이스 초기 분석 | 위 내용 도출 |
+| 2026-02-28 | 전체 코드베이스 초기 분析 | 위 내용 도출 |
+| 2026-03-06 | componentMap/screenMap/Redis 재확인 | LINK_BUTTON 추가(18개), DIARY→CONTENT 전환 반영, UI Redis 캐시(`ui:metadata:{screenId}`, 1h) 확인 |
