@@ -2,7 +2,7 @@ name: Deploy to AWS with Docker
 
 on:
   push:
-    branches: [ "main" , "lab/claude-dev"]
+    branches: ["main", "lab/claude-dev"]
 
 jobs:
   build-and-deploy:
@@ -14,8 +14,8 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
           cache: gradle
 
           # 폴더 위치를 찾기 위해 현재 위치와 파일 목록을 출력한다
@@ -40,17 +40,17 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-            CLEAN_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
-            echo "BRANCH_TAG=$CLEAN_BRANCH" >> $GITHUB_ENV
-            if [ "${{ github.ref_name }}" == "main" ]; then
-              echo "TARGET_PORT=8080" >> $GITHUB_ENV
-              echo "CONTAINER_NAME=sdui-backend" >> $GITHUB_ENV
-              echo "DB_NAME=SDUI_TD" >> $GITHUB_ENV
-            else
-              echo "TARGET_PORT=8081" >> $GITHUB_ENV
-              echo "CONTAINER_NAME=sdui-backend-lab" >> $GITHUB_ENV
-              echo "DB_NAME=SDUI_LAB" >> $GITHUB_ENV
-            fi
+          CLEAN_BRANCH=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+          echo "BRANCH_TAG=$CLEAN_BRANCH" >> $GITHUB_ENV
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "TARGET_PORT=8080" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=sdui-backend" >> $GITHUB_ENV
+            echo "DB_NAME=SDUI_TD" >> $GITHUB_ENV
+          else
+            echo "TARGET_PORT=8081" >> $GITHUB_ENV
+            echo "CONTAINER_NAME=sdui-backend-lab" >> $GITHUB_ENV
+            echo "DB_NAME=SDUI_LAB" >> $GITHUB_ENV
+          fi
 
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
@@ -92,6 +92,8 @@ jobs:
               -e SPRING_DATA_REDIS_HOST=sdui-redis \
               -e SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
               -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+              -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
+              -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
               ${{ secrets.DOCKER_USERNAME }}/sdui-app:${{ env.BRANCH_TAG }}
 
             # 헬스 체크 (30초 대기)
