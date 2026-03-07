@@ -1,8 +1,6 @@
 -- V3: diary → content 데이터 마이그레이션
 -- diary 테이블의 모든 데이터를 content 테이블로 복사합니다.
 
-BEGIN;
-
 -- diary_backup에 전체 데이터 백업
 INSERT INTO diary_backup
 SELECT * FROM diary
@@ -51,5 +49,3 @@ BEGIN
         RAISE EXCEPTION '데이터 마이그레이션 실패: diary에 데이터가 있지만 content에 복사되지 않았습니다.';
     END IF;
 END $$;
-
-COMMIT;

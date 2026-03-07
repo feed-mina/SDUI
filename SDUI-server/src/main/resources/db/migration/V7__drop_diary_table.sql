@@ -2,8 +2,6 @@
 -- 데이터 마이그레이션이 완료되고 diary_backup이 있으므로 원본 diary 테이블을 삭제합니다.
 -- 주의: 이 마이그레이션은 프로덕션에서 신중히 실행해야 합니다.
 
-BEGIN;
-
 -- diary 테이블 존재 여부 확인 및 삭제
 DO $$
 BEGIN
@@ -37,5 +35,3 @@ BEGIN
         RAISE NOTICE 'V7 완료 - content 테이블에 % 건의 데이터가 있습니다.', content_count;
     END IF;
 END $$;
-
-COMMIT;

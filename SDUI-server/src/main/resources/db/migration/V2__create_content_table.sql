@@ -2,8 +2,6 @@
 -- diary 테이블을 대체할 content 테이블을 생성합니다.
 -- diary → content 리네이밍: diary_id → content_id, diary_status → content_status, diary_type → content_type
 
-BEGIN;
-
 -- 안전장치: diary_backup 테이블 생성 (구조만 복사)
 CREATE TABLE IF NOT EXISTS diary_backup (
     diary_id bigint,
@@ -83,5 +81,3 @@ BEGIN
         CREATE SEQUENCE content_content_id_seq OWNED BY content.content_id;
     END IF;
 END $$;
-
-COMMIT;
