@@ -206,9 +206,9 @@ public class KakaoController {
             log.info("KAKAOCONTROLLER-response: role={}, platform={}", jwtToken.getRole(), platform);
             return ResponseEntity.ok(responseBody);
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(webUrl));
-        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+        HttpHeaders redirectHeaders = new HttpHeaders();
+        redirectHeaders.setLocation(URI.create(webUrl));
+        return new ResponseEntity<>(redirectHeaders, HttpStatus.FOUND);
     }
 
     @PostMapping("/sendRecord")
