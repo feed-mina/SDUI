@@ -18,6 +18,7 @@ export interface Metadata {
     css_class?: string;
     inlineStyle?: any;
     actionType?: string;
+    action_type?: string;
     placeholder?: string;
     uiId?: string;
     labelText?: string;

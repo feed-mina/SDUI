@@ -1,8 +1,6 @@
 -- V4: ui_metadata RBAC 컬럼 추가
 -- RBAC(Role-Based Access Control) 지원을 위한 컬럼을 추가합니다.
 
-BEGIN;
-
 -- allowed_roles 컬럼 추가 (없을 경우)
 DO $$
 BEGIN
@@ -45,6 +43,4 @@ BEGIN
     END IF;
 END $$;
 
-RAISE NOTICE 'V4: ui_metadata RBAC 컬럼 추가 완료';
-
-COMMIT;
+DO $$ BEGIN RAISE NOTICE 'V4: ui_metadata RBAC 컬럼 추가 완료'; END $$;

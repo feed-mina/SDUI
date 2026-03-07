@@ -1,8 +1,6 @@
 -- V6: ui_metadata 및 query_master에서 diary → content 변경
 -- 모든 메타데이터에서 diary 참조를 content로 변경합니다.
 
-BEGIN;
-
 -- ui_metadata: screen_id 변경
 UPDATE ui_metadata SET screen_id = 'CONTENT_LIST' WHERE screen_id = 'DIARY_LIST';
 UPDATE ui_metadata SET screen_id = 'CONTENT_WRITE' WHERE screen_id = 'DIARY_WRITE';
@@ -46,5 +44,3 @@ BEGIN
 
     RAISE NOTICE 'V6 완료 - ui_metadata CONTENT 스크린: %, query_master CONTENT 쿼리: %', ui_updated, query_updated;
 END $$;
-
-COMMIT;

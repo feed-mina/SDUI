@@ -149,6 +149,7 @@ localhost:8080 (Backend 개발)
 | 키 | 값 | TTL | 관리 |
 |---|---|-----|------|
 | `SQL:{sqlKey}` | 쿼리 텍스트 | 영구 | 수동 삭제 |
+| `ui:metadata:{screenId}` | List&lt;UiMetadata&gt; JSON | **1시간** | UiMetadataService 자동 (수동 삭제도 가능) |
 | `{userId}` | RefreshToken 객체 | 7일 | 자동 만료 |
 
 **주의:** `SQL:{sqlKey}` 캐시는 자동 만료되지 않음. `query_master` 쿼리 변경 시 Redis에서 해당 키 수동 삭제 필요.
@@ -158,8 +159,8 @@ localhost:8080 (Backend 개발)
 ## 도메인별 의존성 지도
 
 ```
-UiController → UiService → UiMetadataRepository
-                         → Redis (조회 캐시? 확인 필요)
+UiController → UiService → UiMetadataService → UiMetadataRepository
+                                              → Redis (`ui:metadata:{screenId}`, TTL 1h) ✅ 구현됨
 
 AuthController → AuthService → UserRepository
                              → EmailUtil
@@ -194,7 +195,8 @@ CommonQueryController → QueryMasterService → QueryMasterRepository (query_ma
 | 날짜 | 분석 내용 | 결론 |
 |------|-----------|------|
 | 2026-02-28 | 전체 백엔드 코드 초기 분석 | 위 내용 도출 |
-| 2026-02-28 | [P1] 보안 감사 — anyRequest().permitAll() 위험도 분석 | 아래 섹션 참고 |
+| 2026-02-28 | [P1] 보안 감사 — anyRequest().permitAll() 위험도 분析 | 아래 섹션 참고 |
+| 2026-03-06 | 보안 체크리스트 재확인, Redis/UiService 확인 | P0-2 JWT role ✅ 수정됨, EXCLUDE_URLS 오타 ✅ 수정됨, ui:metadata Redis 캐시 확인됨 |
 
 ---
 
@@ -394,12 +396,12 @@ private static final List<String> EXCLUDE_URLS = List.of(
 
 | 항목 | 우선순위 | 상태 |
 |------|---------|------|
-| `/api/execute/**` → `hasRole('ADMIN')` + SecurityConfig permitAll 제거 | **P0 — 즉시** | ❌ 미수정 |
-| JwtAuthenticationFilter 역할 하드코딩 → DB 역할 읽기 | **P0 — 즉시** | ❌ 미수정 |
-| WebSocket 인증 추가 (`/location/update`, `/location/emergency`) | **P0** | ❌ 미수정 |
-| `/api/goalTime/getGoalTime`, `getGoalList` null 체크 강화 | **P1** | ❌ 미수정 |
+| `/api/execute/**` → `hasRole('ADMIN')` + SecurityConfig permitAll 제거 | **P0 — 즉시** | ❌ 미수정 (여전히 permitAll) |
+| JwtAuthenticationFilter 역할 하드코딩 → JWT 클레임 role 읽기 | **P0 — 즉시** | ✅ 수정됨 (line 125: `claims.get("role")`, ROLE_USER는 폴백만) |
+| WebSocket 인증 추가 (`/location/update`, `/location/emergency`) | **P0** | ❌ 미수정 (LocationController JWT 검증 없음) |
+| `/api/goalTime/getGoalTime`, `getGoalList` null 체크 강화 | **P1** | ❌ 미수정 (삼항 연산자로 null 허용 유지) |
 | `/api/auth/editPassword` 현재 비밀번호 검증 추가 | **P1** | ❌ 미수정 |
-| JwtAuthenticationFilter EXCLUDE_URLS 오타 수정 (`"api/ui/MAIN_PAGE"`) | **P2** | ❌ 미수정 |
-| WebSocket Origin `*` → 실제 도메인으로 제한 | **P2** | ❌ 미수정 |
+| JwtAuthenticationFilter EXCLUDE_URLS 오타 수정 (`"api/ui/MAIN_PAGE"`) | **P2** | ✅ 수정됨 (line 33: `"/api/ui/MAIN_PAGE"` 슬래시 추가됨) |
+| WebSocket Origin `*` → 실제 도메인으로 제한 | **P2** | ❌ 미수정 (WebSocketConfig `setAllowedOriginPatterns("*")` 유지) |
 | `anyRequest().denyAll()` 유지 확인 | — | ✅ 이미 적용됨 |
 | `/api/auth/editPassword`, `/api/auth/non-user` authenticated | — | ✅ 이미 적용됨 |

@@ -36,26 +36,49 @@ export default function Sidebar() {
         <aside className="pc-sidebar flex flex-col justify-between h-screen w-64 bg-white border-r">
             <div className="sidebar-top flex-1">
                 <div className="sidebar-logo p-4 font-bold text-xl cursor-pointer"
-                     onClick={() => handleAction({actionType: 'ROUTE', actionUrl: '/view/MAIN_PAGE'})}>
+                    onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/MAIN_PAGE' })}>
                     SDUI Project
                 </div>
-                <nav className="sidebar-nav mt-4 flex flex-col gap-2 px-4">
-                    <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/MAIN_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
-                         onClick={() => handleAction({actionType: 'ROUTE', actionUrl: '/view/MAIN_PAGE'})}>
-                        홈
-                    </div>
-                    <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/SET_TIME_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
-                         onClick={() => handleAction({actionType: 'ROUTE', actionUrl: '/view/SET_TIME_PAGE'})}>
-                        약속 관리
-                    </div>
-                </nav>
+
+                {isRealLoggedIn ? (
+                    logoutMeta ? (
+                        <nav className="sidebar-nav mt-4 flex flex-col gap-2 px-4">
+                            <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/CONTENT_LIST_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
+                                onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/CONTENT_LIST_PAGE' })}>
+                                콘텐츠 리스트 보기
+                            </div>
+                            <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/SET_TIME_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
+                                onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/SET_TIME_PAGE' })}>
+                                약속 관리
+                            </div>
+                        </nav>
+                    ) : (
+                        <div className="text-red-500 text-sm text-center">로그아웃({logoutId}) 데이터 누락</div>
+                    )
+                ) : (
+                    loginBtnMeta ? (
+                        <nav className="sidebar-nav mt-4 flex flex-col gap-2 px-4">
+                            <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/MAIN_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
+                                onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/MAIN_PAGE' })}>
+                                홈
+                            </div>
+                            <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/TUTORIAL_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
+                                onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/TUTORIAL_PAGE' })}>
+                                튜토리얼 보러가기
+                            </div>
+                        </nav>
+                    ) : (
+                        <div className="text-red-500 text-sm text-center">로그인 메타데이터 누락</div>
+                    )
+                )}
+
             </div>
 
             <div className="sidebar-footer p-4 border-t border-gray-100">
                 {isRealLoggedIn ? (
                     logoutMeta ? (
                         <button className="sidebar-auth-btn w-full p-2 bg-gray-100 rounded text-center"
-                                onClick={() => handleAction(logoutMeta)}>
+                            onClick={() => handleAction(logoutMeta)}>
                             {getVal(logoutMeta, 'label_text', 'labelText')}
                         </button>
                     ) : (
@@ -64,7 +87,7 @@ export default function Sidebar() {
                 ) : (
                     loginBtnMeta ? (
                         <button className="sidebar-auth-btn login w-full p-2 bg-blue-500 text-white rounded text-center"
-                                onClick={() => handleAction(loginBtnMeta)}>
+                            onClick={() => handleAction(loginBtnMeta)}>
                             {getVal(loginBtnMeta, 'label_text', 'labelText')}
                         </button>
                     ) : (

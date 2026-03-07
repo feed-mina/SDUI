@@ -37,7 +37,7 @@ const TextField = memo(({ meta, data, value, ...rest }: TextFieldProps) => {
 
     const targetKey = meta?.ref_data_id || meta?.refDataId || meta?.componentId || "0218";
 
-    let finalValue = value || "";
+    let finalValue = value || meta?.labelText || (meta as any)?.label_text || "";
     if (!finalValue && data) {
         if (typeof data !== 'object') {
             finalValue = data;

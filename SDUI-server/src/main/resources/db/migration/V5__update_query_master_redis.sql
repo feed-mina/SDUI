@@ -1,8 +1,6 @@
 -- V5: query_master Redis 캐싱 컬럼 추가
 -- Redis 캐싱 제어를 위한 컬럼을 추가합니다.
 
-BEGIN;
-
 -- use_redis_yn 컬럼 추가 (없을 경우)
 DO $$
 BEGIN
@@ -45,6 +43,4 @@ BEGIN
     END IF;
 END $$;
 
-RAISE NOTICE 'V5: query_master Redis 캐싱 컬럼 추가 완료';
-
-COMMIT;
+DO $$ BEGIN RAISE NOTICE 'V5: query_master Redis 캐싱 컬럼 추가 완료'; END $$;

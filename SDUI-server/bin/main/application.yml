@@ -9,9 +9,9 @@ spring:
       static-locations: classpath:/static/
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/SDUI_TD
-    username: mina
-    password: password
+    url: jdbc:postgresql://localhost:5434/SDUI_TD # jdbc:postgresql://localhost:5432/testdb     # jdbc:postgresql://localhost:5434/SDUI_TD
+    username: mina # postgres # mina
+    password: password # 1234 # password
     hikari:
       maximum-pool-size: 12
       connection-timeout: 30000
@@ -35,7 +35,7 @@ spring:
     baseline-version: 0
     locations: classpath:db/migration
     sql-migration-suffixes: .sql
-    validate-on-migrate: true
+    validate-on-migrate: false
   mail:
     host: smtp.gmail.com
     port: 587

@@ -42,7 +42,13 @@ export function MetadataProvider({ children, screenId: propScreenId }: MetadataP
 
     // 2. 권한 정보 조합
     //  * RBAC 유저 권한에 따라 볼수 있는 페이지가 다르다
-    const rolePrefix = user?.role?.replace('ROLE_', '') || 'GUEST';
+    //  * user.role이 없으면 서버가 로그인 시 설정한 non-HttpOnly 'role' 쿠키를 fallback으로 사용
+    const getRoleFromCookie = (): string => {
+        if (typeof document === 'undefined') return 'GUEST';
+        const match = document.cookie.match(/(?:^|;\s*)role=([^;]*)/);
+        return match ? decodeURIComponent(match[1]) : 'GUEST';
+    };
+    const rolePrefix = (user?.role || getRoleFromCookie()).replace('ROLE_', '');
     const dynamicQueryKey = `${rolePrefix}_${finalScreenId}`;
 
     // 3. 데이터 페칭
