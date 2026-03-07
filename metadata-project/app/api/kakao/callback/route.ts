@@ -16,8 +16,9 @@ export async function GET(request: NextRequest) {
     }
 
     // 백엔드로 code 전달
+    // state=mobile: 백엔드가 302 리다이렉트 대신 JSON을 반환하도록 강제 (KakaoController mobile 분기 활용)
     console.log('[Kakao Callback] Sending code to backend:', `${BACKEND_URL}/api/kakao/callback`);
-    const response = await fetch(`${BACKEND_URL}/api/kakao/callback?code=${code}`, {
+    const response = await fetch(`${BACKEND_URL}/api/kakao/callback?code=${code}&state=mobile`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
