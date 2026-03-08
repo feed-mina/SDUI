@@ -211,31 +211,26 @@ CommonQueryController → QueryMasterService → QueryMasterRepository (query_ma
 | springdoc-openapi-starter-webmvc-ui | 2.2.0  | Swagger     |
 | net.nurigo:sdk                      | 4.3.0  | SMS         |
 
----
-
-## 분석 히스토리
-
-| 날짜       | 분석 내용                                              | 결론                                                                                |
-| ---------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| 2026-02-28 | 전체 백엔드 코드 초기 분석                             | 위 내용 도출                                                                        |
-| 2026-02-28 | [P1] 보안 감사 — anyRequest().permitAll() 위험도 분석 | 아래 섹션 참고                                                                      |
-| 2026-03-06 | Docker DB 포트 변경 + Flyway V1~V8 수정 완료           | 로컬 Docker DB 섹션 참고                                                            |
-| 2026-03-06 | 보안 체크리스트 재확인, Redis/UiService 확인           | P0-2 JWT role ✅ 수정됨, EXCLUDE_URLS 오타 ✅ 수정됨, ui:metadata Redis 캐시 확인됨 |
-
-### 민감 정보 로깅 — System.out.println 잔존 이슈 (P2)
+### 민감 정보 로깅 — System.out.println → SLF4J 전환 ✅ 완료 (2026-03-08)
 
 > **출처:** frontend_engineer/research.md에서 이동 (commit b2ec8d5 이후 재스캔 기준)
+> **2026-03-08 완료:** 11개 파일, 활성 println 45개 전부 SLF4J로 전환
 
-| 파일                             | 개수 | 민감도                           | 상태      |
-| -------------------------------- | ---- | -------------------------------- | --------- |
-| `AuthService.java`             | 4개  | MEDIUM — User 객체, 에러 메시지 | ❌ 미수정 |
-| `DiaryService.java`            | 7개  | MEDIUM — 다이어리 요청 객체     | ❌ 미수정 |
-| `GoalTimeQueryService.java`    | 10개 | MEDIUM — 캐시키, SQL, params    | ❌ 미수정 |
-| `UiController.java`            | 3개  | LOW — screenId 로깅             | ❌ 미수정 |
-| `JwtAuthenticationFilter.java` | 1개  | LOW — System.err                | ❌ 미수정 |
-| 기타                             | 10개 | LOW                              | ❌ 미수정 |
+| 파일                             | 개수 | 민감도                           | 상태                                |
+| -------------------------------- | ---- | -------------------------------- | ----------------------------------- |
+| `ContentService.java`          | 8개  | MEDIUM — 콘텐츠 요청, 에러      | ✅ 완료 (log.debug / log.error)     |
+| `ContentController.java`       | 11개 | MEDIUM — 요청 정보, IP          | ✅ 완료 (log.debug / log.warn / log.error) |
+| `AuthService.java`             | 3개  | MEDIUM — User 객체, 에러 메시지 | ✅ 완료 (log.debug)                 |
+| `GoalTimeQueryService.java`    | 9개  | MEDIUM — 캐시키, SQL, params    | ✅ 완료 (log.debug)                 |
+| `GoalTimeController.java`      | 2개  | LOW — userSqno, targetTime      | ✅ 완료 (log.debug)                 |
+| `UiController.java`            | 3개  | LOW — screenId 로깅             | ✅ 완료 (log.debug)                 |
+| `UiService.java`               | 2개  | LOW — 데이터 정합성 경고        | ✅ 완료 (log.warn)                  |
+| `JwtAuthenticationFilter.java` | 1개  | LOW — System.err + printStackTrace | ✅ 완료 (log.warn + e 객체 포함) |
+| `KakaoController.java`         | 1개  | LOW — kakaoUserInfo             | ✅ 완료 (log.debug)                 |
+| `MockAuthFilter.java`          | 1개  | LOW — 필터 실행 로그            | ✅ 완료 (log.debug)                 |
+| `PasswordUtil.java`            | 2개  | LOW — 비밀번호 일치 여부        | ✅ 완료 (log.debug)                 |
 
-**조치:** 전 파일 `System.out.println` → `logger.debug()` 전환 (프로덕션 배포 전 필수)
+**비고:** 주석 블록(`//`, `/* */`) 내 잔존 println 3건은 비활성 코드로 그대로 유지.
 
 ---
 
@@ -651,3 +646,108 @@ private static final List<String> EXCLUDE_URLS = List.of(
 
 -  **EC2 로컬 저장 + 7일 보관 주기(Retention)** 방식으로 변경.
 - **스크립트:** `.ai/scripts/backup_sdui_db_to_ec2.sh`
+
+---
+
+## RBAC / User Role 구현 현황 상세 분석 (2026-03-08)
+
+### Role 값의 전체 흐름
+
+```
+DB (users.role 컬럼)
+  → JWT 발급 시 "role" 클레임에 포함 (JwtUtil)
+    → JwtAuthenticationFilter: JWT 검증 시 클레임에서 읽어 GrantedAuthority 생성
+      → SecurityContextHolder에 인증 저장
+        → UiController.extractRole(): UserDetails.getAuthorities() 첫 번째 값 추출
+          → UiService.getUiTree(screenId, userRole): isAccessible() 필터링
+```
+
+### JwtAuthenticationFilter — Role 처리 (line 127-135)
+
+```java
+// JWT 클레임에서 role 읽기 (DB 역할 체계 반영, 2026-03-01)
+String role = claims.get("role", String.class);
+if (role == null || role.isBlank()) {
+    role = "ROLE_USER"; // 폴백 (기존 토큰 호환)
+}
+List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+
+CustomUserDetails userDetails = new CustomUserDetails(user);  // DB에서 조회한 User 객체
+Authentication authentication = new UsernamePasswordAuthenticationToken(
+    userDetails, null, authorities  // ⚠️ authorities는 JWT 기반, userDetails.getAuthorities()는 DB 기반
+);
+```
+
+**⚠️ 주의:** `UsernamePasswordAuthenticationToken`에 전달되는 `authorities`는 JWT 클레임 기반이고, `userDetails.getAuthorities()`는 DB `users.role` 기반으로 **소스가 다름**. `UiController.extractRole()`은 `userDetails.getAuthorities()`를 사용하므로 DB role이 최종 결정.
+
+### SecurityConfig — 엔드포인트별 접근 제어
+
+| 엔드포인트 | 설정 | 비고 |
+|-----------|------|------|
+| `/api/ui/**` | `permitAll()` | RBAC는 컨트롤러+서비스 레이어에서 처리 |
+| `/api/goalTime/**` | `permitAll()` | 컨트롤러 레벨에서 부분 인증 처리 |
+| `/api/execute/**` | `permitAll()` | **🔴 P0 — 무인증 SQL 실행 가능 (미수정)** |
+| `/api/content/**` | `authenticated()` | Spring Security 레벨 보호 |
+| 나머지 | `denyAll()` | 기본 차단 |
+
+**Spring Security 레벨의 `hasRole()` / `hasAuthority()` 접근 규칙은 미사용** — role-based URL 제어는 전혀 없음.
+
+### UiController → UiService RBAC (ui_metadata 컴포넌트 필터링)
+
+```java
+// UiController.getUiMetadataList()
+String userRole = (userDetails != null)
+    ? extractRole(userDetails)   // UserDetails.getAuthorities().stream().findFirst()
+    : "ROLE_GUEST";              // 비인증 → ROLE_GUEST
+
+// UiService.isAccessible()
+private boolean isAccessible(UiMetadata entity, String userRole) {
+    String allowedRoles = entity.getAllowedRoles();
+    if (allowedRoles == null || allowedRoles.trim().isEmpty()) return true; // NULL → 전체 허용
+    return Arrays.stream(allowedRoles.split(","))
+            .map(String::trim)
+            .anyMatch(role -> role.equals(userRole));
+}
+```
+
+### allowed_roles 값별 가시성
+
+| `allowed_roles` 값 | ROLE_GUEST | ROLE_USER |
+|-------------------|-----------|-----------|
+| `NULL` | ✅ 표시 | ✅ 표시 |
+| `'ROLE_GUEST'` | ✅ 표시 | ❌ 숨김 |
+| `'ROLE_USER'` | ❌ 숨김 | ✅ 표시 |
+
+### CustomUserDetails — getAuthorities()
+
+```java
+// DB users.role 컬럼에서 직접 읽음
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+    return Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
+}
+```
+
+`UiController.extractRole()`이 이 메서드를 호출하므로 최종 role은 **DB 값 기준**.
+
+### RBAC 계층 요약
+
+| 레이어 | Role 소스 | 사용 목적 |
+|--------|----------|---------|
+| JwtAuthenticationFilter | JWT 클레임 `"role"` | SecurityContext 인증 토큰 생성 |
+| CustomUserDetails.getAuthorities() | DB `users.role` | UiController extractRole() |
+| SecurityConfig | — | 역할 기반 URL 접근제어 미사용 (permitAll/authenticated만) |
+| UiService.isAccessible() | `ui_metadata.allowed_roles` | 화면 컴포넌트별 RBAC 필터링 |
+
+---
+
+## 분析 히스토리 (2026-03-08 기준)
+
+| 날짜       | 분析 내용                                              | 결론                                                                                |
+| ---------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| 2026-02-28 | 전체 백엔드 코드 초기 분析                             | 위 내용 도출                                                                        |
+| 2026-02-28 | [P1] 보안 감사 — anyRequest().permitAll() 위험도 분析 | 아래 섹션 참고                                                                      |
+| 2026-03-06 | Docker DB 포트 변경 + Flyway V1~V8 수정 완료           | 로컬 Docker DB 섹션 참고                                                            |
+| 2026-03-06 | 보안 체크리스트 재확인, Redis/UiService 확인           | P0-2 JWT role ✅ 수정됨, EXCLUDE_URLS 오타 ✅ 수정됨, ui:metadata Redis 캐시 확인됨 |
+| 2026-03-08 | System.out.println → SLF4J 전환 완료                  | 11개 파일 45건 전환, 주석 블록 3건만 잔존 (비활성) |
+| 2026-03-08 | JwtAuthenticationFilter + SecurityConfig RBAC/user role 전체 흐름 분析 | RBAC 구현 현황 상세 분析 섹션 추가. Spring Security 레벨 role-based URL 제어 미사용 확인. UiService.isAccessible()이 실질적 RBAC 담당 |
