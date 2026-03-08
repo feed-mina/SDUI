@@ -86,6 +86,8 @@ public class SecurityConfig {
                         // AUTHENTICATED — 로그인 필수
                         .requestMatchers("/api/auth/editPassword", "/api/auth/non-user", "/api/auth/update-profile").authenticated()
                         .requestMatchers("/api/content/**").authenticated()
+                        // ADMIN ONLY
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // DEFAULT — 명시되지 않은 모든 요청 차단
                         .anyRequest().denyAll()
                 )

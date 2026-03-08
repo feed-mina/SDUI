@@ -1,8 +1,12 @@
 package com.domain.demo_backend.domain.user.domain;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,5 +25,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 2026.01.11 탈퇴유저 확인
     Optional<User> findByEmailAndDelYn(String email, String delYn);
+
+    // 관리자 사용자 목록 조회 (keyword: userId 또는 email 검색, role: 권한 필터)
+    @Query("SELECT u FROM User u WHERE u.delYn = 'N'" +
+           " AND (:keyword IS NULL OR u.userId LIKE %:keyword% OR u.email LIKE %:keyword%)" +
+           " AND (:role IS NULL OR u.role = :role)")
+    List<User> findUsersForAdmin(@Param("keyword") String keyword, @Param("role") String role, Pageable pageable);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.delYn = 'N'" +
+           " AND (:keyword IS NULL OR u.userId LIKE %:keyword% OR u.email LIKE %:keyword%)" +
+           " AND (:role IS NULL OR u.role = :role)")
+    int countUsersForAdmin(@Param("keyword") String keyword, @Param("role") String role);
 
 }
