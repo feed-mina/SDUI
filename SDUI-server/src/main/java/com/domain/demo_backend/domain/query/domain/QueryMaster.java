@@ -33,4 +33,7 @@ public class QueryMaster {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "required_role")
+    private String requiredRole; // NULL=공개, ROLE_USER=로그인 필요, ROLE_ADMIN=관리자 전용
 }

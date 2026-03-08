@@ -43,6 +43,21 @@ public class CommonQueryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "등록되지 않은 SQL 키 입니다"));
         }
 
+        // [P0 Security Fix] required_role 검증
+        String requiredRole = queryMaster.getRequiredRole();
+        if (requiredRole != null && !requiredRole.isBlank()) {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "로그인이 필요합니다."));
+            }
+            boolean hasRole = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals(requiredRole));
+            if (!hasRole) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "권한이 없습니다."));
+            }
+        }
+
         // todo : 동적 쿼리 실행기 (DynamicExecutor) 호출 로직이 들어간다
         // 서비스 로부터 SQL 설계도(Query text)를 가져온다. (Redis 또는 DB)
         String query = queryMaster.getQueryText();
