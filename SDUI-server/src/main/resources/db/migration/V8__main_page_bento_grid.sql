@@ -26,7 +26,7 @@ VALUES
   ('MAIN_PAGE', 'main_bento_appointment', 'TIME_RECORD_WIDGET',
    'MAIN_SECTION', '', 'bento-card bento-card-appointment col-span-2', 'ROLE_USER', 10);
 
--- Card 2: 다이어리 쓰러가기 (col 3) — GROUP 컨테이너
+-- Card 2: 콘텐츠 쓰러가기 (col 3) — GROUP 컨테이너
 INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, label_text, css_class, group_direction, allowed_roles, sort_order)
 VALUES
@@ -49,7 +49,7 @@ INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, label_text, css_class, allowed_roles, sort_order)
 VALUES
   ('MAIN_PAGE', 'main_bento_diary_title', 'TEXT',
-   'main_bento_diary_body', '다이어리 쓰러가기', 'bento-card-title', 'ROLE_USER', 23);
+   'main_bento_diary_body', '콘텐츠 쓰러가기', 'bento-card-title', 'ROLE_USER', 23);
 
 INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, label_text, css_class, allowed_roles, sort_order)
@@ -65,7 +65,7 @@ VALUES
    'main_bento_diary_grp', '→', 'bento-card-arrow', 'LINK', '/view/CONTENT_WRITE',
    'ROLE_USER', 25);
 
--- Card 3: 다이어리 보기 (full width)
+-- Card 3: 콘텐츠 보기 (full width)
 INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, label_text, css_class, group_direction, allowed_roles, sort_order)
 VALUES
@@ -82,7 +82,7 @@ INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, label_text, css_class, allowed_roles, sort_order)
 VALUES
   ('MAIN_PAGE', 'main_bento_view_title', 'TEXT',
-   'main_bento_view_body', '다이어리 보기', 'bento-card-title', 'ROLE_USER', 32);
+   'main_bento_view_body', '콘텐츠 보기', 'bento-card-title', 'ROLE_USER', 32);
 
 INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, label_text, css_class, allowed_roles, sort_order)
@@ -95,7 +95,7 @@ INSERT INTO ui_metadata
    label_text, css_class, action_type, action_url, allowed_roles, sort_order)
 VALUES
   ('MAIN_PAGE', 'main_bento_view_btn', 'BUTTON',
-   'main_bento_view_grp', '📖 다이어리', 'bento-card-tag', 'LINK', '/view/CONTENT_LIST',
+   'main_bento_view_grp', '📖 콘텐츠', 'bento-card-tag', 'LINK', '/view/CONTENT_LIST',
    'ROLE_USER', 34);
 
 -- ================================================================
