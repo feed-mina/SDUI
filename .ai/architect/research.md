@@ -161,5 +161,5 @@ MY_PAGE, CONTENT_LIST, CONTENT_WRITE, CONTENT_DETAIL, CONTENT_MODIFY
 
 | 날짜 | 분석 내용 | 결론 |
 |------|-----------|------|
-| 2026-02-28 | 전체 코드베이스 초기 분析 | 위 내용 도출 |
+| 2026-02-28 | 전체 코드베이스 초기 분석 | 위 내용 도출 |
 | 2026-03-06 | componentMap/screenMap/Redis 재확인 | LINK_BUTTON 추가(18개), DIARY→CONTENT 전환 반영, UI Redis 캐시(`ui:metadata:{screenId}`, 1h) 확인 |

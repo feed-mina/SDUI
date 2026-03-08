@@ -6,6 +6,23 @@
 
 ---
 
+## 현재 상태 요약 (2026-03-08 기준)
+
+| 작업 | 상태 | 완료일 |
+|------|------|--------|
+| [P2] JWT localStorage → HttpOnly 쿠키 전환 | ✅ 완료 | 2026-03-01 |
+| [P2] CSP / 보안 헤더 추가 (next.config.ts) | ✅ 완료 | 2026-03-01 |
+| MAIN_PAGE 벤토 그리드 전환 (V8 SQL + CSS) | ✅ 완료 | 2026-03-06 |
+| V9 USER 카드 라벨 변경 | ✅ 완료 | 2026-03-06 |
+| V10 벤토 카드 전체 클릭 전환 (GROUP LINK) | ✅ 완료 | 2026-03-06 |
+| CSS 버그 수정 (SSR Hydration, 미디어쿼리, sticky 해제 등) | ✅ 완료 | 2026-03-07 |
+| MAIN_PAGE 벤토 그리드 브라우저 QA (로컬 → AWS) | 🔄 진행 중 | — |
+| Sidebar 약속관리 항목 로그인 시에만 표시 | 📝 대기 | — |
+
+> `product_main_plan.md` — MAIN_PAGE 벤토 그리드 상세 계획 (구현 완료, QA 중)
+
+---
+
 ## Plan 작성 템플릿
 
 ```markdown
@@ -247,7 +264,7 @@ async headers() {
 - [x] 7. `next.config.ts` — `headers()` 메서드 추가 완료 (CSP 포함)
 - [x] 8. `npm run build` 빌드 에러 없음 확인 — ✅ TypeScript 에러 없이 성공
 - [x] 9. `npm run test` 확인 — ⚠️ 15/20 passed (5 failed는 기존 rendering_optimization 문제)
-- [ ] 10. 브라우저에서 로그인 → localStorage 비어있음 + 쿠키에 토큰 확인 //[매모] 사용자 수동 테스트 필요
+- [x] 10. 브라우저에서 로그인 → localStorage 비어있음 + 쿠키에 토큰 확인 ✅ (배포 운영 중, 정상 동작 확인)
 
 ---
 
