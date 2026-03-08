@@ -17,7 +17,7 @@ import {useMetadata} from "@/components/providers/MetadataProvider";
 
 
 //  보호가 필요한 스크린 ID 목록 정의
-const PROTECTED_SCREENS = ["MY_PAGE", "CONTENT_LIST", "CONTENT_WRITE", "CONTENT_DETAIL", "CONTENT_MODIFY"];
+const PROTECTED_SCREENS = ["MY_PAGE", "CONTENT_LIST", "CONTENT_WRITE", "CONTENT_DETAIL", "CONTENT_MODIFY", "USER_LIST"];
 
 
 // CommonPage 역할 : 전체 화면의 구성, 메타데이터와 데이터를 가져와 엔진에 전달
