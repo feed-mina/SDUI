@@ -13,9 +13,9 @@
 **주요 화면** (screen_id 기준):
 - LOGIN_PAGE: 로그인 화면
 - REGISTER_PAGE: 회원가입 화면
-- DIARY_LIST: 다이어리 리스트 화면
-- DIARY_WRITE: 다이어리 작성 화면
-- DIARY_DETAIL: 다이어리 상세 화면
+- DIARY_LIST: 콘텐츠 리스트 화면
+- DIARY_WRITE: 콘텐츠 작성 화면
+- DIARY_DETAIL: 콘텐츠 상세 화면
 - MAIN_PAGE: 메인 화면
 
 ### 플랫폼별 UI 차이점 분석
@@ -148,7 +148,7 @@ UPDATE ui_metadata SET component_props = '{
 #### 1.2 DIARY_LIST 메타데이터
 
 ```sql
--- 다이어리 리스트 컨테이너
+-- 콘텐츠 리스트 컨테이너
 UPDATE ui_metadata SET component_props = '{
   "mobile": {
     "viewType": "list",
@@ -163,7 +163,7 @@ UPDATE ui_metadata SET component_props = '{
   }
 }'::jsonb WHERE component_id = 'diaryListContainer';
 
--- 다이어리 카드
+-- 콘텐츠 카드
 UPDATE ui_metadata SET component_props = '{
   "mobile": {
     "height": 100,
@@ -452,7 +452,7 @@ WHERE screen_id = 'DIARY_LIST';
 - 웹 (Mobile): 리스트 레이아웃, 터치 타겟 48px
 - 모바일 앱: 리스트 + 스와이프 삭제
 
-**시나리오 2: 다이어리 작성**
+**시나리오 2: 콘텐츠 작성**
 - 웹: 다음 지도 주소 검색, HTML5 date input
 - 모바일 앱: Google Maps, 네이티브 DateTimePicker, 카메라/갤러리
 

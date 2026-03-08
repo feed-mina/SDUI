@@ -57,7 +57,7 @@
 
 #### 테스트 피라미드 (SDUI 특화)
 ```
-E2E (Playwright)         → 실제 사용자 플로우 (로그인 → 일기 작성)
+E2E (Playwright)         → 실제 사용자 플로우 (로그인 → 콘텐츠 작성)
 통합 테스트 (Jest+MSW)   → DynamicEngine + 가짜 메타데이터 조합
 단위 테스트 (Jest)       → 개별 컴포넌트, 훅 로직
 ```
@@ -127,7 +127,7 @@ POST /api/auth/refresh         → 토큰 갱신 시나리오
 ```typescript
 // 핵심 사용자 플로우
 test('회원가입 → 이메일 인증 → 로그인', async ({ page }) => { ... })
-test('일기 작성 → 목록 확인 → 상세 보기', async ({ page }) => { ... })
+test('콘텐츠 작성 → 목록 확인 → 상세 보기', async ({ page }) => { ... })
 test('비로그인 → 보호 화면 접근 → 로그인 페이지 리다이렉트', async ({ page }) => { ... })
 test('카카오 로그인 OAuth 플로우', async ({ page }) => { ... })
 ```

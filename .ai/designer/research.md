@@ -74,7 +74,7 @@ AppShell
 
 #### MAIN_PAGE (벤토 그리드 — 2026-03-06 V8 전환)
 - 3열 grid 레이아웃 (모바일: 1열)
-- USER: 약속위젯(col 1-2) + 다이어리쓰기(col 3) + 다이어리보기(full)
+- USER: 약속위젯(col 1-2) + 콘텐츠쓰기(col 3) + 콘텐츠보기(full)
 - GUEST: 목표미설정위젯(col 1-2) + 로그인유도(col 3) + 튜토리얼(full)
 
 ```

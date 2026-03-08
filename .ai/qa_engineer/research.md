@@ -110,7 +110,7 @@ POST /api/auth/refresh (실패) → 401
 POST /api/execute/{sqlKey} → { data: mockPageData }
 POST /api/execute/{sqlKey} (빈 결과) → { data: [] }
 
-// 일기 API
+// 콘텐츠 API
 POST /api/diary → { data: { diaryId: 1 } }
 ```
 
@@ -124,7 +124,7 @@ POST /api/diary → { data: { diaryId: 1 } }
 |------|---------|------|
 | useUserActions (LOGIN_SUBMIT) | High | 로그인 성공/실패 시나리오 |
 | useUserActions (REGISTER_SUBMIT) | High | 회원가입 + 이메일 발송 |
-| useBusinessActions (SUBMIT) | High | 일기 저장 플로우 |
+| useBusinessActions (SUBMIT) | High | 콘텐츠 저장 플로우 |
 | 401 자동 토큰 갱신 | High | Axios 인터셉터 |
 | 보호 화면 리다이렉트 | Medium | 비로그인 접근 |
 | 페이지네이션 | Medium | DIARY_LIST 페이지 전환 |
@@ -143,7 +143,7 @@ POST /api/diary → { data: { diaryId: 1 } }
 5. 카카오 로그인 플로우
 6. 토큰 만료 → 자동 갱신 → 화면 유지
 7. MAIN_PAGE GUEST → 벤토 그리드(로그인유도 카드) 렌더링 확인
-8. MAIN_PAGE USER → 벤토 그리드(약속위젯 + 다이어리 카드) 렌더링 확인
+8. MAIN_PAGE USER → 벤토 그리드(약속위젯 + 콘텐츠 카드) 렌더링 확인
 ```
 
 ---

@@ -78,7 +78,7 @@ WHERE allowed_roles IS NOT NULL
    OR css_class_overrides IS NOT NULL;
 
 -- 예상 결과:
--- DIARY_LIST_TITLE: label_text_overrides = {"ROLE_ADMIN":"전체 사용자 일기","ROLE_USER":"내 일기"}
+-- DIARY_LIST_TITLE: label_text_overrides = {"ROLE_ADMIN":"전체 사용자 콘텐츠","ROLE_USER":"내 콘텐츠"}
 -- ADMIN_DELETE_ALL_BTN: allowed_roles = 'ROLE_ADMIN'
 
 -- 4. 인덱스 생성 확인
@@ -245,7 +245,7 @@ UPDATE users SET role = 'ROLE_ADMIN' WHERE email = 'admin@example.com';
      "data": [
        {
          "componentId": "DIARY_LIST_TITLE",
-         "labelText": "내 일기",  // 오버라이드 적용됨
+         "labelText": "내 콘텐츠",  // 오버라이드 적용됨
          ...
        }
        // ADMIN_DELETE_ALL_BTN 컴포넌트는 응답에 없어야 함
@@ -266,7 +266,7 @@ UPDATE users SET role = 'ROLE_ADMIN' WHERE email = 'admin@example.com';
      "data": [
        {
          "componentId": "DIARY_LIST_TITLE",
-         "labelText": "전체 사용자 일기",  // 오버라이드 적용됨
+         "labelText": "전체 사용자 콘텐츠",  // 오버라이드 적용됨
          ...
        },
        {
@@ -308,45 +308,45 @@ UPDATE users SET role = 'ROLE_ADMIN' WHERE email = 'admin@example.com';
 - DB에 label_text_overrides 설정된 컴포넌트 존재:
   ```sql
   UPDATE ui_metadata
-  SET label_text = '일기 목록',
-      label_text_overrides = '{"ROLE_ADMIN":"전체 사용자 일기","ROLE_USER":"내 일기"}'::jsonb
+  SET label_text = '콘텐츠 목록',
+      label_text_overrides = '{"ROLE_ADMIN":"전체 사용자 콘텐츠","ROLE_USER":"내 콘텐츠"}'::jsonb
   WHERE component_id = 'DIARY_LIST_TITLE' AND screen_id = 'DIARY_LIST';
   ```
 
 #### 테스트 단계
 
-##### 케이스 A: ROLE_USER는 "내 일기" 표시
+##### 케이스 A: ROLE_USER는 "내 콘텐츠" 표시
 1. ROLE_USER 계정으로 로그인
 2. `/view/DIARY_LIST` 접속
-3. **화면 확인:** 페이지에 "내 일기" 텍스트가 표시됨
+3. **화면 확인:** 페이지에 "내 콘텐츠" 텍스트가 표시됨
 4. **API 응답 확인:**
    ```json
    {
      "componentId": "DIARY_LIST_TITLE",
-     "labelText": "내 일기"  // 오버라이드 적용
+     "labelText": "내 콘텐츠"  // 오버라이드 적용
    }
    ```
 
-##### 케이스 B: ROLE_ADMIN은 "전체 사용자 일기" 표시
+##### 케이스 B: ROLE_ADMIN은 "전체 사용자 콘텐츠" 표시
 1. ROLE_ADMIN 계정으로 로그인
 2. `/view/DIARY_LIST` 접속
-3. **화면 확인:** 페이지에 "전체 사용자 일기" 텍스트가 표시됨
+3. **화면 확인:** 페이지에 "전체 사용자 콘텐츠" 텍스트가 표시됨
 4. **API 응답 확인:**
    ```json
    {
      "componentId": "DIARY_LIST_TITLE",
-     "labelText": "전체 사용자 일기"  // 오버라이드 적용
+     "labelText": "전체 사용자 콘텐츠"  // 오버라이드 적용
    }
    ```
 
 ##### 케이스 C: ROLE_GUEST는 기본값 표시
 1. ROLE_GUEST 계정으로 로그인 (또는 비로그인)
 2. 해당 컴포넌트가 접근 가능한 페이지 접속
-3. **예상 결과:** "일기 목록" (기본 label_text) 표시
+3. **예상 결과:** "콘텐츠 목록" (기본 label_text) 표시
 
 #### 예상 결과
-✅ ROLE_USER는 "내 일기" 표시
-✅ ROLE_ADMIN은 "전체 사용자 일기" 표시
+✅ ROLE_USER는 "내 콘텐츠" 표시
+✅ ROLE_ADMIN은 "전체 사용자 콘텐츠" 표시
 ✅ 오버라이드가 없는 역할은 기본값 표시
 ✅ 재배포 없이 DB만 수정하여 텍스트 변경 가능
 
@@ -528,7 +528,7 @@ claims.put("role", user.getRole());  // ← 이 부분이 있는지 확인
 ### ❌ 문제 4: label_text가 오버라이드되지 않음
 
 #### 증상
-- ROLE_USER로 로그인했는데 "내 일기" 대신 기본값 "일기 목록"이 표시됨
+- ROLE_USER로 로그인했는데 "내 콘텐츠" 대신 기본값 "콘텐츠 목록"이 표시됨
 
 #### 원인 및 해결
 
@@ -538,10 +538,10 @@ claims.put("role", user.getRole());  // ← 이 부분이 있는지 확인
 SELECT component_id, label_text_overrides FROM ui_metadata WHERE component_id = 'DIARY_LIST_TITLE';
 
 -- 올바른 형식
-'{"ROLE_ADMIN":"전체 사용자 일기","ROLE_USER":"내 일기"}'
+'{"ROLE_ADMIN":"전체 사용자 콘텐츠","ROLE_USER":"내 콘텐츠"}'
 
 -- 잘못된 형식 (작은따옴표 사용)
-"{'ROLE_ADMIN':'전체 사용자 일기','ROLE_USER':'내 일기'}"  -- X
+"{'ROLE_ADMIN':'전체 사용자 콘텐츠','ROLE_USER':'내 콘텐츠'}"  -- X
 ```
 **해결:** 올바른 JSON 형식으로 수정
 
@@ -662,9 +662,9 @@ public AuthController(
 
 | 케이스 | 예상 텍스트 | 실제 텍스트 | 통과 여부 | 비고 |
 |--------|-------------|------------|----------|------|
-| A. ROLE_USER | "내 일기" | | ☐ Pass ☐ Fail | |
-| B. ROLE_ADMIN | "전체 사용자 일기" | | ☐ Pass ☐ Fail | |
-| C. ROLE_GUEST | "일기 목록" (기본값) | | ☐ Pass ☐ Fail | |
+| A. ROLE_USER | "내 콘텐츠" | | ☐ Pass ☐ Fail | |
+| B. ROLE_ADMIN | "전체 사용자 콘텐츠" | | ☐ Pass ☐ Fail | |
+| C. ROLE_GUEST | "콘텐츠 목록" (기본값) | | ☐ Pass ☐ Fail | |
 
 **종합 결과:** ☐ 전체 통과 ☐ 일부 실패
 

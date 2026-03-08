@@ -598,9 +598,73 @@ pages.css 추가 클래스:
 | 2026-03-06                              | componentMap.tsx 확인                             | TIME_RECORD_WIDGET ✅ 등록됨                                            |
 | 2026-03-06                              | V8 SQL + pages.css CSS 생성 완료                  | 구현 파일 2개 생성, QA 검증 대기                                        |
 | 2026-03-06                              | 로컬 Docker DB + Flyway 마이그레이션 완전 수정 | `backend_engineer/research.md` 참고                                          |
+| 2026-03-08                              | 어드민 URL 라우팅 패턴 도입 (`/view/admin/*`) | MetadataProvider.tsx — admin 세그먼트 감지, page.tsx PROTECTED_SCREENS에 USER_LIST 추가 |
 | `axios.tsx` localStorage → 쿠키 전환 | **P1**                                      | ✅ 수정됨 (2026-03-01, localStorage 라인 주석 처리)                     |
 | CSP / 보안 헤더 추가                    | **P1**                                      | ✅ 구현됨 (next.config.ts `async headers()`)                          |
 | 백엔드 System.out.println 정리          | **P2**                                      | → `backend_engineer/research.md` 참고                                  |
 | 프로덕션 `secure(true)` 설정          | **P2**                                      | → `backend_engineer/research.md` 참고                                  |
+
+---
+
+## 튜토리얼 페이지 (Playground) 구현 분석 (2026-03-07)
+
+### 개요
+SDUI의 작동 원리를 시각적으로 보여주기 위한 인터랙티브 튜토리얼 페이지입니다.
+사용자가 UI를 조작하면 JSON 메타데이터가 실시간으로 변하는 것을 확인할 수 있습니다.
+
+### 주요 기능
+1. **Split View**: 좌측(Preview) ↔ 우측(Editor & JSON) 분할 레이아웃
+2. **실시간 렌더링**: `DynamicEngine`을 재사용하여 메타데이터 변경 즉시 반영
+3. **Drag & Drop**: 컴포넌트 리스트 순서 변경 (HTML5 Drag API 사용)
+4. **Versioning**:
+   - '적용' 시 DB에 `TUTORIAL_DEMO`로 저장
+   - 기존 데이터는 `TUTORIAL_DEMO_v{timestamp}`로 자동 백업
+   - '히스토리' 버튼으로 이전 버전 조회 및 롤백 가능
+
+### 기술 스택 및 파일
+| 구분 | 파일명 | 역할 |
+|---|---|---|
+| **DB** | `V9__tutorial_page.sql` | `TUTORIAL_PAGE` 화면 및 `TUTORIAL_PLAYGROUND` 컴포넌트 정의 |
+| **FE** | `TutorialPlayground.tsx` | 메인 로직 (State 관리, D&D, API 호출) |
+| **BE** | `TutorialController.java` | `/api/ui/tutorial/*` 엔드포인트 제공 |
+| **BE** | `TutorialService.java` | 저장, 히스토리 관리, 버전 백업 로직 |
+
+### API 명세
+| Method | Endpoint | 설명 |
+|---|---|---|
+| `POST` | `/api/ui/tutorial/save` | 현재 메타데이터 저장 (기존 데이터 백업 수행) |
+| `GET` | `/api/ui/tutorial/history` | 저장된 히스토리 버전 목록 조회 |
+| `GET` | `/api/ui/tutorial/history/{id}` | 특정 버전의 메타데이터 상세 조회 |
+
+---
+
+## 어드민 URL 라우팅 패턴 (2026-03-08)
+
+### 개요
+
+관리자 전용 화면을 일반 화면과 URL 레벨에서 분리하기 위해 `/view/admin/{screenId}` 패턴 도입.
+
+### URL 구조
+
+| 경로 | screenId | refId | 용도 |
+|---|---|---|---|
+| `/view/MAIN_PAGE` | `MAIN_PAGE` | null | 일반 화면 |
+| `/view/CONTENT_DETAIL/42` | `CONTENT_DETAIL` | `42` | 일반 화면 + refId |
+| `/view/admin/USER_LIST` | `USER_LIST` | null | 관리자 화면 |
+| `/view/admin/USER_DETAIL/5` | `USER_DETAIL` | `5` | 관리자 화면 + refId |
+
+### 수정 파일
+
+- **`MetadataProvider.tsx`**
+  - `finalScreenId` useMemo: `pathSegments[viewIndex+1] === 'admin'`이면 `pathSegments[viewIndex+2]` 반환
+  - `contextValue` useMemo: `isAdminPath = slug[0] === 'admin'` 플래그로 `slug[1]` → screenId, `slug[2]` → refId
+
+- **`page.tsx`**: `PROTECTED_SCREENS`에 `"USER_LIST"` 추가 (로그인 필수)
+
+### 주의사항
+
+- `screenMap.ts` 수정 불필요 — admin 경로는 URL 파싱으로 처리, SCREEN_MAP 룩업을 타지 않음
+- DB의 `screen_id`는 그대로 `USER_LIST` 사용 (백엔드 `/api/ui/{screenId}` 요청도 `USER_LIST`로 그대로 전달)
+- 추후 admin 전용 레이아웃이 필요하면 `isAdminPath` 플래그를 Context에 추가해 활용 가능
 
 ---

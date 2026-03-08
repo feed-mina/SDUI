@@ -19,9 +19,9 @@
 
 | 상태 | Card 1 (col 1-2) | Card 2 (col 3) | Card 3 (full) |
 |------|-----------------|----------------|---------------|
-| PC 로그인 + goalTime | 약속 위젯 (TIME_RECORD_WIDGET) | 다이어리 쓰러가기 | 다이어리 보기 |
+| PC 로그인 + goalTime | 약속 위젯 (TIME_RECORD_WIDGET) | 콘텐츠 쓰러가기 | 콘텐츠 보기 |
 | PC 비로그인 | 시간 설정하기 (TIME_RECORD_WIDGET) | 로그인 하러가기 | 튜토리얼 보기 |
-| 모바일 로그인 | 약속 위젯 (단일 컬럼) | 다이어리 쓰러가기 | 다이어리 보기 |
+| 모바일 로그인 | 약속 위젯 (단일 컬럼) | 콘텐츠 쓰러가기 | 콘텐츠 보기 |
 | 모바일 비로그인 | 시간 설정하기 (단일 컬럼) | 로그인 하러가기 | 튜토리얼 보기 |
 
 > **핵심:** Card 1은 `TIME_RECORD_WIDGET` 단일 컴포넌트로 처리 — goalTime 유무에 따라 RecordTimeComponent 내부에서 자동 분기 (no-goal ↔ clock display)
@@ -94,7 +94,7 @@ mockup2.html 카드는 아이콘 + 제목(h3) + 설명(p) + 화살표(→) 4개 
 GROUP (css_class: "bento-card bento-card-diary")
   ├── GROUP (css_class: "bento-card-body", direction: COLUMN)
   │    ├── TEXT  (labelText: "📔")        ← 아이콘
-  │    ├── TEXT  (labelText: "다이어리 쓰러가기")  ← 제목
+  │    ├── TEXT  (labelText: "콘텐츠 쓰러가기")  ← 제목
   │    └── TEXT  (labelText: "오늘 하루를 기록해보세요.")  ← 설명
   └── BUTTON (labelText: "→", action_type: ROUTE, action_url: "/view/CONTENT_WRITE")
 ```
@@ -346,7 +346,7 @@ VALUES
   ('MAIN_PAGE', 'main_bento_appointment', 'TIME_RECORD_WIDGET',
    'MAIN_SECTION', 'bento-card bento-card-appointment col-span-2', 'ROLE_USER', 10);
 
--- Card 2: 다이어리 쓰러가기 (col 3) — GROUP 컨테이너
+-- Card 2: 콘텐츠 쓰러가기 (col 3) — GROUP 컨테이너
 INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, css_class, group_direction, allowed_roles, sort_order)
 VALUES
@@ -372,7 +372,7 @@ INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, label_text, css_class, allowed_roles, sort_order)
 VALUES
   ('MAIN_PAGE', 'main_bento_diary_title', 'TEXT',
-   'main_bento_diary_body', '다이어리 쓰러가기', 'bento-card-title', 'ROLE_USER', 23);
+   'main_bento_diary_body', '콘텐츠 쓰러가기', 'bento-card-title', 'ROLE_USER', 23);
 
 -- Card 2 자식: 설명
 INSERT INTO ui_metadata
@@ -391,7 +391,7 @@ VALUES
    'main_bento_diary_grp', '→', 'bento-card-arrow', 'LINK', '/view/CONTENT_WRITE',
    'ROLE_USER', 25);
 
--- Card 3: 다이어리 보기 (full width) — GROUP 컨테이너
+-- Card 3: 콘텐츠 보기 (full width) — GROUP 컨테이너
 INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, css_class, group_direction, allowed_roles, sort_order)
 VALUES
@@ -410,7 +410,7 @@ INSERT INTO ui_metadata
   (screen_id, component_id, component_type, parent_group_id, label_text, css_class, allowed_roles, sort_order)
 VALUES
   ('MAIN_PAGE', 'main_bento_view_title', 'TEXT',
-   'main_bento_view_body', '다이어리 보기', 'bento-card-title', 'ROLE_USER', 32);
+   'main_bento_view_body', '콘텐츠 보기', 'bento-card-title', 'ROLE_USER', 32);
 
 -- Card 3 자식: 설명
 INSERT INTO ui_metadata
@@ -425,7 +425,7 @@ INSERT INTO ui_metadata
    label_text, css_class, action_type, action_url, allowed_roles, sort_order)
 VALUES
   ('MAIN_PAGE', 'main_bento_view_btn', 'BUTTON',
-   'main_bento_view_grp', '📖 다이어리', 'bento-card-tag', 'LINK', '/view/CONTENT_LIST',
+   'main_bento_view_grp', '📖 콘텐츠', 'bento-card-tag', 'LINK', '/view/CONTENT_LIST',
    'ROLE_USER', 34);
 
 -- ================================================================
@@ -588,7 +588,7 @@ ORDER BY sort_order;
   - pages.css 하단(line 1717~)에 추가됨
   - flex-col-layout/flex-row-layout 헬퍼 + main-bento 3열 grid + 카드 타입별 + 내부 요소 + RecordTimeComponent override
 - [x] 6. 로컬 DB에서 Flyway 마이그레이션 실행 → MAIN_PAGE 브라우저 확인 ✅ (V8~V10 모두 완료)
-- [x] 7. PC 로그인 상태: 약속위젯(col1-2) + 다이어리쓰러가기(col3) + 다이어리보기(full) 확인 ✅
+- [x] 7. PC 로그인 상태: 약속위젯(col1-2) + 콘텐츠쓰러가기(col3) + 콘텐츠보기(full) 확인 ✅
 - [x] 8. PC 비로그인 상태: 시간설정하기(col1-2) + 로그인(col3) + 튜토리얼(full) 확인 ✅
 - [x] 9. 모바일 단일 컬럼 렌더링 확인 ✅ (미디어쿼리 999px 기준 수정 완료, 2026-03-07)
 - [x] 10. RecordTimeComponent sticky override 스크롤 확인, goal-list-popup 카드 경계 초과 표시 확인 ✅ (pages.css override 완료, 2026-03-07)

@@ -34,7 +34,7 @@
 | SNS_BUTTON | ButtonField | SNS(카카오) 버튼 |
 | IMAGE | ImageField | 이미지 표시 |
 | EMAIL_SELECT | EmailSelectField | 이메일 도메인 선택 |
-| EMOTION_SELECT | EmotionSelectField | 감정 선택 (일기) |
+| EMOTION_SELECT | EmotionSelectField | 감정 선택 (콘텐츠) |
 | SELECT | SelectField | 드롭다운 선택 |
 | TEXTAREA | TextAreaField | 여러 줄 텍스트 |
 | TIME_RECORD_WIDGET | RecordTimeComponent | 시간 기록 위젯 |
@@ -89,7 +89,7 @@
 
 [로그인 상태]
   → DIARY_LIST (목록)
-    → 일기 클릭 → ROUTE_DETAIL → DIARY_DETAIL
+    → 콘텐츠 클릭 → ROUTE_DETAIL → DIARY_DETAIL
     → 수정 버튼 → ROUTE_MODIFY → DIARY_MODIFY
   → DIARY_WRITE (작성)
     → SUBMIT → DIARY_LIST

@@ -44,6 +44,8 @@ com.domain.demo_backend/
 | `/api/execute/{sqlKey}` | POST   | **Yes** | CommonQueryController | 동적 쿼리 실행            |
 | `/api/goalTime/**`      | ALL    | No            | GoalTimeController    | 목표 시간                 |
 | `/api/location/**`      | ALL    | ?             | LocationController    | 위치 서비스               |
+| `/api/admin/users`      | GET    | **ADMIN** | AdminUserController   | 사용자 목록 조회 (keyword/role 필터, 페이징) |
+| `/api/admin/users/role` | PUT    | **ADMIN** | AdminUserController   | 사용자 권한 변경 (최대 5명) |
 
 ---
 
@@ -216,19 +218,19 @@ CommonQueryController → QueryMasterService → QueryMasterRepository (query_ma
 > **출처:** frontend_engineer/research.md에서 이동 (commit b2ec8d5 이후 재스캔 기준)
 > **2026-03-08 완료:** 11개 파일, 활성 println 45개 전부 SLF4J로 전환
 
-| 파일                             | 개수 | 민감도                           | 상태                                |
-| -------------------------------- | ---- | -------------------------------- | ----------------------------------- |
-| `ContentService.java`          | 8개  | MEDIUM — 콘텐츠 요청, 에러      | ✅ 완료 (log.debug / log.error)     |
-| `ContentController.java`       | 11개 | MEDIUM — 요청 정보, IP          | ✅ 완료 (log.debug / log.warn / log.error) |
-| `AuthService.java`             | 3개  | MEDIUM — User 객체, 에러 메시지 | ✅ 완료 (log.debug)                 |
-| `GoalTimeQueryService.java`    | 9개  | MEDIUM — 캐시키, SQL, params    | ✅ 완료 (log.debug)                 |
-| `GoalTimeController.java`      | 2개  | LOW — userSqno, targetTime      | ✅ 완료 (log.debug)                 |
-| `UiController.java`            | 3개  | LOW — screenId 로깅             | ✅ 완료 (log.debug)                 |
-| `UiService.java`               | 2개  | LOW — 데이터 정합성 경고        | ✅ 완료 (log.warn)                  |
-| `JwtAuthenticationFilter.java` | 1개  | LOW — System.err + printStackTrace | ✅ 완료 (log.warn + e 객체 포함) |
-| `KakaoController.java`         | 1개  | LOW — kakaoUserInfo             | ✅ 완료 (log.debug)                 |
-| `MockAuthFilter.java`          | 1개  | LOW — 필터 실행 로그            | ✅ 완료 (log.debug)                 |
-| `PasswordUtil.java`            | 2개  | LOW — 비밀번호 일치 여부        | ✅ 완료 (log.debug)                 |
+| 파일                             | 개수 | 민감도                              | 상태                                       |
+| -------------------------------- | ---- | ----------------------------------- | ------------------------------------------ |
+| `ContentService.java`          | 8개  | MEDIUM — 콘텐츠 요청, 에러         | ✅ 완료 (log.debug / log.error)            |
+| `ContentController.java`       | 11개 | MEDIUM — 요청 정보, IP             | ✅ 완료 (log.debug / log.warn / log.error) |
+| `AuthService.java`             | 3개  | MEDIUM — User 객체, 에러 메시지    | ✅ 완료 (log.debug)                        |
+| `GoalTimeQueryService.java`    | 9개  | MEDIUM — 캐시키, SQL, params       | ✅ 완료 (log.debug)                        |
+| `GoalTimeController.java`      | 2개  | LOW — userSqno, targetTime         | ✅ 완료 (log.debug)                        |
+| `UiController.java`            | 3개  | LOW — screenId 로깅                | ✅ 완료 (log.debug)                        |
+| `UiService.java`               | 2개  | LOW — 데이터 정합성 경고           | ✅ 완료 (log.warn)                         |
+| `JwtAuthenticationFilter.java` | 1개  | LOW — System.err + printStackTrace | ✅ 완료 (log.warn + e 객체 포함)           |
+| `KakaoController.java`         | 1개  | LOW — kakaoUserInfo                | ✅ 완료 (log.debug)                        |
+| `MockAuthFilter.java`          | 1개  | LOW — 필터 실행 로그               | ✅ 완료 (log.debug)                        |
+| `PasswordUtil.java`            | 2개  | LOW — 비밀번호 일치 여부           | ✅ 완료 (log.debug)                        |
 
 **비고:** 주석 블록(`//`, `/* */`) 내 잔존 println 3건은 비활성 코드로 그대로 유지.
 
@@ -571,7 +573,7 @@ public void updateLocation(LocationRequest message,
 
 ---
 
-### /api/goalTime/** 부분 인증 현황
+### /api/goalTime/** 부분 인증 현황 //[메모] 로그인 하지 않은 경우, 페이지에 처음 진입했을때 nogoal 상태를 보여주기  위해 
 
 | 메서드        | 경로             | @AuthenticationPrincipal | null 허용                    | 위험                  |
 | ------------- | ---------------- | ------------------------ | ---------------------------- | --------------------- |
@@ -603,17 +605,17 @@ private static final List<String> EXCLUDE_URLS = List.of(
 
 ### 우선순위 수정 체크리스트
 
-| 항목                                                                        | 우선순위             | 상태                                                               |
-| --------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------ |
-| `/api/execute/**` → `hasRole('ADMIN')` + SecurityConfig permitAll 제거 | **P0 — 즉시** | ❌ 미수정 (여전히 permitAll)                                       |
-| JwtAuthenticationFilter 역할 하드코딩 → JWT 클레임 role 읽기               | **P0 — 즉시** | ✅ 수정됨 (line 125:`claims.get("role")`, ROLE_USER는 폴백만)    |
-| WebSocket 인증 추가 (`/location/update`, `/location/emergency`)         | **P0**         | ❌ 미수정 (LocationController JWT 검증 없음)                       |
-| `/api/goalTime/getGoalTime`, `getGoalList` null 체크 강화               | **P1**         | ❌ 미수정 (삼항 연산자로 null 허용 유지)                           |
-| `/api/auth/editPassword` 현재 비밀번호 검증 추가                          | **P1**         | ❌ 미수정                                                          |
-| JwtAuthenticationFilter EXCLUDE_URLS 오타 수정 (`"api/ui/MAIN_PAGE"`)     | **P2**         | ✅ 수정됨 (line 33:`"/api/ui/MAIN_PAGE"` 슬래시 추가됨)          |
-| WebSocket Origin `*` → 실제 도메인으로 제한                              | **P2**         | ❌ 미수정 (WebSocketConfig `setAllowedOriginPatterns("*")` 유지) |
-| `anyRequest().denyAll()` 유지 확인                                        | —                   | ✅ 이미 적용됨                                                     |
-| `/api/auth/editPassword`, `/api/auth/non-user` authenticated            | —                   | ✅ 이미 적용됨                                                     |
+| 항목                                                                                                                                                             | 우선순위             | 상태                                                               |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------ |
+| `/api/execute/**` → query_master.required_role 컬럼 기반 쿼리별 권한 검증 (Option B 채택)                                                                   | **P0 — 즉시** | ✅ 코드 수정 완료 (QueryMaster.requiredRole + CommonQueryController 검증 로직), V15 migration 폴더 배치 완료, **로컬 DB 적용(서버 실행) 대기** |
+| JwtAuthenticationFilter 역할 하드코딩 → JWT 클레임 role 읽기                                                                                                    | **P0 — 즉시** | ✅ 수정됨 (line 125:`claims.get("role")`, ROLE_USER는 폴백만)    |
+| WebSocket 인증 추가 (`/location/update`, `/location/emergency`)                                                                                              | **P0**         | ❌ 미수정 (LocationController JWT 검증 없음)                       |
+| `/api/goalTime/getGoalTime`, `getGoalList` null 체크 강화 <br />//[메모] 로그인 하지 않은 경우, 페이지에 처음 진입했을때 <br />nogoal 상태를 보여주기  위해 | **P1**         | ❌ 미수정 (삼항 연산자로 null 허용 유지)                           |
+| `/api/auth/editPassword` 현재 비밀번호 검증 추가                                                                                                               | **P1**         | ❌ 미수정                                                          |
+| JwtAuthenticationFilter EXCLUDE_URLS 오타 수정 (`"api/ui/MAIN_PAGE"`)                                                                                          | **P2**         | ✅ 수정됨 (line 33:`"/api/ui/MAIN_PAGE"` 슬래시 추가됨)          |
+| WebSocket Origin `*` → 실제 도메인으로 제한                                                                                                                   | **P2**         | ❌ 미수정 (WebSocketConfig `setAllowedOriginPatterns("*")` 유지) |
+| `anyRequest().denyAll()` 유지 확인                                                                                                                             | —                   | ✅ 이미 적용됨                                                     |
+| `/api/auth/editPassword`, `/api/auth/non-user` authenticated                                                                                                 | —                   | ✅ 이미 적용됨                                                     |
 
 ---
 
@@ -644,7 +646,7 @@ private static final List<String> EXCLUDE_URLS = List.of(
 
 #### 3. DB 백업 전략 변경 (2026-03-07)
 
--  **EC2 로컬 저장 + 7일 보관 주기(Retention)** 방식으로 변경.
+- **EC2 로컬 저장 + 7일 보관 주기(Retention)** 방식으로 변경.
 - **스크립트:** `.ai/scripts/backup_sdui_db_to_ec2.sh`
 
 ---
@@ -682,15 +684,16 @@ Authentication authentication = new UsernamePasswordAuthenticationToken(
 
 ### SecurityConfig — 엔드포인트별 접근 제어
 
-| 엔드포인트 | 설정 | 비고 |
-|-----------|------|------|
-| `/api/ui/**` | `permitAll()` | RBAC는 컨트롤러+서비스 레이어에서 처리 |
-| `/api/goalTime/**` | `permitAll()` | 컨트롤러 레벨에서 부분 인증 처리 |
-| `/api/execute/**` | `permitAll()` | **🔴 P0 — 무인증 SQL 실행 가능 (미수정)** |
-| `/api/content/**` | `authenticated()` | Spring Security 레벨 보호 |
-| 나머지 | `denyAll()` | 기본 차단 |
+| 엔드포인트           | 설정                | 비고                                             |
+| -------------------- | ------------------- | ------------------------------------------------ |
+| `/api/ui/**`       | `permitAll()`     | RBAC는 컨트롤러+서비스 레이어에서 처리           |
+| `/api/goalTime/**` | `permitAll()`     | 컨트롤러 레벨에서 부분 인증 처리                 |
+| `/api/execute/**`  | `permitAll()`     | **🟡 P0 — Controller 레벨 required_role 검증 추가됨 (V15 DB 적용 후 완전 적용)** |
+| `/api/content/**`  | `authenticated()` | Spring Security 레벨 보호                        |
+| `/api/admin/**`    | `hasRole("ADMIN")` | ✅ 2026-03-08 추가 — ADMIN 전용 (SecurityConfig line 90) |
+| 나머지               | `denyAll()`       | 기본 차단                                        |
 
-**Spring Security 레벨의 `hasRole()` / `hasAuthority()` 접근 규칙은 미사용** — role-based URL 제어는 전혀 없음.
+**Spring Security 레벨의 `hasRole()` 접근 규칙: `/api/admin/**`에 최초 적용 (2026-03-08)**
 
 ### UiController → UiService RBAC (ui_metadata 컴포넌트 필터링)
 
@@ -713,10 +716,10 @@ private boolean isAccessible(UiMetadata entity, String userRole) {
 ### allowed_roles 값별 가시성
 
 | `allowed_roles` 값 | ROLE_GUEST | ROLE_USER |
-|-------------------|-----------|-----------|
-| `NULL` | ✅ 표시 | ✅ 표시 |
-| `'ROLE_GUEST'` | ✅ 표시 | ❌ 숨김 |
-| `'ROLE_USER'` | ❌ 숨김 | ✅ 표시 |
+| -------------------- | ---------- | --------- |
+| `NULL`             | ✅ 표시    | ✅ 표시   |
+| `'ROLE_GUEST'`     | ✅ 표시    | ❌ 숨김   |
+| `'ROLE_USER'`      | ❌ 숨김    | ✅ 표시   |
 
 ### CustomUserDetails — getAuthorities()
 
@@ -732,22 +735,25 @@ public Collection<? extends GrantedAuthority> getAuthorities() {
 
 ### RBAC 계층 요약
 
-| 레이어 | Role 소스 | 사용 목적 |
-|--------|----------|---------|
-| JwtAuthenticationFilter | JWT 클레임 `"role"` | SecurityContext 인증 토큰 생성 |
-| CustomUserDetails.getAuthorities() | DB `users.role` | UiController extractRole() |
-| SecurityConfig | — | 역할 기반 URL 접근제어 미사용 (permitAll/authenticated만) |
-| UiService.isAccessible() | `ui_metadata.allowed_roles` | 화면 컴포넌트별 RBAC 필터링 |
+| 레이어                             | Role 소스                     | 사용 목적                                                 |
+| ---------------------------------- | ----------------------------- | --------------------------------------------------------- |
+| JwtAuthenticationFilter            | JWT 클레임 `"role"`         | SecurityContext 인증 토큰 생성                            |
+| CustomUserDetails.getAuthorities() | DB `users.role`             | UiController extractRole()                                |
+| SecurityConfig                     | —                            | 역할 기반 URL 접근제어 미사용 (permitAll/authenticated만) |
+| UiService.isAccessible()           | `ui_metadata.allowed_roles` | 화면 컴포넌트별 RBAC 필터링                               |
 
 ---
 
-## 분析 히스토리 (2026-03-08 기준)
+## 분석 히스토리 (2026-03-08 기준)
 
-| 날짜       | 분析 내용                                              | 결론                                                                                |
-| ---------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| 2026-02-28 | 전체 백엔드 코드 초기 분析                             | 위 내용 도출                                                                        |
-| 2026-02-28 | [P1] 보안 감사 — anyRequest().permitAll() 위험도 분析 | 아래 섹션 참고                                                                      |
-| 2026-03-06 | Docker DB 포트 변경 + Flyway V1~V8 수정 완료           | 로컬 Docker DB 섹션 참고                                                            |
-| 2026-03-06 | 보안 체크리스트 재확인, Redis/UiService 확인           | P0-2 JWT role ✅ 수정됨, EXCLUDE_URLS 오타 ✅ 수정됨, ui:metadata Redis 캐시 확인됨 |
-| 2026-03-08 | System.out.println → SLF4J 전환 완료                  | 11개 파일 45건 전환, 주석 블록 3건만 잔존 (비활성) |
-| 2026-03-08 | JwtAuthenticationFilter + SecurityConfig RBAC/user role 전체 흐름 분析 | RBAC 구현 현황 상세 분析 섹션 추가. Spring Security 레벨 role-based URL 제어 미사용 확인. UiService.isAccessible()이 실질적 RBAC 담당 |
+| 날짜       | 분석 내용                                                              | 결론                                                                                                                                  |
+| ---------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-02-28 | 전체 백엔드 코드 초기 분석                                             | 위 내용 도출                                                                                                                          |
+| 2026-02-28 | [P1] 보안 감사 — anyRequest().permitAll() 위험도 분석                 | 아래 섹션 참고                                                                                                                        |
+| 2026-03-06 | Docker DB 포트 변경 + Flyway V1~V8 수정 완료                           | 로컬 Docker DB 섹션 참고                                                                                                              |
+| 2026-03-06 | 보안 체크리스트 재확인, Redis/UiService 확인                           | P0-2 JWT role ✅ 수정됨, EXCLUDE_URLS 오타 ✅ 수정됨, ui:metadata Redis 캐시 확인됨                                                   |
+| 2026-03-08 | System.out.println → SLF4J 전환 완료                                  | 11개 파일 45건 전환, 주석 블록 3건만 잔존 (비활성)                                                                                    |
+| 2026-03-08 | JwtAuthenticationFilter + SecurityConfig RBAC/user role 전체 흐름 분석 | RBAC 구현 현황 상세 분석 섹션 추가. Spring Security 레벨 role-based URL 제어 미사용 확인. UiService.isAccessible()이 실질적 RBAC 담당 |
+| 2026-03-08 | 관리자페이지 기획 + P0-1 `/api/execute/**` 무인증 취약점 해소 (Option B) | query_master.required_role 컬럼 추가, QueryMaster.java + CommonQueryController.java 수정 완료. V15 마이그레이션 초안 작성(.ai/). AdminController/Service Phase 1~6 구현 계획 수립. 로컬 DB 환경 기준 진행 예정 |
+| 2026-03-08 | 로컬 DB 전환 + V13/V14 버그 수정 + V15 migration 폴더 배치 | application.yml 5432/testdb 전환. V13·V14 `sql_text`→`query_text` 컬럼명 오류 수정. V15 db/migration 폴더 이동 완료. 로컬 서버 실행 후 마이그레이션 적용 대기 중 |
+| 2026-03-08 | 순서 1~3 완료 — 서버 기동 확인, SecurityConfig ADMIN 보호, AdminUserController/Service 신규 생성 | V12~V15 로컬 DB 적용 완료(서버 시작 로그 확인). `SecurityConfig.java:90` `/api/admin/**` → `hasRole("ADMIN")` 추가. `domain/admin/` 패키지 신규 — `AdminUserController`, `AdminUserService`, `AdminUserResponse`, `UpdateUserRoleRequest`. `UserRepository`에 `findUsersForAdmin`·`countUsersForAdmin` JPQL 쿼리 추가. V16 마이그레이션 작성 예정 (`find_users_for_admin` query_master 등록 + `GET_ADMIN_STATS` required_role 누락 수정) |

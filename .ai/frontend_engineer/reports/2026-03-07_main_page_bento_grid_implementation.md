@@ -21,7 +21,7 @@ Docker 로컬 환경에서 Flyway V1-V8 마이그레이션 정상 실행 확인 
 
 | 상태 | Card 1 (col 1-2) | Card 2 (col 3) | Card 3 (full width) |
 |------|-----------------|----------------|---------------------|
-| **PC/모바일 로그인** | 약속 위젯 (TIME_RECORD_WIDGET) | 다이어리 쓰러가기 | 다이어리 보기 |
+| **PC/모바일 로그인** | 약속 위젯 (TIME_RECORD_WIDGET) | 콘텐츠 쓰러가기 | 콘텐츠 보기 |
 | **PC/모바일 비로그인** | 시간 설정하기 (TIME_RECORD_WIDGET) | 로그인 하러가기 | 튜토리얼 보기 |
 
 ### 1.2 RBAC 분기 전략
@@ -209,7 +209,7 @@ DELETE FROM flyway_schema_history WHERE version = '8';
 | # | 확인 항목 | 상태 |
 |---|----------|------|
 | 6 | 로컬 DB Flyway V1-V8 정상 실행 | ✅ 완료 (이전 세션) |
-| 7 | PC 로그인: 약속위젯(col1-2) + 다이어리쓰러가기(col3) + 다이어리보기(full) | 🔲 |
+| 7 | PC 로그인: 약속위젯(col1-2) + 콘텐츠쓰러가기(col3) + 콘텐츠보기(full) | 🔲 |
 | 8 | PC 비로그인: 시간설정하기(col1-2) + 로그인(col3) + 튜토리얼(full) | 🔲 |
 | 9 | 모바일 단일 컬럼 렌더링 (두 상태 모두) | 🔲 |
 | 10 | RecordTimeComponent sticky 해제 확인, goal-list-popup 카드 밖으로 표시 확인 | 🔲 |
