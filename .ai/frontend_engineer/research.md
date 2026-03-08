@@ -668,3 +668,44 @@ SDUI의 작동 원리를 시각적으로 보여주기 위한 인터랙티브 튜
 - 추후 admin 전용 레이아웃이 필요하면 `isAdminPath` 플래그를 Context에 추가해 활용 가능
 
 ---
+
+## 관리자 회원 권한 관리 (2026-03-08, 순서 6)
+
+### 신규 파일
+
+| 파일 | 역할 |
+|------|------|
+| `components/DynamicEngine/hook/useAdminUsers.ts` | 관리자 회원 목록 조회·권한 변경 전용 훅 |
+| `components/fields/AdminUserTable.tsx` | `ADMIN_USER_TABLE` 컴포넌트 |
+
+### useAdminUsers.ts 설계 포인트
+
+- **query 상태 분리**: `keyword`/`roleFilter`는 live 입력값, `query`(커밋된 파라미터)가 변경될 때만 API 재조회
+  - `handleSearch()` → `setQuery({ keyword, roleFilter, page: 1 })` → `useEffect([query])` 실행
+  - `handlePageChange(p)` → `setQuery(prev => ({ ...prev, page: p }))` → keyword/roleFilter 유지
+- **체크박스 max-5**: `toggleSelect` 내 `next.size >= 5`에서 alert + 조기 return
+- **권한 변경 플로우**: `window.confirm(userId 목록 포함 메시지)` → `PUT /api/admin/users/role` → 목록 새로고침
+- axios 인스턴스(`@/services/axios`) 사용 → withCredentials + 401 인터셉터 자동 처리
+
+### AdminUserTable.tsx 설계 포인트
+
+- 기존 `Pagination` 컴포넌트 재사용 (`totalCount`, `pageSize`, `currentPage`, `onPageChange`)
+- 기존 `inputfield-core`, `content-btn` CSS 클래스 재사용
+- **행 클릭 = 체크박스 토글** (체크박스 td는 `stopPropagation`으로 이중 토글 방지)
+- `SelectField`는 이메일 도메인 전용이라 미사용 → 네이티브 `<select>` 직접 사용
+
+### componentMap.tsx 변경
+
+```typescript
+ADMIN_USER_TABLE: withRenderTrack(AdminUserTable, "AdminUserTable"),
+```
+
+### pages.css 추가 클래스 (line 2320~)
+
+`.admin-page-container`, `.admin-page-header`, `.admin-page-title`, `.admin-back-btn`,
+`.admin-user-table-wrapper`, `.admin-toolbar`, `.admin-search-group`, `.admin-search-input`,
+`.admin-role-filter`, `.admin-role-select`, `.admin-search-btn`, `.admin-role-control`,
+`.admin-change-btn`, `.admin-selection-info`, `.admin-user-table`, `.admin-row-selected`,
+`.admin-table-empty`, `.admin-role-badge`, `.badge-admin`, `.badge-user`
+
+---

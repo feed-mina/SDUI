@@ -243,6 +243,9 @@ if (requiredRole != null) {
 | 순서 1 — 서버 실행 + V12~V15 Flyway 마이그레이션 로컬 DB 적용 | `./gradlew bootRun` 로그 확인 |
 | 순서 2 — SecurityConfig `/api/admin/**` hasRole("ADMIN") 추가 | `SecurityConfig.java:90` |
 | 순서 3 — AdminUserController + AdminUserService 신규 생성 | `domain/admin/controller/AdminUserController.java`, `domain/admin/service/AdminUserService.java`, `domain/admin/dto/AdminUserResponse.java`, `domain/admin/dto/UpdateUserRoleRequest.java`, `UserRepository.java` (findUsersForAdmin 추가) |
+| 순서 4 — V16 마이그레이션 (query_master 등록 + GET_ADMIN_STATS 수정) | `V16__admin_user_query.sql` |
+| 순서 5 — V17 마이그레이션 (USER_LIST 스크린 ui_metadata) | `V17__user_list_screen.sql` |
+| 순서 6 — Frontend ADMIN_USER_TABLE 컴포넌트 구현 | `useAdminUsers.ts`, `AdminUserTable.tsx`, `componentMap.tsx`, `pages.css` |
 
 ---
 
@@ -279,5 +282,5 @@ cd SDUI-server
 | 2 | SecurityConfig에 `/api/admin/**` hasRole("ADMIN") 추가 | `SecurityConfig.java` | ✅ |
 | 3 | AdminUserController + AdminUserService 신규 생성 | `domain/admin/controller`, `service` | ✅ |
 | 4 | V16 마이그레이션 — `find_users_for_admin` query_master 등록 + `GET_ADMIN_STATS` required_role 수정 | `V16__admin_user_query.sql` | ✅ |
-| 5 | V17 마이그레이션 — USER_LIST 스크린 ui_metadata | `V17__user_list_screen.sql` | ⬜ |
-| 6 | Frontend — 관리자 action 핸들러 추가 | `useBusinessActions.tsx` 또는 신규 컴포넌트 | ⬜ |
+| 5 | V17 마이그레이션 — USER_LIST 스크린 ui_metadata | `V17__user_list_screen.sql` | ✅ |
+| 6 | Frontend — ADMIN_USER_TABLE 컴포넌트 구현 + componentMap 등록 | `AdminUserTable.tsx`, `componentMap.tsx` | ✅ |
