@@ -32,8 +32,11 @@ export function MetadataProvider({ children, screenId: propScreenId }: MetadataP
 
         const pathSegments = pathname.split('/').filter(Boolean);
         const viewIndex = pathSegments.indexOf('view');
-        //  * 경로가 /view/[screenId]/[index] 인 경우
+        //  * 경로가 /view/[screenId]/[index] 또는 /view/admin/[screenId]/[index] 인 경우
         if (viewIndex !== -1 && pathSegments[viewIndex + 1]) {
+            if (pathSegments[viewIndex + 1] === 'admin') {
+                return pathSegments[viewIndex + 2] || DEFAULT_SCREEN_ID;
+            }
             return pathSegments[viewIndex + 1];
         }
         // * 경로가 meta.screen_id로 URL 또는 MAIN_PAGE
@@ -71,12 +74,15 @@ export function MetadataProvider({ children, screenId: propScreenId }: MetadataP
     //   Context Value를 메모이제이션하여 참조값 고정
     //  * data : 서버에서 가져온 screenId별 메타데이터 정보 , 레이아웃크기구분, 로딩상태, 최종 URL파라미터를 contextValue의 변수에 담아 케싱한다
     const contextValue = useMemo(() => {
-        // URL 기반으로 정보 추출
-        const screenIdFromUrl = slug[0] || SCREEN_MAP[pathname] || DEFAULT_SCREEN_ID;
+        // URL 기반으로 정보 추출 (/view/admin/[screenId] 패턴 지원)
+        const isAdminPath = slug[0] === 'admin';
+        const screenIdFromUrl = isAdminPath
+            ? (slug[1] || SCREEN_MAP[pathname] || DEFAULT_SCREEN_ID)
+            : (slug[0] || SCREEN_MAP[pathname] || DEFAULT_SCREEN_ID);
+        const refRaw = isAdminPath ? slug[2] : slug[1];
         let refIdFromUrl: string | number | null = null;
-        if (slug[1]) {
-            const rawValue = slug[1];
-            refIdFromUrl = !isNaN(Number(rawValue)) ? Number(rawValue) : rawValue;
+        if (refRaw) {
+            refIdFromUrl = !isNaN(Number(refRaw)) ? Number(refRaw) : refRaw;
         }
         return {
             menuTree: data || [],
