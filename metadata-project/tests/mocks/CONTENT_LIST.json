@@ -20,7 +20,7 @@
         {
           "componentId": "diary_list_source",
           "parentGroupId": "LIST_SECTION",
-          "labelText": "일기 목록 데이터",
+          "labelText": "콘텐츠 목록 데이터",
           "componentType": "DATA_SOURCE",
           "sortOrder": 0,
           "isRequired": false,
@@ -36,7 +36,7 @@
         {
           "componentId": "go_write_btn",
           "parentGroupId": "LIST_SECTION",
-          "labelText": "새 일기 쓰기",
+          "labelText": "새 콘텐츠 쓰기",
           "componentType": "BUTTON",
           "sortOrder": 0,
           "isRequired": false,
@@ -52,7 +52,7 @@
         {
           "componentId": "DIARY_CARD",
           "parentGroupId": "LIST_SECTION",
-          "labelText": "일기 카드",
+          "labelText": "콘텐츠 카드",
           "componentType": "GROUP",
           "sortOrder": 2,
           "isRequired": false,

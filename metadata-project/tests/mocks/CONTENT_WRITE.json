@@ -4,7 +4,7 @@
     {
       "componentId": "DIARYWRITE_SECTION",
       "parentGroupId": null,
-      "labelText": "다이어리쓰기 섹션",
+      "labelText": "콘텐츠쓰기 섹션",
       "componentType": "GROUP",
       "sortOrder": 1,
       "isRequired": false,
