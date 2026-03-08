@@ -103,14 +103,14 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                     const urlEmail = searchParams.get('email');
                     const urlCode = searchParams.get('code');
                     const currentData = base.formDataRef.current;
-                    console.log('currentData',currentData);
+                    // console.log('currentData',currentData);
 
                     // [수정] 1. URL 파라미터가 있다면 무조건 그것을 사용 (가장 확실한 데이터)
                     // [수정] 2. currentData 조회 시 component_id(reg_code)와 ref_data_id(code)를 모두 체크
                     const finalEmail = urlEmail || currentData.reg_email || currentData.email;
                     const finalCode = urlCode || currentData.reg_code || currentData.code;
-                    console.log("최종 전송 데이터:", { finalEmail, finalCode });
-                    console.log("currentData:", currentData);
+                    // console.log("최종 전송 데이터:", { finalEmail, finalCode });
+                    // console.log("currentData:", currentData);
                     // 필수값 체크
                     if (!finalEmail) {
                         alert("이메일 정보가 없습니다. 다시 시도해주세요.");
@@ -144,8 +144,8 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
             case "SUBMIT_ADDITIONAL_INFO":
                 try {
                     // RBAC: 카카오 로그인 후 추가 정보 입력 (2026-03-01 추가)
-                    console.log('[DEBUG] currentFormData:', currentFormData);
-                    console.log('[DEBUG] currentFormData keys:', Object.keys(currentFormData));
+                    // console.log('[DEBUG] currentFormData:', currentFormData);
+                    // console.log('[DEBUG] currentFormData keys:', Object.keys(currentFormData));
 
                     // ref_data_id에 맞춰 키 수정
                     const phone = currentFormData.phone;  // "phone" (소문자)
@@ -153,7 +153,7 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                     const detailAddress = currentFormData.detail_address;
                     const zipCode = currentFormData.zip_code;
 
-                    console.log('[DEBUG] 추출된 값:', { phone, roadAddress, detailAddress, zipCode });
+                    // console.log('[DEBUG] 추출된 값:', { phone, roadAddress, detailAddress, zipCode });
 
                     // 필수 항목 검증
                     if (!phone || !roadAddress || !zipCode) {
@@ -186,7 +186,7 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                 try {
                     await axios.post('/api/kakao/logout');
                 } catch (err) {
-                    console.error("Kakao logout failed", err);
+                    // console.error("Kakao logout failed", err);
                 } finally {
                     await logout(); //  우리 서버 세션 정리 및 상태 초기화
                     if (actionUrl) {
@@ -199,7 +199,7 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
             case "LINK":
             case "ROUTE":
                 if (!actionUrl) {
-                    console.warn("이동할 URL이 없습니다.");
+                    // console.warn("이동할 URL이 없습니다.");
                     return;
                 }
                 // 외부 링크(http)인 경우와 내부 경로 구분

@@ -1,9 +1,9 @@
-import {useEffect, useState, useCallback, useMemo} from "react";
-import {useRouter} from "next/navigation";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import axios from "@/services/axios";
 import { useAuth } from "@/context/AuthContext";
 import { useMetadata } from "@/components/providers/MetadataProvider";
-import {parseJsonbFields} from "@/components/utils/dataParser";
+import { parseJsonbFields } from "@/components/utils/dataParser";
 
 
 //  @@@@ usePageMetadata 역할 : 데이터 관리자 역할이다. 메타데이터가져오기 , 원본 데이터 가져오기 , 가져온 데이터를 pageData로 담아줌, 로딩중인지 전체 개수가 몇개인지 같은 페이지의 전역 상태를 관리
@@ -51,7 +51,7 @@ export const usePageMetadata = (
                     // 서버 응답 구조 {"status":"success", "data": [...]} 반영
                     setMetadata(res.data.data || []);
                 } catch (error) {
-                    console.error("Metadata Direct Fetch Error:", error);
+                    // console.error("Metadata Direct Fetch Error:", error);
                 } finally {
                     setLoading(false);
                 }
@@ -148,7 +148,7 @@ export const usePageMetadata = (
                         filterId: isOnlyMine ? user?.userId : "",
                         userId: user?.userId || "guest",
                         userSqno: user?.userSqno,
-                        contentId: refId|| null //  (백엔드 :contentId와 매핑)
+                        contentId: refId || null //  (백엔드 :contentId와 매핑)
                     };
 
                     let res;
@@ -241,7 +241,7 @@ export const usePageMetadata = (
                 setPageData(combinedData);
                 setTotalCount(detectedTotalCount);
             } catch (error) {
-                console.error("Data Fetching Error:", error);
+                // console.error("Data Fetching Error:", error);
             } finally {
                 setLoading(false);
             }
@@ -255,7 +255,7 @@ export const usePageMetadata = (
     return {
         metadata: filteredMetadata,
         pageData,
-        loading: loading || metaLoading ,
+        loading: loading || metaLoading,
         totalCount,
         isLoggedIn
     };

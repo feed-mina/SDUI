@@ -12,15 +12,15 @@ export const usePageMetadata = (screenId: string) => {
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-                    console.log("위도:", lat, "경도:", lng);
+                    // console.log("위도:", lat, "경도:", lng);
                     // 여기서 서버로 전송하는 API 호출
                 },
                 (error) => {
-                    console.error("위치 정보를 가져오는 데 실패했습니다.", error);
+                    // console.error("위치 정보를 가져오는 데 실패했습니다.", error);
                 }
             );
         } else {
-            console.log("이 브라우저에서는 Geolocation을 지원하지 않습니다.");
+            // console.log("이 브라우저에서는 Geolocation을 지원하지 않습니다.");
         }
     };
 
