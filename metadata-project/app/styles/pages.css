@@ -1,20 +1,21 @@
-
-
 /* ==========================================
    1. GLOBAL PAGE UTILS
    ========================================== */
 .page-wrap {
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - 80px); /* 헤더 높이 제외 */
+    min-height: calc(100vh - 80px);
+    /* 헤더 높이 제외 */
     width: 100%;
 }
 
 /* 하단 콘텐츠: 2열 그리드 */
 .engine-container.is-desktop .content-area {
-    display: block;      /* 그리드 해제 */
+    display: block;
+    /* 그리드 해제 */
     width: 100%;
-    max-width: 1200px;   /* 디자인에 맞춰 조절 가능 */
+    max-width: 1200px;
+    /* 디자인에 맞춰 조절 가능 */
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -35,14 +36,17 @@
     top: 0;
     z-index: 100;
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.9); /* 반투명 배경 */
-    backdrop-filter: blur(10px); /* 배경 블러 효과 (아이폰 스타일) */
+    background-color: rgba(255, 255, 255, 0.9);
+    /* 반투명 배경 */
+    backdrop-filter: blur(10px);
+    /* 배경 블러 효과 (아이폰 스타일) */
     border-bottom: 1px solid #f0f0f0;
     padding: 12px 16px;
 }
 
 .header-container {
-    max-width: 600px; /* 모바일 최대 너비 제한 */
+    max-width: 600px;
+    /* 모바일 최대 너비 제한 */
     margin: 0 auto;
 }
 
@@ -50,13 +54,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 44px; /* 모바일 표준 헤더 높이 */
+    height: 44px;
+    /* 모바일 표준 헤더 높이 */
 }
 
 .logo {
     font-size: 1.25rem;
     font-weight: 800;
-    color: #2ecc71; /* 포인트 컬러 (초록색) */
+    color: #2ecc71;
+    /* 포인트 컬러 (초록색) */
     letter-spacing: -0.5px;
     cursor: pointer;
 }
@@ -107,6 +113,7 @@
     font-weight: 700;
     margin-top: 8px;
 }
+
 /* ==========================================
    2. MAIN_PAGE (메인 페이지)
    ========================================== */
@@ -124,18 +131,21 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    background-color: #f9fafb; /* 레퍼런스 느낌의 연한 배경 */
+    background-color: #f9fafb;
+    /* 레퍼런스 느낌의 연한 배경 */
     box-sizing: border-box;
 }
 
 /* 2. 카드 공통 스타일 */
 .main-card-item {
-    background: #ffffff ;
-    border-radius: 24px ;
-    padding: 24px ;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 24px;
     display: flex;
-    flex-direction: column; /* 모바일: 세로 정렬 */
-    align-items: center;    /* 모바일: 중앙 정렬 */
+    flex-direction: column;
+    /* 모바일: 세로 정렬 */
+    align-items: center;
+    /* 모바일: 중앙 정렬 */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     box-sizing: border-box;
     gap: 20px;
@@ -147,28 +157,33 @@
     flex-direction: column;
     gap: 12px;
     width: 100%;
-    align-items: center; /* 모바일: 중앙 */
+    align-items: center;
+    /* 모바일: 중앙 */
 }
 
 .card-title {
-    font-size: 1.25rem ;
-    font-weight: 800 ;
+    font-size: 1.25rem;
+    font-weight: 800;
     color: #1f2937;
-    text-align: center; /* 모바일: 중앙 */
+    text-align: center;
+    /* 모바일: 중앙 */
     margin: 0;
 }
 
 /* 4. 버튼 공통 스타일 (레퍼런스 다크그린) */
-.content-nav1, .content-btn-primary, .content-btn-secondary {
-    background-color: #007B65 ; /* 레퍼런스 포인트 컬러 */
-    color: #ffffff ;
-    border-radius: 50px ;
-    padding: 12px 24px ;
-    font-weight: 700 ;
-    font-size: 0.95rem ;
-    border: none ;
+.content-nav1,
+.content-btn-primary,
+.content-btn-secondary {
+    background-color: #007B65;
+    /* 레퍼런스 포인트 컬러 */
+    color: #ffffff;
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
     white-space: nowrap;
-    width: fit-content ;
+    width: fit-content;
     cursor: pointer;
 }
 
@@ -187,40 +202,42 @@
     .main-responsive-grid {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 30px ;
-        padding: 40px 80px ;
+        gap: 30px;
+        padding: 40px 80px;
     }
 
     /* 상단 카드는 전체 너비 사용 및 가로 배치 */
     .main-card-item.top-full {
-        grid-column: 1 / 3 ;
-        flex-direction: row-reverse ; /* 이미지 오른쪽, 글자 왼쪽 */
-        justify-content: space-between ;
-        padding: 60px 80px ;
+        grid-column: 1 / 3;
+        flex-direction: row-reverse;
+        /* 이미지 오른쪽, 글자 왼쪽 */
+        justify-content: space-between;
+        padding: 60px 80px;
         min-height: 350px;
     }
 
     /* 하단 카드들도 내부 가로 배치 */
     .main-card-item.sub-half {
-        flex-direction: row-reverse ;
-        justify-content: space-between ;
-        padding: 40px ;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        padding: 40px;
         min-height: 220px;
     }
 
     /* PC에서는 글자를 왼쪽 정렬로 변경 */
     .card-left-area {
-        align-items: flex-start ;
-        text-align: left ;
+        align-items: flex-start;
+        text-align: left;
     }
 
     .card-title {
-        font-size: 1.6rem ;
-        text-align: left ;
+        font-size: 1.6rem;
+        text-align: left;
     }
 
     .contentImg {
-        max-width: 350px; /* PC에선 이미지 더 크게 */
+        max-width: 350px;
+        /* PC에선 이미지 더 크게 */
     }
 }
 
@@ -276,7 +293,8 @@
 }
 
 /* 입력 필드 레이블 */
-.label_email, .label_pw {
+.label_email,
+.label_pw {
     display: block;
     font-size: 0.85rem;
     font-weight: 600;
@@ -287,7 +305,7 @@
 
 /* 입력창 및 이메일 그룹 */
 #user_email_domain,
-#user_email ,
+#user_email,
 #user_pw,
 .domian-input,
 .login_form-input select {
@@ -316,14 +334,15 @@
 .group-EMAIL_SUB_GROUP {
     display: flex;
     align-items: center;
-    flex-wrap: nowrap ; /* 모바일에서도 웬만하면 한 줄 유지 */
+    flex-wrap: nowrap;
+    /* 모바일에서도 웬만하면 한 줄 유지 */
     gap: 5px;
 }
 
 .group-EMAIL_SUB_GROUP input,
 .group-EMAIL_SUB_GROUP select {
-    flex: 1 ;
-    min-width: 80px ;
+    flex: 1;
+    min-width: 80px;
 }
 
 .group-EMAIL_SUB_GROUP span {
@@ -333,7 +352,8 @@
 }
 
 /* 로그인/카카오 버튼 */
-.login_form_button, .kakao-button {
+.login_form_button,
+.kakao-button {
     width: 100%;
     height: 52px;
     border-radius: 12px;
@@ -347,11 +367,25 @@
     transition: all 0.2s;
 }
 
-.login_form_button { background-color: #FDBFBC; color: white; margin-top: 10px; }
-.login_form_button:hover { background-color: #fbada9; }
+.login_form_button {
+    background-color: #FDBFBC;
+    color: white;
+    margin-top: 10px;
+}
 
-.kakao-button { background-color: #FEE500; color: #191919; margin-top: 12px; }
-.kakao-button:hover { opacity: 0.9; }
+.login_form_button:hover {
+    background-color: #fbada9;
+}
+
+.kakao-button {
+    background-color: #FEE500;
+    color: #191919;
+    margin-top: 12px;
+}
+
+.kakao-button:hover {
+    opacity: 0.9;
+}
 
 .signup-nav {
     width: 100%;
@@ -362,7 +396,8 @@
     display: block;
     text-align: center;
     margin-top: 12px;
-    border: 2px solid #FDBFBC; /* 메인 테마색 활용 */
+    border: 2px solid #FDBFBC;
+    /* 메인 테마색 활용 */
     border-radius: 12px;
     background-color: transparent;
     color: #FDBFBC;
@@ -377,9 +412,11 @@
     background-color: #FDBFBC;
     color: white;
 }
+
 .pw_toggle_btn {
     display: none;
 }
+
 /* ==========================================
    4. PC RESPONSIVE (1000px 이상)
    ========================================== */
@@ -387,8 +424,8 @@
 
 
     .is-pc .group-MAIN_SECTION:not(.main-bento) {
-        display: flex ;
-        flex-direction: row ;
+        display: flex;
+        flex-direction: row;
         justify-content: space-between;
         align-items: center;
         padding: 60px 80px;
@@ -417,7 +454,8 @@
 .page-wrap.CONTENT_LIST {
     display: flex;
     flex-direction: column;
-    align-items: center; /* 가로 중앙 정렬 */
+    align-items: center;
+    /* 가로 중앙 정렬 */
     width: 100%;
     padding: 20px;
 }
@@ -425,7 +463,8 @@
 /* 필터 토글 위치 */
 .filter-toggle-container {
     width: 100%;
-    max-width: 600px; /* PC에서도 리스트 너비에 맞춤 */
+    max-width: 600px;
+    /* PC에서도 리스트 너비에 맞춤 */
     display: flex;
     justify-content: flex-end;
     margin-bottom: 15px;
@@ -437,7 +476,8 @@
     flex-direction: column;
     gap: 15px;
     width: 100%;
-    max-width: 600px; /* 리스트 폭 제한 */
+    max-width: 600px;
+    /* 리스트 폭 제한 */
 }
 
 /* 페이지네이션 중앙 정렬 */
@@ -449,10 +489,10 @@
     width: 100%;
 }
 
-.group-TITLE_AUTHOR_GROUP{
+.group-TITLE_AUTHOR_GROUP {
 
     background: beige;
-    display:flex;
+    display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
@@ -476,7 +516,7 @@
     padding: 20px;
     cursor: pointer;
     transition: 0.2s;
-    height: auto ;
+    height: auto;
     min-height: 100px;
 }
 
@@ -521,11 +561,13 @@
     color: #2c3e50;
     font-size: 18px;
     font-weight: 700;
-    margin-left: 0 ; /* 기존 50px 제거 */
+    margin-left: 0;
+    /* 기존 50px 제거 */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex: 1; /* 제목이 공간을 적당히 차지하게 함 */
+    flex: 1;
+    /* 제목이 공간을 적당히 차지하게 함 */
 }
 
 /* 2. 작성자: 뱃지 스타일 유지, 마진 제거 */
@@ -536,22 +578,26 @@
     padding: 4px 8px;
     font-size: 13px;
     font-weight: 500;
-    margin-left: 10px ; /* 제목과의 최소 간격 */
-    flex-shrink: 0; /* 이름이 찌그러지지 않게 방어 */
+    margin-left: 10px;
+    /* 제목과의 최소 간격 */
+    flex-shrink: 0;
+    /* 이름이 찌그러지지 않게 방어 */
 }
 
 /* 3. 날짜: 부모가 flex-start여도 오른쪽 끝으로 밀어내기 */
 .diaryDate {
     color: #999;
     font-size: 12px;
-    margin-top: 0 ; /* auto 제거 */
-    margin-left: auto ; /* 이 코드가 핵심: 남는 공간을 다 차지해서 오른쪽으로 밀어냄 */
+    margin-top: 0;
+    /* auto 제거 */
+    margin-left: auto;
+    /* 이 코드가 핵심: 남는 공간을 다 차지해서 오른쪽으로 밀어냄 */
     white-space: nowrap;
 }
 
 /* [추가 팁] 그리드 안에서 글자가 사라지는 문제 해결용 */
 /* 카드가 들어갈 공간의 최소 크기를 0으로 지정해야 글자가 튀어나오지 않음 */
-.diaryListSection > div {
+.diaryListSection>div {
     min-width: 0;
 }
 
@@ -615,7 +661,8 @@
 /*    }*/
 /*}*/
 
-/* 3. 모바일 화면 설정 (767px 이하) */        /* 모바일에서는 무조건 한 줄에 하나 */
+/* 3. 모바일 화면 설정 (767px 이하) */
+/* 모바일에서는 무조건 한 줄에 하나 */
 /*@media (max-width: 767px) {*/
 /*    .diaryListSection {*/
 /* */
@@ -721,7 +768,8 @@
     box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
-.diaryTextarea, .common-textarea {
+.diaryTextarea,
+.common-textarea {
     min-height: 250px;
     line-height: 1.6;
     resize: vertical;
@@ -737,6 +785,7 @@
     padding: 20px 16px;
     width: 100%;
 }
+
 /* ==========================================
    4. 레이아웃 엔진 (통합 데스크톱 그리드 고정형)
    ========================================== */
@@ -746,70 +795,76 @@
 /* 전체 그리드 설정 */
 .engine-container.is-desktop .write_section1 {
     display: grid !important;
-    grid-template-columns: 1.2fr 0.8fr; /* 좌측 본문 : 우측 사이드바 */
+    grid-template-columns: 1.2fr 0.8fr;
+    /* 좌측 본문 : 우측 사이드바 */
     column-gap: 40px;
-    row-gap: 12px;       /* 여백 줄이기: 기존 24px 이상에서 12px로 축축 */
+    row-gap: 12px;
+    /* 여백 줄이기: 기존 24px 이상에서 12px로 축축 */
     align-items: start;
     width: 100%;
-    padding: 20px 0;    /* 상하단 여백 최적화 */
+    padding: 20px 0;
+    /* 상하단 여백 최적화 */
 }
 
 /* 모든 자식 div의 기본 마진 제거 (여백 줄이기 핵심) */
-.engine-container.is-desktop .write_section1 > div {
+.engine-container.is-desktop .write_section1>div {
     margin-bottom: 0 !important;
 }
 
 /* --- 좌측 영역 (Column 1) --- */
 
 /* [2] 제목 */
-.engine-container.is-desktop .write_section1 > div:has(#diaryTitle),
-.engine-container.is-desktop .write_section1 > div:has(.diary-label):has(+ div #diaryTitle) {
+.engine-container.is-desktop .write_section1>div:has(#diaryTitle),
+.engine-container.is-desktop .write_section1>div:has(.diary-label):has(+ div #diaryTitle) {
     grid-column: 1;
 }
 
 /* [3] 내용 */
-.engine-container.is-desktop .write_section1 > div:has(#diaryContent),
-.engine-container.is-desktop .write_section1 > div:has(.diaryTextarea) {
+.engine-container.is-desktop .write_section1>div:has(#diaryContent),
+.engine-container.is-desktop .write_section1>div:has(.diaryTextarea) {
     grid-column: 1;
 }
 
 .engine-container.is-desktop .diaryTextarea {
-    min-height: 350px !important; /* 높이 절반 사이즈 */
+    min-height: 350px !important;
+    /* 높이 절반 사이즈 */
 }
 
 /* [4] 태그 그룹 (내용 바로 아래) */
-.engine-container.is-desktop .write_section1 > div:has(#DAYTAG_SUB_GROUP),
-.engine-container.is-desktop .write_section1 > div:has(.DAYTAG_SUB_GROUP),
-.engine-container.is-desktop .write_section1 > .write_sub_group:has([id^="dayTag"]) {
+.engine-container.is-desktop .write_section1>div:has(#DAYTAG_SUB_GROUP),
+.engine-container.is-desktop .write_section1>div:has(.DAYTAG_SUB_GROUP),
+.engine-container.is-desktop .write_section1>.write_sub_group:has([id^="dayTag"]) {
     grid-column: 1;
 }
 
 /* --- 우측 영역 (Column 2) --- */
 
 /* [5] 하루 일과 (제목 옆부터 시작) */
-.engine-container.is-desktop .write_section1 > div:has(.daily_routine_section),
-.engine-container.is-desktop .write_section1 > div:has(.time-slot-container) {
+.engine-container.is-desktop .write_section1>div:has(.daily_routine_section),
+.engine-container.is-desktop .write_section1>div:has(.time-slot-container) {
     grid-column: 2;
-    grid-row: 2 / 4; /* 제목과 내용 옆 영역을 차지 */
+    grid-row: 2 / 4;
+    /* 제목과 내용 옆 영역을 차지 */
 }
 
 /* [6] 오늘의 감정 (태그 옆) */
-.engine-container.is-desktop .write_section1 > div:has(#EMOTION_SUB_GROUP),
-.engine-container.is-desktop .write_section1 > div:has(.EMOTION_SUB_GROUP),
-.engine-container.is-desktop .write_section1 > .write_sub_group:has(.emotionSelect) {
+.engine-container.is-desktop .write_section1>div:has(#EMOTION_SUB_GROUP),
+.engine-container.is-desktop .write_section1>div:has(.EMOTION_SUB_GROUP),
+.engine-container.is-desktop .write_section1>.write_sub_group:has(.emotionSelect) {
     grid-column: 2;
     grid-row: 4;
 }
-.group-CONTENTWRITE_BTN_GROUP{
+
+.group-CONTENTWRITE_BTN_GROUP {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
 /* [7] 버튼 그룹 (우측 하단 고정) */
-.engine-container.is-desktop .write_section1 > div:has(.save-button),
-.engine-container.is-desktop .write_section1 > div:has(.go_modify_btn),
-.engine-container.is-desktop .write_section1 > div:has(.go_list_btn) {
+.engine-container.is-desktop .write_section1>div:has(.save-button),
+.engine-container.is-desktop .write_section1>div:has(.go_modify_btn),
+.engine-container.is-desktop .write_section1>div:has(.go_list_btn) {
     grid-column: 2;
     grid-row: 5;
     display: flex;
@@ -821,7 +876,8 @@
 .engine-container.is-desktop .save-button,
 .engine-container.is-desktop .go_modify_btn,
 .engine-container.is-desktop .go_list_btn {
-    max-width: 100%; /* 사이드바 너비에 맞춤 */
+    max-width: 100%;
+    /* 사이드바 너비에 맞춤 */
 }
 
 
@@ -832,7 +888,8 @@
 /* 읽기 전용 상태 공통 */
 .is-readonly,
 [readonly] {
-    background-color: #f1f5f9 !important; /* 조금 더 명확한 차이 */
+    background-color: #f1f5f9 !important;
+    /* 조금 더 명확한 차이 */
     border-color: #e2e8f0 !important;
     cursor: default !important;
     box-shadow: none !important;
@@ -888,7 +945,8 @@
     text-decoration: none;
 }
 
-.save-button, .go_list_btn {
+.save-button,
+.go_list_btn {
     margin-bottom: 20px;
     background: var(--btn-gradient);
     color: white;
@@ -901,7 +959,9 @@
     color: white;
 }
 
-.save-button:hover, .go_list_btn:hover, .go_modify_btn:hover {
+.save-button:hover,
+.go_list_btn:hover,
+.go_modify_btn:hover {
     transform: translateY(-2px);
     filter: brightness(1.05);
 }
@@ -912,7 +972,8 @@ readonly 공통 레이아웃
 .readonly-text-field {
     padding: 8px;
     background-color: #f9f9f9;
-    border: 1px dashed #ddd; /* 읽기 전용임을 시각적으로 암시 */
+    border: 1px dashed #ddd;
+    /* 읽기 전용임을 시각적으로 암시 */
     border-radius: 4px;
     width: 100%;
 }
@@ -933,10 +994,14 @@ readonly 공통 레이아웃
 
 
 .ui-text-field.is-readonly {
-    color: #888;          /* 텍스트를 흐리게 */
-    user-select: none;    /* 드래그 방지 */
-    font-style: italic;   /* 읽기 전용임을 시각적으로 표현 */
+    color: #888;
+    /* 텍스트를 흐리게 */
+    user-select: none;
+    /* 드래그 방지 */
+    font-style: italic;
+    /* 읽기 전용임을 시각적으로 표현 */
 }
+
 /* 읽기 전용일 때 네비게이션 버튼 숨기기(선택 사항) */
 .is-readonly .swiper-nav-btn {
     display: none;
@@ -974,12 +1039,16 @@ readonly 공통 레이아웃
 
 .wheel-wrapper {
     width: 70px;
-    height: 50px; /* 아이템 높이와 동일 */
+    height: 50px;
+    /* 아이템 높이와 동일 */
     /* height: 150px; 50px * 3개 보이게 */
     overflow-y: scroll;
-    scroll-snap-type: y mandatory; /* 자석 기능 */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE, Edge */
+    scroll-snap-type: y mandatory;
+    /* 자석 기능 */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE, Edge */
     background: #f8f9fa;
     border-radius: 8px;
     text-align: center;
@@ -1004,20 +1073,23 @@ readonly 공통 레이아웃
 
     /* [핵심] 위/아래 안쪽으로 그림자를 주어 굴곡진 느낌 연출 */
     box-shadow: inset 0px 10px 8px -5px rgba(0, 0, 0, 0.1),
-    inset 0px -10px 8px -5px rgba(0, 0, 0, 0.1);
+        inset 0px -10px 8px -5px rgba(0, 0, 0, 0.1);
 
     /* [추가] 마우스를 올렸을 때 '손 모양' 대신 '위아래 화살표' 커서로 변경 */
     cursor: ns-resize;
 }
+
 /* 크롬 스크롤 숨김 */
 
 .wheel-item {
-    height: 50px; /* JS 상수의 ITEM_HEIGHT와 같아야 함 */
+    height: 50px;
+    /* JS 상수의 ITEM_HEIGHT와 같아야 함 */
     line-height: 50px;
     font-size: 24px;
     font-weight: bold;
     color: #333;
-    scroll-snap-align: center; /* 가스크롤이 멈출 때 아이템 중앙에 오도록 자석 효과 */
+    scroll-snap-align: center;
+    /* 가스크롤이 멈출 때 아이템 중앙에 오도록 자석 효과 */
 }
 
 .spacer {
@@ -1030,7 +1102,8 @@ readonly 공통 레이아웃
     font-size: 24px;
     font-weight: bold;
     margin: 0 5px;
-    padding-bottom: 4px; /* 시각적 보정 */
+    padding-bottom: 4px;
+    /* 시각적 보정 */
 }
 
 .quick-buttons {
@@ -1054,7 +1127,8 @@ readonly 공통 레이아웃
 
 
 .time-input {
-    width: 150px; /* 너비를 명시적으로 고정 */
+    width: 150px;
+    /* 너비를 명시적으로 고정 */
     height: 40px;
     font-size: 24px;
     font-weight: bold;
@@ -1095,29 +1169,40 @@ readonly 공통 레이아웃
 
 /* 1. 전체 박스 스타일: 마치 입력창처럼 보이게 함 */
 .date-input-box {
-    margin-top: 20px; /* 위쪽 시간 영역과의 간격 */
+    margin-top: 20px;
+    /* 위쪽 시간 영역과의 간격 */
     display: flex;
     align-items: center;
-    justify-content: space-between; /* 좌우로 내용 배치 */
+    justify-content: space-between;
+    /* 좌우로 내용 배치 */
 
-    padding: 12px 16px; /* 내부 여백 */
-    background-color: #f8f9fa; /* 아주 연한 회색 배경 */
-    border: 1px solid #e9ecef; /* 은은한 테두리 */
-    border-radius: 12px; /* 둥근 모서리 (위쪽 시간 영역과 통일감) */
+    padding: 12px 16px;
+    /* 내부 여백 */
+    background-color: #f8f9fa;
+    /* 아주 연한 회색 배경 */
+    border: 1px solid #e9ecef;
+    /* 은은한 테두리 */
+    border-radius: 12px;
+    /* 둥근 모서리 (위쪽 시간 영역과 통일감) */
 
-    cursor: pointer; /* 마우스 올리면 손가락 모양 */
-    transition: all 0.2s ease; /* 부드러운 애니메이션 */
+    cursor: pointer;
+    /* 마우스 올리면 손가락 모양 */
+    transition: all 0.2s ease;
+    /* 부드러운 애니메이션 */
 }
 
 /* 마우스를 올렸을 때 효과 */
 .date-input-box:hover {
-    background-color: #e2e6ea; /* 배경색이 조금 진해짐 */
-    border-color: #ced4da; /* 테두리도 조금 진해짐 */
+    background-color: #e2e6ea;
+    /* 배경색이 조금 진해짐 */
+    border-color: #ced4da;
+    /* 테두리도 조금 진해짐 */
 }
 
 /* 마우스를 클릭하는 순간 효과 */
 .date-input-box:active {
-    transform: scale(0.98); /* 살짝 눌리는 느낌 */
+    transform: scale(0.98);
+    /* 살짝 눌리는 느낌 */
     background-color: #dbe0e5;
 }
 
@@ -1125,22 +1210,27 @@ readonly 공통 레이아웃
 .date-label-group {
     display: flex;
     align-items: center;
-    gap: 8px; /* 아이콘과 텍스트 사이 간격 */
-    color: #495057; /* 진한 회색 텍스트 */
+    gap: 8px;
+    /* 아이콘과 텍스트 사이 간격 */
+    color: #495057;
+    /* 진한 회색 텍스트 */
     font-weight: 600;
     font-size: 15px;
 }
 
 .calendar-icon {
-    font-size: 18px; /* 아이콘 크기 */
+    font-size: 18px;
+    /* 아이콘 크기 */
 }
 
 /* 3. 오른쪽 날짜 값 텍스트 */
 .date-value-text {
-    margin: 0; /* p 태그 기본 여백 제거 */
+    margin: 0;
+    /* p 태그 기본 여백 제거 */
     font-size: 16px;
     font-weight: bold;
-    color: #0070f3; /* 강조색 (파란색) 적용 */
+    color: #0070f3;
+    /* 강조색 (파란색) 적용 */
 }
 
 .date-input-box {
@@ -1156,7 +1246,8 @@ readonly 공통 레이아웃
     cursor: pointer;
     transition: all 0.2s ease;
     width: 100%;
-    box-sizing: border-box; /* 패딩 때문에 박스가 넘치는 것을 방지 */
+    box-sizing: border-box;
+    /* 패딩 때문에 박스가 넘치는 것을 방지 */
 }
 
 
@@ -1223,11 +1314,13 @@ readonly 공통 레이아웃
     box-sizing: border-box;
     border-bottom: 1px solid #eaeaea;
 }
+
 .logo {
     flex: 2;
     display: flex;
     align-items: center;
 }
+
 .time-record-container,
 .no-goal-container {
     flex: 8;
@@ -1239,8 +1332,10 @@ readonly 공통 레이아웃
 
 /* 안내 박스 전체 스타일 */
 .no-goal-container {
-    background-color: #f8f9fa; /* 아주 연한 회색 */
-    border: 1px solid #e9ecef; /* 테두리 */
+    background-color: #f8f9fa;
+    /* 아주 연한 회색 */
+    border: 1px solid #e9ecef;
+    /* 테두리 */
     border-radius: 12px;
     padding: 20px;
     text-align: center;
@@ -1253,7 +1348,8 @@ readonly 공통 레이아웃
 }
 
 .no-goal-container:hover {
-    background-color: #f1f3f5; /* 마우스 올렸을 때 살짝 어두워짐 */
+    background-color: #f1f3f5;
+    /* 마우스 올렸을 때 살짝 어두워짐 */
 }
 
 /* 안내 문구 */
@@ -1265,7 +1361,8 @@ readonly 공통 레이아웃
 
 /* 강조 텍스트 */
 .setup-link {
-    color: #228be6; /* 포인트 블루 컬러 */
+    color: #228be6;
+    /* 포인트 블루 컬러 */
     font-size: 0.9rem;
     text-decoration: underline;
 }
@@ -1277,7 +1374,8 @@ readonly 공통 레이아웃
     margin-bottom: 10px;
     border: 2px solid #007B65;
 }
-.header-loading{
+
+.header-loading {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1291,9 +1389,17 @@ readonly 공통 레이아웃
 }
 
 @keyframes pulse-animation {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
 }
 
 
@@ -1303,6 +1409,7 @@ readonly 공통 레이아웃
     align-items: center;
     width: 100%;
 }
+
 /* 로그아웃 버튼 (메인) */
 .logout_button {
     width: 100%;
@@ -1357,7 +1464,8 @@ readonly 공통 레이아웃
     border: 2px solid #007bff;
     cursor: pointer;
     font-size: 15px;
-    color: #007bff; /* 파란색 텍스트 */
+    color: #007bff;
+    /* 파란색 텍스트 */
     font-weight: 600;
     padding: 5px 10px;
     border-radius: 5px;
@@ -1365,7 +1473,8 @@ readonly 공통 레이아웃
 }
 
 .add-time-btn:hover {
-    background-color: #f0f8ff; /* 마우스 올리면 살짝 배경색 */
+    background-color: #f0f8ff;
+    /* 마우스 올리면 살짝 배경색 */
 }
 
 /* [•••] 더보기 버튼 스타일 */
@@ -1410,7 +1519,8 @@ readonly 공통 레이아웃
     display: flex;
     align-items: center;
     gap: 8px;
-    border-bottom: 1px solid #f5f5f5; /* 기본적으로 밑줄 추가 */
+    border-bottom: 1px solid #f5f5f5;
+    /* 기본적으로 밑줄 추가 */
 }
 
 /* 마지막 아이템은 밑줄 제거 (JS 로직 대체) */
@@ -1440,7 +1550,8 @@ readonly 공통 레이아웃
 
 /* 더보기 섹션 (하단 구분선 포함) */
 .more-list-section {
-    border-top: 1px solid #f0f0f0; /* 구분선 (중요!) */
+    border-top: 1px solid #f0f0f0;
+    /* 구분선 (중요!) */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1451,9 +1562,11 @@ readonly 공통 레이아웃
 /* 하단 버튼들을 감싸는 박스 (시간추가 + 점세개) */
 .bottom-btn-group {
     display: flex;
-    justify-content: center; /* 가운데 정렬 */
+    justify-content: center;
+    /* 가운데 정렬 */
     align-items: center;
-    gap: 20px; /* 두 버튼 사이의 간격 */
+    gap: 20px;
+    /* 두 버튼 사이의 간격 */
     width: 100%;
     position: relative;
 }
@@ -1504,7 +1617,8 @@ readonly 공통 레이아웃
 
 /* 목표 시간 라벨 */
 .target-time-label {
-    display: block; /* span이지만 줄바꿈 되도록 */
+    display: block;
+    /* span이지만 줄바꿈 되도록 */
     font-size: 20px;
     color: #555;
     margin-bottom: 4px;
@@ -1565,12 +1679,35 @@ readonly 공통 레이아웃
     align-items: baseline;
     gap: 10px;
 }
-.pc-top-utility .target-time-label  { font-size: 13px; margin-bottom: 0; }
-.pc-top-utility .formatted-time     { font-size: 16px; margin-bottom: 0; }
-.pc-top-utility .remain-time        { font-size: 13px; }
-.pc-top-utility .clock-container    { padding-bottom: 0; gap: 16px; }
-.pc-top-utility .more-list-section  { border-top: none; padding-top: 0; }
-.pc-top-utility .arrival-button     { padding: 8px 16px; font-size: 13px; }
+
+.pc-top-utility .target-time-label {
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.pc-top-utility .formatted-time {
+    font-size: 16px;
+    margin-bottom: 0;
+}
+
+.pc-top-utility .remain-time {
+    font-size: 13px;
+}
+
+.pc-top-utility .clock-container {
+    padding-bottom: 0;
+    gap: 16px;
+}
+
+.pc-top-utility .more-list-section {
+    border-top: none;
+    padding-top: 0;
+}
+
+.pc-top-utility .arrival-button {
+    padding: 8px 16px;
+    font-size: 13px;
+}
 
 /* 리스트 펼치기 버튼 (...) */
 .more-button {
@@ -1588,9 +1725,11 @@ readonly 공통 레이아웃
     color: #333;
     padding: 20px;
     text-align: center;
-    border: 2px solid #ff0000; /* 이미지의 빨간 테두리 강조 반영 */
+    border: 2px solid #ff0000;
+    /* 이미지의 빨간 테두리 강조 반영 */
     border-radius: 8px;
-    cursor: pointer; /* 클릭 시 시간 설정 페이지로 이동하는 느낌 */
+    cursor: pointer;
+    /* 클릭 시 시간 설정 페이지로 이동하는 느낌 */
 }
 
 
@@ -1598,21 +1737,17 @@ readonly 공통 레이아웃
 응급처치
    ================================================================= */
 
-.ui-text-field label_pw is-readonly{
+.ui-text-field label_pw is-readonly {
     display: none;
 }
 
-#set_time_title{
+#set_time_title {}
 
-}
-
-#set_time_title{
-
-}
+#set_time_title {}
 
 
 
-#cancel-button{
+#cancel-button {
     color: #6c757d;
     cursor: pointer;
     border-radius: 16px;
@@ -1628,6 +1763,7 @@ readonly 공통 레이아웃
     display: flex;
     border: 1px solid #6c757d;
 }
+
 /* ==========================================
    가입페이지 REGISTER_PAGE
    ========================================== */
@@ -1654,8 +1790,13 @@ readonly 공통 레이아웃
 }
 
 /* 메타데이터에 포함된 마진 클래스 처리 */
-.mt-30 { margin-top: 30px; }
-.mt-40 { margin-top: 40px; }
+.mt-30 {
+    margin-top: 30px;
+}
+
+.mt-40 {
+    margin-top: 40px;
+}
 
 /* 행 레이아웃: 우편번호 + 검색 버튼 */
 .ADDR_SEARCH_ROW {
@@ -1720,7 +1861,8 @@ button:hover {
     height: 56px;
     background-color: #0064ff;
     color: #fff;
-    border-radius: 28px; /* 둥근 형태 */
+    border-radius: 28px;
+    /* 둥근 형태 */
     font-size: 17px;
 }
 
@@ -1732,8 +1874,16 @@ button:hover {
 /* ── DynamicEngine 그룹 방향 헬퍼 ──
    모든 GROUP 노드에 자동으로 추가되는 클래스.
    flex-col-layout을 main-bento보다 먼저 선언해야 display: grid가 우선 적용됨 */
-.flex-row-layout { display: flex; flex-direction: row; flex-wrap: wrap; }
-.flex-col-layout  { display: flex; flex-direction: column; }
+.flex-row-layout {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.flex-col-layout {
+    display: flex;
+    flex-direction: column;
+}
 
 /* ── 3열 그리드 컨테이너 ── */
 .main-bento {
@@ -1748,11 +1898,18 @@ button:hover {
 
 /* TIME_RECORD_WIDGET은 GROUP이 아닌 컴포넌트라서 css_class가 엔진에서 적용되지 않음.
    첫 번째 그리드 아이템(위젯)이 2칸을 점유하도록 직접 지정 */
-.main-bento > :first-child { grid-column: 1 / 3; }
+.main-bento> :first-child {
+    grid-column: 1 / 3;
+}
 
 /* GROUP 자식에 적용되는 열 확장 클래스 */
-.col-span-2 { grid-column: 1 / 3; }
-.col-span-3 { grid-column: 1 / -1; }
+.col-span-2 {
+    grid-column: 1 / 3;
+}
+
+.col-span-3 {
+    grid-column: 1 / -1;
+}
 
 /* ── 카드 공통 ──
    overflow: visible 필수 — goal-list-popup이 position: absolute라 overflow: hidden이면 클리핑됨 */
@@ -1788,7 +1945,10 @@ button:hover {
     justify-content: space-between;
     cursor: pointer;
 }
-.bento-card-diary:hover { background: linear-gradient(135deg, #14532d, #166534); }
+
+.bento-card-diary:hover {
+    background: linear-gradient(135deg, #14532d, #166534);
+}
 
 .bento-card-login {
     background: #0f766e;
@@ -1796,7 +1956,10 @@ button:hover {
     justify-content: space-between;
     cursor: pointer;
 }
-.bento-card-login:hover { background: #0d9488; }
+
+.bento-card-login:hover {
+    background: #0d9488;
+}
 
 .bento-card-dark {
     background: #1e293b;
@@ -1804,13 +1967,34 @@ button:hover {
     justify-content: space-between;
     cursor: pointer;
 }
-.bento-card-dark:hover { background: #182030; }
+
+.bento-card-dark:hover {
+    background: #182030;
+}
 
 /* ── 카드 내부 요소 ── */
-.bento-card-body  { display: flex; flex-direction: column; gap: 4px; }
-.bento-card-icon  { font-size: 1.6rem; margin-bottom: 8px; }
-.bento-card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
-.bento-card-desc  { font-size: 0.82rem; opacity: .75; line-height: 1.5; }
+.bento-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bento-card-icon {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+}
+
+.bento-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.bento-card-desc {
+    font-size: 0.82rem;
+    opacity: .75;
+    line-height: 1.5;
+}
 
 /* 화살표 버튼 — ButtonField가 "content-btn bento-card-arrow"로 렌더링 */
 .bento-card-arrow {
@@ -1889,7 +2073,10 @@ button:hover {
     font-weight: 600;
     cursor: pointer;
 }
-.main-bento .setup-button:hover { background: #15803d; }
+
+.main-bento .setup-button:hover {
+    background: #15803d;
+}
 
 /* ── 모바일: 단일 열 ──
    999px: useDeviceType 훅의 1000px 기준과 맞춤 (is-mobile 클래스 적용 시 함께 동작) */
@@ -1899,7 +2086,8 @@ button:hover {
         padding: 16px;
         gap: 12px;
     }
-    .main-bento > :first-child,
+
+    .main-bento> :first-child,
     .col-span-2,
     .col-span-3 {
         grid-column: 1 !important;
@@ -1922,6 +2110,7 @@ button:hover {
     border-color: transparent !important;
     box-shadow: none !important;
 }
+
 .main-bento .ui-text-field.is-readonly {
     color: inherit;
     font-style: normal;
@@ -1935,22 +2124,33 @@ button:hover {
 .bento-card {
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
+
 .bento-card-diary:hover,
 .bento-card-login:hover,
 .bento-card-dark:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
 }
-.bento-card-diary  { transition: background 0.2s, transform 0.2s, box-shadow 0.2s; }
-.bento-card-login  { transition: background 0.2s, transform 0.2s, box-shadow 0.2s; }
-.bento-card-dark   { transition: background 0.2s, transform 0.2s, box-shadow 0.2s; }
+
+.bento-card-diary {
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.bento-card-login {
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.bento-card-dark {
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
 
 /* ── 타이포그래피 개선 ── */
-.bento-card-icon  {
+.bento-card-icon {
     font-size: 1.9rem;
     margin-bottom: 12px;
     line-height: 1;
 }
+
 .bento-card-title {
     font-size: 1.2rem;
     font-weight: 800;
@@ -1958,7 +2158,8 @@ button:hover {
     line-height: 1.3;
     letter-spacing: -0.01em;
 }
-.bento-card-desc  {
+
+.bento-card-desc {
     font-size: 0.855rem;
     opacity: 0.78;
     line-height: 1.6;
@@ -1970,6 +2171,7 @@ button:hover {
     padding-top: 16px;
     transition: transform 0.2s ease;
 }
+
 .bento-card-diary:hover .bento-card-arrow,
 .bento-card-login:hover .bento-card-arrow {
     transform: translateX(4px);
@@ -1988,20 +2190,23 @@ button:hover {
 
 /* ── 데스크톱: 다크 카드(full-width) 가로 레이아웃 ── */
 @media (min-width: 1000px) {
+
     .group-main_bento_view_grp,
     .group-main_bento_tutorial_grp {
         flex-direction: row !important;
         align-items: center;
         gap: 0;
     }
+
     .group-main_bento_view_body,
     .group-main_bento_tutorial_body {
         flex: 1;
     }
-    .group-main_bento_view_grp > .bento-card-tag,
-    .group-main_bento_view_grp > .ui-text-field,
-    .group-main_bento_tutorial_grp > .bento-card-tag,
-    .group-main_bento_tutorial_grp > .ui-text-field {
+
+    .group-main_bento_view_grp>.bento-card-tag,
+    .group-main_bento_view_grp>.ui-text-field,
+    .group-main_bento_tutorial_grp>.bento-card-tag,
+    .group-main_bento_tutorial_grp>.ui-text-field {
         margin-top: 0;
         align-self: center;
         flex-shrink: 0;
@@ -2016,13 +2221,281 @@ button:hover {
         gap: 12px;
         padding-bottom: 8px;
     }
-    .main-bento .target-time-label { font-size: 13px; }
-    .main-bento .formatted-time    { font-size: 20px; margin-bottom: 2px; }
-    .main-bento .remain-time       { font-size: 20px; }
-    .main-bento .arrival-button    { width: 100%; padding: 12px 20px; font-size: 15px; }
-    .main-bento .arrival-button-container { width: 100%; }
+
+    .main-bento .target-time-label {
+        font-size: 13px;
+    }
+
+    .main-bento .formatted-time {
+        font-size: 20px;
+        margin-bottom: 2px;
+    }
+
+    .main-bento .remain-time {
+        font-size: 20px;
+    }
+
+    .main-bento .arrival-button {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+
+    .main-bento .arrival-button-container {
+        width: 100%;
+    }
 }
 
 /* ── 벤토 내 INPUT 라벨 숨김 (구버전 AWS 배포 호환) ──
    V8 이후 bento에 INPUT 컴포넌트는 없어야 하지만, 아직 미배포 환경 대비 */
-.main-bento .input-group-wrapper { display: none !important; }
+.main-bento .input-group-wrapper {
+    display: none !important;
+}
+
+/* ==========================================
+   ADMIN DASHBOARD (ROLE_ADMIN)
+   ========================================== */
+
+.bento-card-admin-stats {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: #fff;
+    border: 1px solid #475569;
+}
+
+.bento-card-admin-users {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #1e293b;
+    cursor: pointer;
+    justify-content: space-between;
+}
+
+.bento-card-admin-users:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    transition: transform 0.2s;
+}
+
+.bento-card-admin-logs {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+}
+
+/* 내부 컴포넌트 스타일 */
+.stat-group {
+    display: flex;
+    gap: 32px;
+    margin-top: 16px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value-text {
+    white-space: pre-line;
+    /* 줄바꿈 허용 */
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.log-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.status-error {
+    color: #ef4444;
+}
+
+.status-info {
+    color: #0ea5e9;
+}
+
+/* ==========================================
+   USER_LIST PAGE (관리자 회원 권한 관리)
+   ========================================== */
+
+.admin-page-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.admin-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #eaecee;
+    padding-bottom: 1rem;
+}
+
+.admin-page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.admin-back-btn {
+    background: none;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.admin-back-btn:hover {
+    background-color: #f8fafc;
+}
+
+.admin-user-table-wrapper {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.admin-search-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-search-input {
+    min-width: 250px;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.admin-role-filter,
+.admin-role-select {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: #fff;
+}
+
+.admin-search-btn {
+    padding: 0.6rem 1.2rem;
+    background-color: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.admin-search-btn:hover {
+    background-color: #2563eb;
+}
+
+.admin-role-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-change-btn {
+    padding: 0.6rem 1.2rem;
+    background-color: #22c55e;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.admin-change-btn:hover {
+    background-color: #16a34a;
+}
+
+.admin-selection-info {
+    font-size: 0.9rem;
+    color: #3b82f6;
+    font-weight: 600;
+    padding: 0.4rem 0;
+}
+
+.admin-user-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-user-table th,
+.admin-user-table td {
+    padding: 0.9rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eaecee;
+    font-size: 0.95rem;
+}
+
+.admin-user-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #374151;
+}
+
+.admin-user-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.admin-user-table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+.admin-row-selected {
+    background-color: #eff6ff !important;
+}
+
+.admin-table-empty {
+    text-align: center;
+    padding: 3rem;
+    color: #94a3b8;
+}
+
+.admin-role-badge {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.badge-admin {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-user {
+    background-color: #e0f2fe;
+    color: #075985;
+}
+
