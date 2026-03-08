@@ -3,6 +3,8 @@ package com.domain.demo_backend.domain.ui.service;
 import com.domain.demo_backend.domain.ui.domain.UiMetadata;
 import com.domain.demo_backend.domain.ui.domain.UiMetadataRepository;
 import com.domain.demo_backend.domain.ui.dto.UiResponseDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class UiService {
+    private static final Logger log = LoggerFactory.getLogger(UiService.class);
     private final UiMetadataRepository uiMetadataRepository;
 
     public UiService(UiMetadataRepository uiMetadataRepository) {
@@ -47,7 +50,7 @@ public class UiService {
                                 UiResponseDto::getComponentId, // Key
                                 dto -> dto, // Value
                                 (existing, replacement) -> { // Merge Function (중복처리)
-                                    System.out.println("Duplicate ID Detected: " + existing.getComponentId());
+                                    log.warn("Duplicate ID Detected: {}", existing.getComponentId());
                                     return existing;
                                 },
                                 LinkedHashMap::new // Map Supplier (구현체 지정)
@@ -69,7 +72,7 @@ public class UiService {
                 } else {
                     // 정합성 체크: 부모 ID는 있는데 실제 Map에 없는 경우 (고아 노드)
                     // 부모가 권한 필터링으로 제거되었을 수 있으므로 최상위로 올림
-                    System.out.println("데이터 Integrity Warning: Parent " + parentId + " not found for " + node.getComponentId() + " (possibly filtered by RBAC)");
+                    log.warn("데이터 Integrity Warning: Parent {} not found for {} (possibly filtered by RBAC)", parentId, node.getComponentId());
                     rootNodes.add(node);
                 }
             }

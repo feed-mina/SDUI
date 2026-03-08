@@ -18,6 +18,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ContentService {
+    private static final Logger log = LoggerFactory.getLogger(ContentService.class);
     private final JwtUtil jwtUtil;
     @Autowired
     private ContentRepository contentRepository;
@@ -45,14 +49,14 @@ public class ContentService {
     }
 
     public PageInfo<ContentResponse> selectContentList(String userId, int pageNo, int pageSize) {
-        System.out.println("@@@콘텐츠 서비스 selectContentList진입");
+        log.debug("콘텐츠 서비스 selectContentList 진입");
 //        PageHelper.startPage(pageNo, pageSize);
 
         int totalCount = contentRepository.countByUserId(userId);
 
         List<Content> diaries;
         int offset = (pageNo - 1) * pageSize; //  OFFSET 미리 계산
-        System.out.println("@@@offset: " + offset);
+        log.debug("offset: {}", offset);
         try {
             // 콘텐츠 목록 가져오기
 //            contentResponseList = contentRepository.selectContentList(userId, pageSize, offset) ;
@@ -70,16 +74,15 @@ public class ContentService {
 
             return pageInfo;
         } catch (Exception e) {
-            System.err.println("Error fetching content list: " + e.getMessage());
+            log.error("Error fetching content list: {}", e.getMessage(), e);
             throw new RuntimeException("콘텐츠를 조회하는 도중 오류가 발생했습니다.", e);
         }
     }
 
     public Set<ContentResponse> findContentById(ContentRequest contentReq) {
 
-        System.out.println("@@@@@@findContentById 서비스 로직 진입 contentReq:: " + contentReq);
-
-        System.out.println("@@@findContentItemById sql시작" + contentReq);
+        log.debug("findContentById 서비스 로직 진입: {}", contentReq);
+        log.debug("findContentItemById sql 시작: {}", contentReq);
         // 1. contentReq 에서 필요한 값을 꺼내서 변수에 담는다.
         String userId = contentReq.getUserId();
         int pageSize = 10; // 만약 요청이 없다면 임시로 10개
@@ -112,7 +115,7 @@ public class ContentService {
     @Transactional(readOnly = true)
     public Optional<Content> viewContentItem(ContentRequest contentReq) throws NotFoundException {
 
-        System.out.println("@@@viewContentItem 서비스 로직 진입 contentReq:: " + contentReq);
+        log.debug("viewContentItem 서비스 로직 진입: {}", contentReq);
         if (contentReq.getContentId() == null) {
             throw new IllegalArgumentException("contentId가 누락되었습니다.");
         }
@@ -133,7 +136,7 @@ public class ContentService {
     public void addContent(ContentRequest contentRequest, String ip, Authentication authentication) {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        System.out.println("@@@contentRequest-콘텐츠서비스: " + contentRequest);
+        log.debug("contentRequest-콘텐츠서비스: {}", contentRequest);
         //먼저 DB에서 유저를 찾는다.
         User user = userRepository.findByUserSqno(userDetails.getUserSqno()).orElseThrow(() -> new IllegalArgumentException("존재하지 않은 사용자입니다."));
 
@@ -166,7 +169,7 @@ public class ContentService {
                 .date(dayOfWeek)
                 .build();
 
-        System.out.println("@@@Content 객체 생성 값: " + content);
+        log.debug("Content 객체 생성 값: {}", content);
         contentRepository.save(content);
     }
 

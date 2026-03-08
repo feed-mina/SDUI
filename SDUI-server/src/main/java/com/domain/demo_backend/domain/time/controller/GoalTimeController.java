@@ -5,6 +5,8 @@ import com.domain.demo_backend.domain.time.domain.GoalArrivalRequest;
 import com.domain.demo_backend.domain.time.service.GoalTimeQueryService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +28,14 @@ import java.util.Map;
 @RequestMapping("/api/goalTime")
 @RequiredArgsConstructor
 public class GoalTimeController {
+    private static final Logger log = LoggerFactory.getLogger(GoalTimeController.class);
     private final GoalTimeQueryService goalTimeQueryService;
 
     @GetMapping("/getGoalTime")
     public ResponseEntity<Map<String, String>> getGoalTime(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userSqno = (userDetails != null) ? userDetails.getUserSqno() : null;
         String targetTime = goalTimeQueryService.getGoalTime(userSqno);
-        System.out.println("@@@ targetTime: " + targetTime);
+        log.debug("targetTime: {}", targetTime);
         if (targetTime == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(Map.of("goalTime", targetTime != null ? targetTime : ""));
     }
@@ -45,7 +48,7 @@ public class GoalTimeController {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
         Long userSqno = userDetails.getUserSqno();
-        System.out.println("@@@ userSqno: " + userSqno);
+        log.debug("userSqno: {}", userSqno);
 
         // 2. 프론트앤드에서 데이터 가져오기
         String targetTimeStr = body.get("targetTime");

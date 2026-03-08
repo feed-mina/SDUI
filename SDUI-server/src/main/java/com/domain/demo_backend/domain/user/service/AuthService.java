@@ -373,9 +373,9 @@ public class AuthService {
         existingUser.setUpdatedAt(ldt);
         //  userRepository.editPassword(existingUser); // 기존 레코드를 update
         existingUser.setHashedPassword(newHashedPassword);
-        System.out.println("existingUser : " + existingUser);
-        System.out.println("user Mapper nonMember 시작");
-        System.out.println("user 탈퇴 처리 완료: " + existingUser);
+        log.debug("existingUser: {}", existingUser);
+        log.debug("user Mapper nonMember 시작");
+        log.debug("user 탈퇴 처리 완료: {}", existingUser);
     }
 
     public boolean isUserVerified(String email) {

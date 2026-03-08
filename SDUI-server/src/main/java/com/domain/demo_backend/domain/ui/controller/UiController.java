@@ -11,11 +11,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/ui")
 public class UiController {
+    private static final Logger log = LoggerFactory.getLogger(UiController.class);
 
     private final UiService uiService;
 
@@ -38,11 +42,11 @@ public class UiController {
             : "ROLE_GUEST";
 
         // 서비스에서 역할 기반 필터링된 트리 구조 데이터를 받아서 응답
-        System.out.println("@@@UiController 시작!");
-        System.out.println("screenId: " + screenId + ", userRole: " + userRole);
+        log.debug("UiController 시작!");
+        log.debug("screenId: {}, userRole: {}", screenId, userRole);
         List<UiResponseDto> treeList = uiService.getUiTree(screenId, userRole);
 
-        System.out.println("treeList: " + treeList);
+        log.debug("treeList: {}", treeList);
         return ApiResponse.success(treeList);
     }
 

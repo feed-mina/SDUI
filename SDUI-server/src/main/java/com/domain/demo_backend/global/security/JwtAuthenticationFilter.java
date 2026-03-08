@@ -9,6 +9,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     //    cloundfront 적용 후 프록시 설정으로 추가
     private static final List<String> EXCLUDE_URLS = List.of(
             "/api/auth/login",
@@ -136,8 +139,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             } catch (Exception e) {
                 // 유효하지 않은 토큰 예외 처리
-                System.err.println("Invalid JWT token: " + e.getMessage());
-                e.printStackTrace();
+                log.warn("Invalid JWT token: {}", e.getMessage(), e);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 응답 반환
                 response.getWriter().write("Invalid JWT Token");
                 return;

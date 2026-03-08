@@ -1,11 +1,14 @@
 package com.domain.demo_backend.global.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class PasswordUtil {
+    private static final Logger log = LoggerFactory.getLogger(PasswordUtil.class);
 
     public static String sha256(String password) {
         try {
@@ -54,9 +57,9 @@ public class PasswordUtil {
         boolean isMatch = encoder.matches(userInput, encryptedPassword);
 
         if (isMatch) {
-            System.out.println("비밀번호가 일치합니다.");
+            log.debug("비밀번호가 일치합니다.");
         } else {
-            System.out.println("비밀번호가 일치하지 않습니다.");
+            log.debug("비밀번호가 일치하지 않습니다.");
         }
     }
 

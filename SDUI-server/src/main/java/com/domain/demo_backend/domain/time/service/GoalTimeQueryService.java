@@ -4,6 +4,8 @@ import com.domain.demo_backend.domain.query.service.QueryMasterService;
 import com.domain.demo_backend.domain.time.domain.GoalSetting;
 import com.domain.demo_backend.domain.time.domain.GoalSettingRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -24,6 +26,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class GoalTimeQueryService {
+    private static final Logger log = LoggerFactory.getLogger(GoalTimeQueryService.class);
     private final QueryMasterService queryMasterService;
     private final StringRedisTemplate stringRedisTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -39,31 +42,31 @@ public class GoalTimeQueryService {
     public String getGoalTime(Long userSqno) {
         // 1. Rddis에서 사용자의 목표 시간이 이미 계산되어 있는지 확인
         String cacheKey = "USER_GOAL:" + userSqno;
-        System.out.println("@@@ cacheKey: " + cacheKey);
+        log.debug("cacheKey: {}", cacheKey);
 
         String cachedTime = stringRedisTemplate.opsForValue().get(cacheKey);
-        System.out.println("@@@ cachedTime: " + cachedTime);
+        log.debug("cachedTime: {}", cachedTime);
 
         if (cachedTime != null) return cachedTime;
 
         // 2. Redis에 없다면 QueryMasterService를 통해 SQL문장을 가져온다.
         // DB의 query_master 테이블에 GET_USER_GOAL_TIME 키가 등록되어 있어야 한다.
         String sql = queryMasterService.getQuery("GET_USER_GOAL_TIME");
-        System.out.println("@@@ sql: " + sql);
+        log.debug("sql: {}", sql);
 
         Map<String, Object> params = new HashMap<>();
         params.put("userSqno", userSqno);
-        System.out.println("@@@ params: " + params);
+        log.debug("params: {}", params);
         try {
 
             // 3. 갸져온 SQL 실행 (userId 파라미터 바인딩)
             String targetTime = namedParameterJdbcTemplate.queryForObject(sql, params, String.class);
-            System.out.println("@@@ cacheKey: " + cacheKey);
-            System.out.println("@@@ targetTime: " + targetTime);
+            log.debug("cacheKey: {}", cacheKey);
+            log.debug("targetTime: {}", targetTime);
             // 4. 실행 결과를 Redis에 저장 (예 : 1시간 동안 유지)
             if (targetTime != null) {
                 stringRedisTemplate.opsForValue().set(cacheKey, targetTime, Duration.ofHours(3));
-                System.out.println("@@@ 레디스에  targetTime 저장");
+                log.debug("레디스에 targetTime 저장");
             }
             return targetTime;
         } catch (EmptyResultDataAccessException e) {
@@ -113,9 +116,9 @@ public class GoalTimeQueryService {
         if (updatedCount > 0) {
             String cacheKey = "USER_GOAL:" + userSqno;
             stringRedisTemplate.delete(cacheKey);
-            System.out.println("LOG: 캐시 삭제 완료 -" + cacheKey);
+            log.debug("캐시 삭제 완료 - {}", cacheKey);
         } else {
-            System.out.println("LOG: 업데이트 대상이 없습니다. 이미 처리되었거나 목표가 없음");
+            log.debug("업데이트 대상이 없습니다. 이미 처리되었거나 목표가 없음");
         }
     }
 }
