@@ -1,45 +1,10 @@
--- V15__add_required_role_to_query_master.sql
--- [P0 Security Fix] query_master 테이블에 required_role 컬럼 추가
--- + USER_LIST 스크린 ui_metadata 등록
---
--- 목적: /api/execute/{sqlKey} 엔드포인트의 무인증 SQL 실행 취약점 해소
--- 방식: 각 쿼리에 실행 권한 요구사항을 명시 → CommonQueryController에서 검증
---
--- required_role 값 규칙:
---   NULL        → 누구나 실행 가능 (기존 동작 유지)
---   'ROLE_USER' → 로그인한 사용자만 실행 가능
---   'ROLE_ADMIN'→ ADMIN 권한 보유자만 실행 가능
+-- V18__user_list_screen.sql
+-- 배경: V15 파일 하단에 USER_LIST INSERT가 추가되었으나,
+--       Flyway가 V15를 이미 "완료"로 기록한 후 파일이 수정되어 재실행되지 않음.
+--       V16/V17은 MAIN_PAGE 수정만 포함 → USER_LIST 메타데이터 미적용 상태.
+-- 목적: USER_LIST 스크린 ui_metadata 신규 등록 (회원 권한 관리 페이지, ROLE_ADMIN 전용)
 
-ALTER TABLE query_master
-    ADD COLUMN IF NOT EXISTS required_role VARCHAR(50) DEFAULT NULL;
-
-COMMENT ON COLUMN query_master.required_role
-    IS '실행 권한 요구사항: NULL=공개, ROLE_USER=로그인 필요, ROLE_ADMIN=관리자 전용';
-
--- 사용자별 데이터를 조회하는 쿼리는 ROLE_USER로 보호
-UPDATE query_master SET required_role = 'ROLE_USER'
-WHERE sql_key IN (
-    'GET_MY_GOAL_TIME',
-    'GET_GOAL_LIST',
-    'GET_CONTENT_LIST',
-    'GET_MY_CONTENT'
-);
-
--- 관리자 전용 쿼리 보호 (V12~V14에서 등록된 쿼리들)
-UPDATE query_master SET required_role = 'ROLE_ADMIN'
-WHERE sql_key IN (
-    'GET_SYSTEM_LOGS',
-    'GET_ADMIN_STATS'
-);
-
--- ===================================================
--- USER_LIST 스크린 ui_metadata 등록
--- 회원 권한 관리 페이지 (ROLE_ADMIN 전용)
--- ADMIN_USER_TABLE 컴포넌트: 검색/체크박스/권한변경/페이징을 내부에서 처리
--- API: GET /api/admin/users, PUT /api/admin/users/role
--- ===================================================
-
--- 1. 페이지 루트 컨테이너 (parent_group_id = NULL → 최상위 노드)
+-- 1. 페이지 루트 컨테이너
 INSERT INTO ui_metadata (
     screen_id, component_id, component_type,
     parent_group_id, label_text, css_class,
