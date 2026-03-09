@@ -13,7 +13,11 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "jwt.secret=test_secret_key_must_be_at_least_32_bytes_long_for_security",
+    "jwt.expiration=3600000",
+    "jwt.refresh-token.expiration=86400000"
+})
 @ActiveProfiles("test")
 @DisplayName("JwtUtil 단위 테스트")
 class JwtUtilTest {
