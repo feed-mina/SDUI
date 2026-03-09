@@ -26,6 +26,7 @@ export default function Sidebar() {
 
     // 조건 단순화: Context에서 제공하는 isLoggedIn 불리언 값만 신뢰하도록 수정
     const isRealLoggedIn = Boolean(isLoggedIn);
+    const isAdmin = user?.role === 'ROLE_ADMIN';
 
     // 메타데이터 매핑 (디버깅을 위해 콘솔 대신 대체 UI 렌더링 활용)
     const logoutId = user?.socialType === 'K' ? 'header_kakao_logout' : 'header_general_logout';
@@ -33,7 +34,7 @@ export default function Sidebar() {
     const loginBtnMeta = flatMeta.find(m => getVal(m, 'component_id', 'componentId') === 'header_login_btn');
 
     return (
-        <aside className="pc-sidebar flex flex-col justify-between h-screen w-64 bg-white border-r">
+        <aside className={`pc-sidebar flex flex-col justify-between h-screen w-64 bg-white border-r${isAdmin ? ' is-admin' : ''}`}>
             <div className="sidebar-top flex-1">
                 <div className="sidebar-logo p-4 font-bold text-xl cursor-pointer"
                     onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/MAIN_PAGE' })}>
@@ -42,16 +43,29 @@ export default function Sidebar() {
 
                 {isRealLoggedIn ? (
                     logoutMeta ? (
-                        <nav className="sidebar-nav mt-4 flex flex-col gap-2 px-4">
-                            <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/CONTENT_LIST_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
-                                onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/CONTENT_LIST_PAGE' })}>
-                                콘텐츠 리스트 보기
-                            </div>
-                            <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/SET_TIME_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
-                                onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/SET_TIME_PAGE' })}>
-                                약속 관리
-                            </div>
-                        </nav>
+                        isAdmin ? (
+                            <nav className="sidebar-nav mt-4 flex flex-col gap-2 px-4">
+                                <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/admin/MAIN_PAGE' ? 'bg-gray-700 font-bold' : ''}`}
+                                    onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/admin/MAIN_PAGE' })}>
+                                    대시보드
+                                </div>
+                                <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/admin/USER_LIST' ? 'bg-gray-700 font-bold' : ''}`}
+                                    onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/admin/USER_LIST' })}>
+                                    회원 관리
+                                </div>
+                            </nav>
+                        ) : (
+                            <nav className="sidebar-nav mt-4 flex flex-col gap-2 px-4">
+                                <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/CONTENT_LIST_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
+                                    onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/CONTENT_LIST_PAGE' })}>
+                                    콘텐츠 리스트 보기
+                                </div>
+                                <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/SET_TIME_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
+                                    onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/SET_TIME_PAGE' })}>
+                                    약속 관리
+                                </div>
+                            </nav>
+                        )
                     ) : (
                         <div className="text-red-500 text-sm text-center">로그아웃({logoutId}) 데이터 누락</div>
                     )
