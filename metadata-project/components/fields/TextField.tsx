@@ -46,6 +46,17 @@ const TextField = memo(({ meta, data, value, ...rest }: TextFieldProps) => {
         }
     }
 
+    // {key} → data[key] 템플릿 치환
+    if (finalValue && typeof finalValue === 'string' && data && typeof data === 'object') {
+        finalValue = finalValue.replace(/\{([^}]+)\}/g, (match: string, key: string) =>
+            data[key] !== undefined ? String(data[key]) : match
+        );
+    }
+    // DB에서 오는 리터럴 \n → 실제 줄바꿈 변환
+    if (typeof finalValue === 'string' && finalValue.includes('\\n')) {
+        finalValue = finalValue.replace(/\\n/g, '\n');
+    }
+
     let parsedStyle = {};
     try {
         if (meta?.inlineStyle) {
@@ -59,6 +70,7 @@ const TextField = memo(({ meta, data, value, ...rest }: TextFieldProps) => {
 
     const customStyle = {
         ...parsedStyle,
+        whiteSpace: 'pre-line' as const,
         visibility: (isVisible ? "visible" : "hidden") as "visible" | "hidden"
     };
 
