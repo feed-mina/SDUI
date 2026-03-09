@@ -709,3 +709,34 @@ ADMIN_USER_TABLE: withRenderTrack(AdminUserTable, "AdminUserTable"),
 `.admin-table-empty`, `.admin-role-badge`, `.badge-admin`, `.badge-user`
 
 ---
+
+## USER_LIST 헤더 UI 수정 (2026-03-09)
+
+### 수정 배경
+- PC에서 `flex-row-layout`의 `flex-wrap: wrap`으로 인해 "← 돌아가기" 버튼이 제목 아래로 밀려 가운데 배치됨
+- `ui_metadata.is_readonly DEFAULT true`로 인해 버튼에 `.is-readonly` 클래스 자동 부여 → 회색 비활성화 스타일
+
+### 수정 내용 (`pages.css:2334~`)
+
+| 문제 | 원인 | 수정 방법 |
+|------|------|----------|
+| 버튼이 다음 줄로 래핑 | `flex-row-layout { flex-wrap: wrap }` | `.admin-page-header.flex-row-layout { flex-wrap: nowrap }` |
+| 제목이 전체 너비 점유 | flex item 기본 크기 | `.admin-page-title { flex: 1 }` |
+| 버튼 줄바꿈 | 텍스트 wrap | `.admin-back-btn { white-space: nowrap; flex-shrink: 0 }` |
+| 버튼 회색 스타일 | `is-readonly` 기본값 true | `.admin-back-btn.is-readonly { background: none !important; cursor: pointer !important }` |
+
+### 패턴 메모: `is_readonly DEFAULT true` 주의
+
+DynamicEngine이 `is_readonly = true`인 컴포넌트에 `is-readonly` 클래스를 자동 부여.
+BUTTON 타입에서 이 클래스가 시각적으로 비활성화처럼 보이는 경우:
+1. **CSS 오버라이드 (권장)**: 해당 버튼 클래스에 `is-readonly` 스타일 재정의
+2. **DB 수정**: Flyway 마이그레이션에서 `is_readonly = false` 명시
+
+### 히스토리
+
+| 날짜 | 항목 | 결과 |
+|------|------|------|
+| 2026-03-09 | USER_LIST 헤더 flex-wrap 수정 | PC에서 제목 좌측, 버튼 우측 배치 정상화 |
+| 2026-03-09 | admin-back-btn is-readonly CSS 오버라이드 | 버튼 정상 스타일 (클릭 가능, 회색 없음) |
+
+---
