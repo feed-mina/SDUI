@@ -2339,10 +2339,17 @@ button:hover {
     padding-bottom: 1rem;
 }
 
+/* flex-row-layout의 flex-wrap: wrap 방지 + 세로 중앙 정렬 */
+.admin-page-header.flex-row-layout {
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
 .admin-page-title {
     font-size: 1.5rem;
     font-weight: 700;
     color: #2c3e50;
+    flex: 1;
 }
 
 .admin-back-btn {
@@ -2353,10 +2360,24 @@ button:hover {
     border-radius: 6px;
     font-size: 0.9rem;
     cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .admin-back-btn:hover {
     background-color: #f8fafc;
+}
+
+/* is_readonly 기본값(true)으로 인한 비활성화 스타일 초기화 */
+.admin-back-btn.is-readonly {
+    background: none !important;
+    background-color: transparent !important;
+    cursor: pointer !important;
+    border-color: #cbd5e1 !important;
+}
+
+.admin-back-btn.is-readonly:hover {
+    background-color: #f8fafc !important;
 }
 
 .admin-user-table-wrapper {
@@ -2499,3 +2520,45 @@ button:hover {
     color: #075985;
 }
 
+
+/* =============================================
+   Admin Sidebar — Dark Theme (.is-admin)
+   ============================================= */
+.pc-sidebar.is-admin {
+    background-color: #1e2433;
+    border-right-color: #2d3748;
+    color: #e2e8f0;
+}
+
+.pc-sidebar.is-admin .sidebar-logo {
+    color: #f7fafc;
+    border-bottom: 1px solid #2d3748;
+}
+
+.pc-sidebar.is-admin .nav-item {
+    color: #cbd5e0;
+    border-radius: 6px;
+}
+
+.pc-sidebar.is-admin .nav-item:hover {
+    background-color: #2d3748;
+    color: #f7fafc;
+}
+
+.pc-sidebar.is-admin .nav-item.bg-gray-700 {
+    background-color: #4a5568 \!important;
+    color: #f7fafc \!important;
+}
+
+.pc-sidebar.is-admin .sidebar-footer {
+    border-top-color: #2d3748;
+}
+
+.pc-sidebar.is-admin .sidebar-auth-btn {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+.pc-sidebar.is-admin .sidebar-auth-btn:hover {
+    background-color: #4a5568;
+}
