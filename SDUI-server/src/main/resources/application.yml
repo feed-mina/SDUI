@@ -1,4 +1,3 @@
-
 spring:
   application:
     name: SDUI-server
@@ -9,9 +8,9 @@ spring:
       static-locations: classpath:/static/
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5434/SDUI_TD # jdbc:postgresql://localhost:5432/testdb     # jdbc:postgresql://localhost:5434/SDUI_TD
-    username: mina # postgres # mina
-    password: password # 1234 # password
+    url: jdbc:postgresql://localhost:5434/SDUI_TD # jdbc:postgresql://localhost:5432/testdb
+    username: mina # postgres
+    password: password # 1234
     hikari:
       maximum-pool-size: 12
       connection-timeout: 30000
