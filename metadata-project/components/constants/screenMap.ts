@@ -1,0 +1,15 @@
+export const SCREEN_MAP: Record<string, string> = {
+    "/": "MAIN_PAGE",
+    "/MAIN_PAGE": "MAIN_PAGE",
+    "/LOGIN_PAGE": "LOGIN_PAGE",
+    "/SET_TIME_PAGE": "SET_TIME_PAGE" ,
+    "/TUTORIAL_PAGE" : "TUTORIAL_PAGE",
+    "/CONTENT_LIST": "CONTENT_LIST",
+    "/CONTENT_WRITE": "CONTENT_WRITE",
+    "/CONTENT_DETAIL" : "CONTENT_DETAIL",
+    "/CONTENT_MODIFY" : "CONTENT_MODIFY",
+    // "/MY_PAGE": "MY_PAGE",
+    // "/DASHBOARD_PAGE": "DASHBOARD_PAGE",
+};
+
+export const DEFAULT_SCREEN_ID = "MAIN_PAGE";
