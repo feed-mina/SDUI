@@ -21,7 +21,7 @@ export const useRenderCount = (componentName: string) => {
 
     // 프로덕션 환경에서는 console.log 활성화 (디버깅용)
     if (process.env.NODE_ENV !== 'test') {
-        console.log(`[Screen: ${screenId}] ${componentName} 렌더링 횟수: ${count.current}`);
+        // console.log(`[Screen: ${screenId}] ${componentName} 렌더링 횟수: ${count.current}`);
     }
 
     return count.current;

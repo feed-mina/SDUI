@@ -1,8 +1,8 @@
 'use client';
 
-import {useState, useCallback, useRef, useEffect, useMemo} from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { flattenMetadata } from "../..//utils/metadataUtils";
-import {useAuth} from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 // @@@@ useBaseActions 역할 : 모든 페이지에서 공통으로 쓰는 기능, 화면의 기억과 상태 관리 : 화면에 보이는 이벽창에 사용자가 무엇을 적었는지 혹은 서버에서 가져온 데이터를 어떻게 보관할지 담당한다, 데이터의 초기화외 동기화
 // * initialData(조회데이터) 가 오면 그걸 현재 입력 폼(formData) 에 넣는다. (ex 수정화면에서 기존 내용을 볼수있다)
@@ -38,7 +38,7 @@ export const useBaseActions = (screenId: string, metadata: any[] = [], initialDa
             setFormData({});
         } else {
             // URL 데이터가 있다면 그것만은 살려둔다.
-            setFormData({ reg_email: urlEmail, email: urlEmail, reg_code: UrlCode, code: UrlCode  });
+            setFormData({ reg_email: urlEmail, email: urlEmail, reg_code: UrlCode, code: UrlCode });
         }
     }
 
@@ -60,10 +60,10 @@ export const useBaseActions = (screenId: string, metadata: any[] = [], initialDa
 
 
     const handleChange = useCallback((id: string, value: any) => {
-        console.log('[useBaseActions] handleChange:', { id, value });
+        // console.log('[useBaseActions] handleChange:', { id, value });
         setFormData((prev: any) => {
             const updated = { ...prev, [id]: value };
-            console.log('[useBaseActions] updated formData:', updated);
+            // console.log('[useBaseActions] updated formData:', updated);
             return updated;
         });
     }, []);
@@ -91,7 +91,7 @@ export const useBaseActions = (screenId: string, metadata: any[] = [], initialDa
         };
     }, [checkAccess]);
     // 모든 컴포넌트를 한줄로 쭉 세워서 확인이 필요, 구조를 일렬로 펴줌
-     const flatMeta = useMemo(() => flattenMetadata(metadata), [metadata]);
+    const flatMeta = useMemo(() => flattenMetadata(metadata), [metadata]);
 
     return {
         formData, setFormData, formDataRef, handleChange,

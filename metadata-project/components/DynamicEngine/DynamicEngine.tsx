@@ -1,21 +1,21 @@
 // @@@@ 2026-02-07 변경 DynamicEngine 훅,렌더링,컴포넌트 부분 따로 분리
 'use client';
 import React from "react";
-import {componentMap} from "../constants/componentMap";
-import {useDynamicEngine} from "./useDynamicEngine";
-import {DynamicEngineProps, Metadata} from "./type";
-import {useRenderCount} from "@/components/DynamicEngine/hook/useRenderCount";
-import {useDeviceType} from "../../hooks/useDeviceType";
+import { componentMap } from "../constants/componentMap";
+import { useDynamicEngine } from "./useDynamicEngine";
+import { DynamicEngineProps, Metadata } from "./type";
+import { useRenderCount } from "@/components/DynamicEngine/hook/useRenderCount";
+import { useDeviceType } from "../../hooks/useDeviceType";
 
 // @@@@ 2026-02-07 주석 추가
 // DynamicEngine 역할 : 분석된 구조를 바탕으로 실제 리액트 컴포넌트를 랜더링
-    // ... 이하 렌더링 로직 동일
+// ... 이하 렌더링 로직 동일
 const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
 
     //  구조 분해 할당 시 screenId 추출
-    const {metadata, screenId, pageData, formData, setFormData, onChange, onAction, closeModal, activeModal, ...rest} = props;
+    const { metadata, screenId, pageData, formData, setFormData, onChange, onAction, closeModal, activeModal, ...rest } = props;
     //   비즈니스 로직 훅에 필요한 데이터를 넘겨 트리 구조(treeData)를 생성한다.
-    const {treeData, getComponentData} = useDynamicEngine(metadata, pageData, formData);
+    const { treeData, getComponentData } = useDynamicEngine(metadata, pageData, formData);
     // * 디바이스 별로 className을 is-pc 또는 is-mobile로 구분
     const { deviceClass } = useDeviceType();
     //  * 페이지별로 렌더링 횟수 체크 -> 배포할때 주석처리 필요
@@ -76,7 +76,7 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
                 if (isRepeater) {
                     const list = pageData?.[refId];
                     if (!list || !Array.isArray(list)) {
-                        console.warn(`[DynamicEngine] ${refId} 데이터가 배열이 아닙니다.`, list);
+                        // console.warn(`[DynamicEngine] ${refId} 데이터가 배열이 아닙니다.`, list);
                         return null;
                     }
                     // * map은 각 개별 요소로 적용을 할 수 있게 한다.
@@ -140,7 +140,7 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
     };
 
 
-// * rendalModel 은 componet_type이 MODAL인 경우
+    // * rendalModel 은 componet_type이 MODAL인 경우
     const renderModals = (nodes?: Metadata[] | null) => {
         if (!nodes) return null;
         return nodes
