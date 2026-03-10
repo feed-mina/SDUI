@@ -39,11 +39,11 @@ const InputField = memo(({
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         // console.log('[InputField] handleInputChange:', {
-            targetKey,
-            value: e.target.value,
-            isReadOnly,
-            onChangeFn: typeof onChange
-        });
+        //     targetKey,
+        //     value: e.target.value,
+        //     isReadOnly,
+        //     onChangeFn: typeof onChange
+        // });
         if (!isReadOnly) {
             onChange(targetKey, e.target.value);
         }
