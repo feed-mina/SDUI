@@ -58,6 +58,7 @@ export default function Sidebar() {
                             <nav className="sidebar-nav mt-4 flex flex-col gap-2 px-4">
                                 <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/CONTENT_LIST' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
                                     onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/CONTENT_LIST' })}>
+
                                     콘텐츠 리스트 보기
                                 </div>
                                 <div className={`nav-item p-2 rounded cursor-pointer ${pathname === '/view/SET_TIME_PAGE' ? 'bg-green-50 text-green-700 font-bold' : ''}`}
