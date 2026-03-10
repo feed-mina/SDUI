@@ -18,7 +18,7 @@ export const parseJsonbFields = (data: any): any => {
                     // JSON 문자열을 실제 객체/배열로 변환
                     processed[key] = JSON.parse(field.value);
                 } catch (e) {
-                    console.error(`[JSONB 파싱 에러] 필드: ${key}, 값: ${field.value}`, e);
+                    // console.error(`[JSONB 파싱 에러] 필드: ${key}, 값: ${field.value}`, e);
                     processed[key] = field.value; // 실패 시 문자열 유지
                 }
             } else {

@@ -1,13 +1,13 @@
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import axios from "@/services/axios";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useQueryClient} from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext"; // 1. AuthContext 가져오기
 import { useBaseActions } from "./useBaseActions";
 import { flattenMetadata } from "../..//utils/metadataUtils";
 import { handleError, extractErrorMessage } from "@/utils/errorHandler";
 
-export const useBusinessActions = (screenId: string,metadata: any[] = [], initialData: any = {}) => {
+export const useBusinessActions = (screenId: string, metadata: any[] = [], initialData: any = {}) => {
     const base = useBaseActions(screenId, metadata, initialData); // screenId 추가 [cite: 2026-02-17]
     const router = useRouter();
     // queryClient 선언 (캐시 조작을 위해 필요)
@@ -25,7 +25,7 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
             case "LINK":
             case "ROUTE":
                 if (!actionUrl) {
-                    console.warn("이동할 URL이 없습니다.");
+                    // console.warn("이동할 URL이 없습니다.");
                     return;
                 }
                 // 외부 링크(http)인 경우와 내부 경로 구분
@@ -86,7 +86,7 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
             case "ROUTE_DETAIL":
                 const baseActionUrl = meta.actionUrl || meta.action_url;
                 if (!data) {
-                    console.error(`${actionType} 액션 실행 실패: 데이터가 없습니다.`);
+                    // console.error(`${actionType} 액션 실행 실패: 데이터가 없습니다.`);
                     return;
                 }
                 const contentId = data.content_id || data.contentId;
@@ -96,8 +96,8 @@ export const useBusinessActions = (screenId: string,metadata: any[] = [], initia
                         : `${baseActionUrl}/${contentId}`;
                     router.push(finalPath);
                 } else {
-                    console.warn("이동할 경로 또는 ID가 데이터에 없습니다.", { baseActionUrl, contentId });
-                }break;
+                    // console.warn("이동할 경로 또는 ID가 데이터에 없습니다.", { baseActionUrl, contentId });
+                } break;
             default:
                 break;
         }

@@ -1,9 +1,9 @@
 // context/AuthContext.tsx
 'use client';
 
-import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import api from '@/services/axios';
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface User {
     userId?: string;
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // 1. 서버에 로그아웃 알림 (세션/쿠키 만료 처리 요청)
             await api.post('/api/auth/logout');
         } catch (err) {
-            console.error("Logout API error:", err);
+            // console.error("Logout API error:", err);
             // 서버 에러가 나더라도 클라이언트 상태는 지우는 게 사용자 입장에서 안전해
         } finally {
             //  클라이언트 상태 초기화
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const currentPath = window.location.pathname;
             // 이미 추가 정보 입력 페이지에 있으면 리다이렉트하지 않음 (무한 루프 방지)
             if (currentPath !== '/view/ADDITIONAL_INFO_PAGE') {
-                console.log('ROLE_GUEST 감지: 추가 정보 입력 페이지로 리다이렉트');
+                // console.log('ROLE_GUEST 감지: 추가 정보 입력 페이지로 리다이렉트');
                 router.push('/view/ADDITIONAL_INFO_PAGE');
             }
         }
@@ -101,8 +101,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return (
 
-        <AuthContext.Provider value={{ user, isLoggedIn, isLoading, updateUser: setUser, login, logout,
-            checkAccess  }}>
+        <AuthContext.Provider value={{
+            user, isLoggedIn, isLoading, updateUser: setUser, login, logout,
+            checkAccess
+        }}>
             {children}
         </AuthContext.Provider>
     );
