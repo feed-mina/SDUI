@@ -68,7 +68,7 @@ BEGIN
         );
 
         -- 시퀀스 동기화 (content 테이블의 최대값 + 1로 설정)
-        SELECT setval('content_content_id_seq', (SELECT COALESCE(MAX(content_id), 0) + 1 FROM content), false);
+        PERFORM setval('content_content_id_seq', (SELECT COALESCE(MAX(content_id), 0) + 1 FROM content), false);
 
     ELSE
         RAISE NOTICE 'V3: diary 테이블이 존재하지 않아 데이터 마이그레이션을 건너뜁니다.';
