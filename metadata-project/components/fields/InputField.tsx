@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from "react";
-import "../../app/styles/field.css";  
+import "../../app/styles/field.css";
 
 interface InputFieldProps {
     id: string;
@@ -14,16 +14,16 @@ interface InputFieldProps {
 }
 
 const InputField = memo(({
-                             id,
-                             meta,
-                             data,
-                             onChange,
-                             onAction,
-                             pwType,
-                             showPassword,
-                             className: externalClassName,
-                             ...rest
-                         }: InputFieldProps) => {
+    id,
+    meta,
+    data,
+    onChange,
+    onAction,
+    pwType,
+    showPassword,
+    className: externalClassName,
+    ...rest
+}: InputFieldProps) => {
 
     const targetKey = meta?.ref_data_id || meta?.refDataId || String(id || "");
     const value = (data && typeof data === 'object') ? (data[targetKey] ?? "") : (data ?? "");
@@ -38,12 +38,7 @@ const InputField = memo(({
     ].filter(Boolean).join(" ");
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // console.log('[InputField] handleInputChange:', {
-            targetKey,
-            value: e.target.value,
-            isReadOnly,
-            onChangeFn: typeof onChange
-        });
+        //    console.log('[InputField] handleInputChange:', { targetKey, value: e.target.value, isReadOnly, onChangeFn: typeof onChange });
         if (!isReadOnly) {
             onChange(targetKey, e.target.value);
         }
