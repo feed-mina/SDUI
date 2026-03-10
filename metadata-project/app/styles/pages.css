@@ -339,6 +339,17 @@
     gap: 5px;
 }
 
+/* flex-row-layout의 flex-wrap:wrap 덮어쓰기 방지 */
+.group-EMAIL_SUB_GROUP.flex-row-layout {
+    flex-wrap: nowrap;
+}
+
+/* 컴포넌트 래퍼 div도 flex:1 적용 (width:100% INPUT 래퍼가 전체 폭을 차지하는 문제 해결) */
+.group-EMAIL_SUB_GROUP > div {
+    flex: 1;
+    min-width: 80px;
+}
+
 .group-EMAIL_SUB_GROUP input,
 .group-EMAIL_SUB_GROUP select {
     flex: 1;

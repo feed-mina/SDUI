@@ -34,6 +34,7 @@ public class UiResponseDto {
 
     // 스타일 및 액션
     private String cssClass; // 적용할 CSS 클래스
+    private String groupDirection; // 그룹 방향 ('ROW' 또는 'COLUMN')
     private String actionType; // 클릭 등 이벤트 발생 시 액션타입
     private String actionUrl; // 액션 수행 URL
 
@@ -66,6 +67,7 @@ public class UiResponseDto {
         this.dataApiUrl = entity.getDataApiUrl();
         this.dataSqlKey = entity.getDataSqlKey();
         this.refDataId = entity.getRefDataId();
+        this.groupDirection = entity.getGroupDirection();
 
         // 역할별 label_text 오버라이드 처리
         this.labelText = resolveOverriddenValue(
