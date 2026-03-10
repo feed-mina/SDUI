@@ -35,15 +35,24 @@ const TextField = memo(({ meta, data, value, ...rest }: TextFieldProps) => {
         meta?.is_readonly === true || meta?.is_readonly === "true";
     const isVisible = meta?.isVisible !== false && meta?.isVisible !== "false";
 
-    const targetKey = meta?.ref_data_id || meta?.refDataId || meta?.componentId || "0218";
+    // ref_data_id가 명시된 경우(리피터 컨텍스트) data 바인딩을 labelText보다 우선
+    const explicitRef = meta?.ref_data_id || meta?.refDataId;
+    const targetKey = explicitRef || meta?.componentId || "0218";
 
-    let finalValue = value || meta?.labelText || (meta as any)?.label_text || "";
+    let finalValue = value;
     if (!finalValue && data) {
         if (typeof data !== 'object') {
             finalValue = data;
-        } else if (targetKey && data[targetKey] !== undefined) {
-            finalValue = data[targetKey];
+        } else if (explicitRef && data[explicitRef] !== undefined && data[explicitRef] !== null) {
+            finalValue = String(data[explicitRef]);
         }
+    }
+    if (!finalValue) {
+        finalValue = meta?.labelText || (meta as any)?.label_text || "";
+    }
+    // componentId 기반 폴백 (ref_data_id 없을 때)
+    if (!finalValue && !explicitRef && data && typeof data === 'object' && targetKey) {
+        if (data[targetKey] !== undefined) finalValue = data[targetKey];
     }
 
     // {key} → data[key] 템플릿 치환

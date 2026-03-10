@@ -568,7 +568,7 @@
 
 /* 모바일에서 제목이 너무 길면 말줄임표(...) 대신 그냥 줄바꿈해서 보여주기 */
 /* 1. 제목: 불필요한 마진 제거 및 텍스트 줄임표 처리 */
-.diaryTitle {
+.contentTitle {
     color: #2c3e50;
     font-size: 18px;
     font-weight: 700;
@@ -582,7 +582,7 @@
 }
 
 /* 2. 작성자: 뱃지 스타일 유지, 마진 제거 */
-#diaryContent {
+#contentContent {
     color: #555;
     background-color: #f1f3f5;
     border-radius: 4px;
@@ -596,7 +596,7 @@
 }
 
 /* 3. 날짜: 부모가 flex-start여도 오른쪽 끝으로 밀어내기 */
-.diaryDate {
+.contentDate {
     color: #999;
     font-size: 12px;
     margin-top: 0;
@@ -608,7 +608,7 @@
 
 /* [추가 팁] 그리드 안에서 글자가 사라지는 문제 해결용 */
 /* 카드가 들어갈 공간의 최소 크기를 0으로 지정해야 글자가 튀어나오지 않음 */
-.diaryListSection>div {
+.contentListSection>div {
     min-width: 0;
 }
 
@@ -660,7 +660,7 @@
 /* 화면이 넓으면 카드를 여러 개 배치 (최소 300px, 남으면 늘어남) */
 /* 2. PC 화면 설정 (768px 이상) */
 /*@media (min-width: 768px) {*/
-/*    .diaryListSection {*/
+/*    .contentListSection {*/
 /*        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));*/
 /*    }*/
 /*    .group-CONTENTWRITE_BTN_GROUP {*/
@@ -675,7 +675,7 @@
 /* 3. 모바일 화면 설정 (767px 이하) */
 /* 모바일에서는 무조건 한 줄에 하나 */
 /*@media (max-width: 767px) {*/
-/*    .diaryListSection {*/
+/*    .contentListSection {*/
 /* */
 /*        grid-template-columns: 1fr;*/
 /*    }*/
@@ -737,7 +737,7 @@
 
 
 /* ==========================================
-  DIARY (WRITE & DETAIL) 공통 레이아웃
+  CONTENT (WRITE & DETAIL) 공통 레이아웃
   ========================================== */
 /* ==========================================
   1. 공통 변수 및 초기화 (상속 유도)
@@ -754,8 +754,8 @@
 /* ==========================================
    2. 필드 공통 스타일 (Input, Textarea, Select)
    ========================================== */
-.diaryInput,
-.diaryTextarea,
+.contentInput,
+.contentTextarea,
 .common-textarea,
 .emotion-select-element,
 .email-select {
@@ -770,8 +770,8 @@
 }
 
 /* 포커스 효과 (Readonly가 아닐 때만) */
-.diaryInput:focus:not([readonly]),
-.diaryTextarea:focus:not([readonly]),
+.contentInput:focus:not([readonly]),
+.contentTextarea:focus:not([readonly]),
 .emotion-select-element:focus,
 .email-select:focus {
     outline: none;
@@ -779,7 +779,7 @@
     box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
-.diaryTextarea,
+.contentTextarea,
 .common-textarea {
     min-height: 250px;
     line-height: 1.6;
@@ -825,18 +825,18 @@
 /* --- 좌측 영역 (Column 1) --- */
 
 /* [2] 제목 */
-.engine-container.is-desktop .write_section1>div:has(#diaryTitle),
-.engine-container.is-desktop .write_section1>div:has(.diary-label):has(+ div #diaryTitle) {
+.engine-container.is-desktop .write_section1>div:has(#contentTitle),
+.engine-container.is-desktop .write_section1>div:has(.content-label):has(+ div #contentTitle) {
     grid-column: 1;
 }
 
 /* [3] 내용 */
-.engine-container.is-desktop .write_section1>div:has(#diaryContent),
-.engine-container.is-desktop .write_section1>div:has(.diaryTextarea) {
+.engine-container.is-desktop .write_section1>div:has(#contentContent),
+.engine-container.is-desktop .write_section1>div:has(.contentTextarea) {
     grid-column: 1;
 }
 
-.engine-container.is-desktop .diaryTextarea {
+.engine-container.is-desktop .contentTextarea {
     min-height: 350px !important;
     /* 높이 절반 사이즈 */
 }
@@ -1950,14 +1950,14 @@ button:hover {
     gap: 14px;
 }
 
-.bento-card-diary {
+.bento-card-content {
     background: linear-gradient(135deg, #166534, #15803d);
     color: #fff;
     justify-content: space-between;
     cursor: pointer;
 }
 
-.bento-card-diary:hover {
+.bento-card-content:hover {
     background: linear-gradient(135deg, #14532d, #166534);
 }
 
@@ -2136,14 +2136,14 @@ button:hover {
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.bento-card-diary:hover,
+.bento-card-content:hover,
 .bento-card-login:hover,
 .bento-card-dark:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
 }
 
-.bento-card-diary {
+.bento-card-content {
     transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
@@ -2183,7 +2183,7 @@ button:hover {
     transition: transform 0.2s ease;
 }
 
-.bento-card-diary:hover .bento-card-arrow,
+.bento-card-content:hover .bento-card-arrow,
 .bento-card-login:hover .bento-card-arrow {
     transform: translateX(4px);
 }

@@ -99,7 +99,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
                     currentPage={currentPage}
                     onPageChange={(page) => {
                         setCurrentPage(page);
-                        console.log(`[페이지 변경] 현재 페이지: ${currentPage}, 변경된 페이지: ${page}`);
+                        // console.log(`[페이지 변경] 현재 페이지: ${currentPage}, 변경된 페이지: ${page}`);
                     }}
                 />
             )}
