@@ -77,6 +77,9 @@ jobs:
             # 최신 이미지 pull
             docker pull ${{ secrets.DOCKER_USERNAME }}/sdui-app:${{ env.BRANCH_TAG }}
 
+            # 오래된 이미지 정리 (디스크 공간 확보)
+            docker image prune -af --filter "until=24h" || true
+
             # 기존 컨테이너 중지 및 제거
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm ${{ env.CONTAINER_NAME }} || true
