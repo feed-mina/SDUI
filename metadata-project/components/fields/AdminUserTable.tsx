@@ -10,7 +10,7 @@ const AdminUserTable: React.FC<any> = memo(() => {
     const {
         users, totalCount, isLoading, pageSize, currentPage,
         keyword, setKeyword,
-        roleFilter, setRoleFilter,
+        roleFilter, applyRoleFilter,
         selectedIds, newRole, setNewRole,
         handleSearch, handlePageChange, toggleSelect, handleRoleChange,
     } = useAdminUsers();
@@ -32,7 +32,7 @@ const AdminUserTable: React.FC<any> = memo(() => {
                     <select
                         className="admin-role-filter"
                         value={roleFilter}
-                        onChange={e => setRoleFilter(e.target.value)}
+                        onChange={e => applyRoleFilter(e.target.value)}
                     >
                         <option value="">전체 권한</option>
                         <option value="ROLE_USER">일반사용자</option>

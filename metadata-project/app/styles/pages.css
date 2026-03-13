@@ -2234,7 +2234,11 @@ button:hover {
     }
 
     .main-bento .target-time-label {
-        font-size: 13px;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
     }
 
     .main-bento .formatted-time {

@@ -212,15 +212,16 @@ export const useUserActions = (screenId: string,metadata: any[] = [], initialDat
                 }
                 break;
             case "OPEN_POSTCODE":
-                // Daum 주소 API 호출
-                if ((window as any).daum) {
-                    new (window as any).daum.Postcode({
-                        oncomplete: (data: any) => {
+                // 팝업 방식(window.daum.Postcode.open)은 카카오 도메인 변경 후 차단됨.
+                // iframe 방식(DaumPostcodeEmbed)으로 교체: PostcodeModal이 이벤트를 수신해 모달을 표시한다.
+                window.dispatchEvent(new CustomEvent('open-postcode-modal', {
+                    detail: {
+                        onComplete: (data: any) => {
                             base.handleChange('zipCode', data.zonecode);
                             base.handleChange('roadAddress', data.roadAddress);
                         }
-                    }).open();
-                }
+                    }
+                }));
                 break;
 
             case "TOGGLE_PW":

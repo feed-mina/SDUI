@@ -49,7 +49,7 @@ const nextConfig: NextConfig = {
                             "img-src 'self' data: data: blob: https: http://k.kakaocdn.net",                 // 외부 이미지 허용
                             "connect-src 'self' http://localhost:8080 http://43.201.237.68:8081 https://yerin.duckdns.org https://kauth.kakao.com https://kapi.kakao.com https://vercel.live https://*.vercel.app wss://ws-us3.pusher.com", // API 서버 + Vercel Live
                             "font-src 'self' data:",
-                            "frame-src http://postcode.map.daum.net https://postcode.map.daum.net https://postcode.map.kakao.com",  // Daum/Kakao 우편번호 iframe (도메인 변경 2026-03-10)
+                            "frame-src http://postcode.map.daum.net https://postcode.map.daum.net http://postcode.map.kakao.com https://postcode.map.kakao.com",  // Daum/Kakao 우편번호 iframe (도메인 변경 2026-03-10)
                             "object-src 'none'",
                             "frame-ancestors 'none'",
                         ].join('; '),

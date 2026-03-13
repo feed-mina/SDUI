@@ -33,8 +33,6 @@ export const useBusinessActions = (screenId: string, metadata: any[] = [], initi
                     window.location.href = actionUrl;
                 } else {
                     router.push(actionUrl);
-                    // 페이지 이동 후 필요시 데이터 갱신
-                    router.refresh();
                 }
                 break;
             case "SUBMIT": {

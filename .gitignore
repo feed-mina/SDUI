@@ -1,12 +1,29 @@
+# SDUI-server
+# Gradle build output
+SDUI-server/bin/
+SDUI-server/build/
+SDUI-server/src/main/resources/ application-local.yml 
+SDUI-server/docs/authcontroller_example.java
+# Build results
+SDUI-server/target/
+
+# pronounce-api
+pronounce-api/.env
+pronounce-api/venv311
+# 구글 서비스 계정 비밀키
+pronounce-api/*.json
+pronounce-api/static/* 
+pronounce-api/app/__pycache__/*
+
+#meta-project
+
+
+
 # 환경 설정
 .env
 .env.*
 .env*
 *.env.*
-
-application-local.properties
-application-ec2.properties
-application-secrets.properties
 
 # 로그
 *.log
@@ -15,15 +32,7 @@ log.txt
 # IDE
 .idea/
 *.iml
-
 dist/*
-
-pronounce-api/.env
-pronounce-api/venv311
-# 구글 서비스 계정 비밀키
-pronounce-api/*.json
-# Build results
-SDUI-server/target/
 
 # Playwright test results
 test-results/
@@ -44,8 +53,9 @@ out/
 *.jar
 *.war
 *.ear
+
 # 기타
-*.log
+*.pem
 *.tmp
 *.bak
 *.zip
@@ -53,19 +63,12 @@ out/
 *.exe
 *.dll
 *.so
-*.pem
 *.key
 *.keystore
 *.bak
 *.old
 *.vscode/
 *.idea/
-fix_content_list_key_mismatch.sql
-fix_sdui_issues.sql
-SDUI-server/docs/authcontroller_example.java
-diagnose_content_list.sql
-*.pem
-
-# Gradle build output
-SDUI-server/bin/
-SDUI-server/build/
+# fix_content_list_key_mismatch.sql
+# fix_sdui_issues.sql
+# diagnose_content_list.sql

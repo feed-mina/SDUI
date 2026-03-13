@@ -88,6 +88,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/content/**").authenticated()
                         // ADMIN ONLY
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // AI API (인증 필요)
+                        .requestMatchers(HttpMethod.POST, "/api/ai/**").authenticated()
                         // DEFAULT — 명시되지 않은 모든 요청 차단
                         .anyRequest().denyAll()
                 )

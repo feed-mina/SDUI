@@ -64,6 +64,13 @@ export function useAdminUsers() {
         setQuery({ keyword, roleFilter, page: 1 });
     }, [keyword, roleFilter]);
 
+    // 권한 필터 즉시 적용 (선택 즉시 검색, 검색 버튼 불필요)
+    const applyRoleFilter = useCallback((role: string) => {
+        setRoleFilter(role);
+        setSelectedIds(new Set());
+        setQuery({ keyword, roleFilter: role, page: 1 });
+    }, [keyword]);
+
     // 페이지 변경: keyword/roleFilter는 유지
     const handlePageChange = useCallback((page: number) => {
         setSelectedIds(new Set());
@@ -135,6 +142,7 @@ export function useAdminUsers() {
         setNewRole,
         // 핸들러
         handleSearch,
+        applyRoleFilter,
         handlePageChange,
         toggleSelect,
         handleRoleChange,
