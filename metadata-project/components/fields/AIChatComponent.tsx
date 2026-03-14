@@ -47,6 +47,7 @@ export default function AIChatComponent({ meta, data }: AIChatComponentProps) {
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [upgradeModalMsg, setUpgradeModalMsg] = useState(upgradeMessage);
     const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+    const [koreanMode, setKoreanMode] = useState(false); // 한국어 인식 모드
     const conversationStartedRef = useRef(false);
 
     // ── SSE 스트림 훅 ──
@@ -89,13 +90,17 @@ export default function AIChatComponent({ meta, data }: AIChatComponentProps) {
                     setShowUpgradeModal(true);
                     return;
                 }
+            } catch (err: any) {
+                // 멤버십 API 미구현(404) 또는 네트워크 에러 → 멤버십 체크 스킵, 대화 진행
+                const status = err?.response?.status;
+                if (status === 401) return; // 인증 에러는 axios 인터셉터 처리
+                // 404 등 → 멤버십 기능 미구현 단계: 그냥 대화 시작
+            }
 
-                if (welcomeMessage && !conversationStartedRef.current) {
-                    conversationStartedRef.current = true;
-                    setMessages([{ role: 'assistant', content: welcomeMessage }]);
-                }
-            } catch {
-                // 401은 axios 인터셉터 처리
+            // 멤버십 확인됐거나 API 미구현 상태 → 환영 메시지 표시
+            if (welcomeMessage && !conversationStartedRef.current) {
+                conversationStartedRef.current = true;
+                setMessages([{ role: 'assistant', content: welcomeMessage }]);
             }
         };
 
@@ -110,6 +115,7 @@ export default function AIChatComponent({ meta, data }: AIChatComponentProps) {
                 formData.append('audio', blob, 'recording.webm');
 
                 const res = await api.post('/api/ai/stt', formData, {
+                    params: { language: koreanMode ? 'ko' : (language === 'ko' ? 'ko' : undefined) },
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 const transcript: string = res.data?.data?.text || '';
@@ -141,7 +147,13 @@ export default function AIChatComponent({ meta, data }: AIChatComponentProps) {
     return (
         <div className={`ai-chat-container ${containerClass}`}>
             <div className="ai-chat-header">
-                <h2 className="ai-chat-title">{title}</h2>
+                <div className="ai-header-info">
+                    <h2 className="ai-chat-title">{title}</h2>
+                    <div className="ai-status-tag">
+                        <span className="ai-status-dot"></span>
+                        AI Live
+                    </div>
+                </div>
                 {messages.length > 0 && (
                     <button className="ai-end-btn admin-back-btn" onClick={handleEnd}>
                         {endBtnLabel}
@@ -150,6 +162,17 @@ export default function AIChatComponent({ meta, data }: AIChatComponentProps) {
             </div>
 
             <ConversationPanel messages={messages} isStreaming={isStreaming} />
+
+            {/* 언어 토글 버튼 */}
+            <div className="lang-toggle-bar">
+                <button
+                    className={`lang-toggle-btn ${koreanMode ? 'lang-toggle-btn--active' : ''}`}
+                    onClick={() => setKoreanMode(prev => !prev)}
+                    title="토글: 한국어 인식 ON/OFF"
+                >
+                    {koreanMode ? '🇰🇷 한국어 인식 중' : '🌐 영어 인식 중 (한국어로 전환)'}
+                </button>
+            </div>
 
             <AudioRecorder
                 state={recordingState}
