@@ -17,6 +17,7 @@ import {withRenderTrack} from "@/components/utils/withRenderTrack";
 import Modal from "@/components/fields/Modal";
 import AdminUserTable from "@/components/fields/AdminUserTable";
 import AIChatComponent from "@/components/fields/AIChatComponent";
+import AIChatComponentV2 from "@/components/fields/AIChatComponentV2";
 
 const GroupComponent: React.FC<any> = ({ children }) => <>{children}</>;
 
@@ -41,4 +42,5 @@ export const componentMap: Record<string, React.FC<any>> = {
     GROUP:withRenderTrack(GroupComponent, "GroupField"),
     ADMIN_USER_TABLE: withRenderTrack(AdminUserTable, "AdminUserTable"),
     AI_CHAT: withRenderTrack(AIChatComponent, "AIChatComponent"),
+    AI_CHAT_V2: withRenderTrack(AIChatComponentV2, "AIChatComponentV2"),
 };
