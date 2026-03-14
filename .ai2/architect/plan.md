@@ -1,8 +1,8 @@
 # Architect Plan: SDUI 기반 AI 튜터 + AI 면접관 통합 구현 계획
 
 > 작성일: 2026-03-11
-> 최종 수정: 2026-03-11
-> 상태: **사용자 승인 완료 → Phase 2부터 구현 시작**
+> 최종 수정: 2026-03-13
+> 상태: **Phase 2 백엔드 구현 완료 / 프론트엔드 연결 진행 중**
 > 기반: 링글 과제 아이디어 → SDUI 아키텍처로 전환
 
 ---
@@ -315,13 +315,13 @@ Spring Boot (포트 8080) 담당:
 ### Phase 2: AI 파이프라인 검증 (최우선)
 
 ```
-[ ] SDUI-server: OpenAI Java SDK 의존성 추가 (build.gradle)
-[ ] SttService.java (OpenAI Whisper 연동)
-[ ] ChatService.java (GPT-4o SSE Streaming)
-[ ] SttController.java + ChatController.java
-[ ] metadata-project: AIChatComponent.tsx (마이크 + Waveform + 채팅창)
-[ ] componentMap에 AI_CHAT 등록
-[ ] ui_metadata: AI_ENGLISH_CHAT_PAGE, AI_KOREAN_CHAT_PAGE 삽입
+[x] SDUI-server: RestClient/HttpClient 방식으로 OpenAI API 직접 호출 구현
+[x] SttService.java (OpenAI Whisper 연동)
+[x] ChatService.java (GPT-4o SSE Streaming)
+[x] SttController.java + ChatController.java + InterviewController.java
+[x] metadata-project: AIChatComponent.tsx (마이크 + Waveform + 채팅창)
+[ ] componentMap에 AI_CHAT 등록 ← **다음 단계**
+[ ] ui_metadata: AI_ENGLISH_CHAT_PAGE, AI_KOREAN_CHAT_PAGE 삽입 (V26부터 적용)
 [ ] 동작 검증 (영어 대화 → 한국어 대화)
 ```
 

@@ -1,8 +1,9 @@
 # Backend Engineer Plan: SDUI 기반 멤버십 + AI 파이프라인 구현
 
 > 작성일: 2026-03-11
+> 최종 수정: 2026-03-13
 > 근거: architect/plan.md + backend_engineer/research.md
-> 상태: 구현 대기 (사용자 승인 후 진행)
+> 상태: **Phase 2 구현 완료 / Phase 1(멤버십) 미구현**
 
 ---
 
@@ -464,22 +465,23 @@ spring:
 
 ## TODO (구현 체크리스트)
 
-### Phase 2 (AI 파이프라인)
-- [ ] `AsyncConfig.java` — ThreadPoolTaskExecutor 설정
-- [ ] `OpenAiClient.java` — RestClient 기반 STT/Chat 호출
-- [ ] DTO: SttRequest/Response, ChatRequest, ChatMessage, InterviewStartRequest, InterviewAnswerRequest
-- [ ] `SttService.java` — Whisper 호출
-- [ ] `ChatService.java` — GPT-4o SSE 스트리밍
-- [ ] `InterviewService.java` — 프롬프트 엔지니어링 + SSE
-- [ ] `AiSttController.java` — POST /api/ai/stt
-- [ ] `AiChatController.java` — POST /api/ai/chat (SSE)
-- [ ] `AiInterviewController.java` — POST /api/ai/interview/start, /answer (SSE)
-- [ ] `application.yml`에 `openai.api-key` 설정
+### Phase 2 (AI 파이프라인) ✅ 완료
+- [x] `AsyncConfig.java` — ThreadPoolTaskExecutor 설정
+- [x] `OpenAiClient.java` — Java HttpClient 기반 STT/Chat 호출
+- [x] DTO: SttResponse, ChatRequest, ChatMessage, InterviewStartRequest, InterviewAnswerRequest
+- [x] `SttService.java` — Whisper 호출
+- [x] `ChatService.java` — GPT-4o SSE 스트리밍
+- [x] `InterviewService.java` — 프롬프트 엔지니어링 + SSE
+- [x] `AiSttController.java` — POST /api/ai/stt
+- [x] `AiChatController.java` — POST /api/ai/chat (SSE)
+- [x] `AiInterviewController.java` — POST /api/ai/interview/start, /answer (SSE)
+- [ ] `application.yml`에 `openai.api-key` 설정 ← **확인 필요**
 - [ ] JUnit 테스트: AiSttControllerTest, AiChatControllerTest (MockRestServiceServer)
 
-### Phase 1 (멤버십 도메인)
-- [ ] `V22__create_memberships.sql`
-- [ ] `V23__create_user_memberships.sql`
+### Phase 1 (멤버십 도메인) ❌ 미구현
+> ⚠️ 실제 Flyway 최신 버전 V25 → **V28, V29 사용** (plan.md의 V22/V23은 이미 사용됨)
+- [ ] `V28__create_memberships.sql` (기존 V22 파일은 impl/phase1에 준비됨, 번호 수정 필요)
+- [ ] `V29__create_user_memberships.sql`
 - [ ] `Membership.java` (JPA Entity)
 - [ ] `UserMembership.java` (JPA Entity + isActive() 메서드)
 - [ ] `MembershipRepository.java`

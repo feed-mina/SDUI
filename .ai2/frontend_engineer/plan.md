@@ -1,8 +1,9 @@
 # Frontend Engineer Plan: AI 파이프라인 + 멤버십 화면 구현
 
 > 작성일: 2026-03-11
+> 최종 수정: 2026-03-13
 > 근거: architect/plan.md + frontend_engineer/research.md
-> 상태: 사용자 승인 대기
+> 상태: **Phase 1 컴포넌트 구현 완료 / componentMap 등록 및 DB SQL 미완료**
 
 ---
 
@@ -341,9 +342,11 @@ interface MembershipUpgradeModalProps {
 
 | 파일 | 설명 |
 |------|------|
-| `V24__ai_chat_pages.sql` | AI_ENGLISH_CHAT_PAGE, AI_KOREAN_CHAT_PAGE 메타데이터 |
-| `V25__ai_interview_page.sql` | AI_INTERVIEW_PAGE 메타데이터 |
-| `V26__membership_pages.sql` | MEMBERSHIP_SHOP_PAGE 메타데이터 (ADMIN 화면은 USER_LIST 확장으로 대체) |
+| `V26__ai_chat_pages.sql` | AI_ENGLISH_CHAT_PAGE, AI_KOREAN_CHAT_PAGE 메타데이터 ← 실제 버전 V26 |
+| `V27__ai_interview_page.sql` | AI_INTERVIEW_PAGE 메타데이터 |
+| `V28__create_memberships.sql` | memberships 테이블 생성 |
+| `V29__create_user_memberships.sql` | user_memberships 테이블 생성 |
+| `V30__membership_pages.sql` | MEMBERSHIP_SHOP_PAGE 메타데이터 |
 
 ---
 
@@ -360,17 +363,17 @@ interface MembershipUpgradeModalProps {
 ### Phase 1: AI 채팅
 
 ```
-[ ] 1.  lib/types/ai.ts — ChatMessage, ChatRequest, ConversationState, AIChatConfig 타입
-[ ] 2.  lib/hooks/useSSEStream.ts — fetch + ReadableStream SSE 소비 훅
-[ ] 3.  lib/hooks/useAudioRecorder.ts — MediaRecorder + Blob 생성
-[ ] 4.  components/fields/ai/Waveform.tsx — AudioContext 시각화
-[ ] 5.  components/fields/ai/ConversationPanel.tsx — 메시지 목록 + 스트리밍
-[ ] 6.  components/fields/ai/AudioRecorder.tsx — 마이크 UI
-[ ] 7.  components/fields/ai/MembershipUpgradeModal.tsx — 업그레이드 모달
-[ ] 8.  components/fields/AIChatComponent.tsx — meta + data로 완전 구성
-[ ] 9.  componentMap.tsx 등록 (AI_CHAT)
-[ ] 10. screenMap.ts 등록 (/ai/english, /ai/korean)
-[ ] 11. V24__ai_chat_pages.sql — ui_metadata + query_master (ai_english_chat_config, ai_korean_chat_config)
+[x] 1.  lib/types/ai.ts — ChatMessage, ChatRequest, ConversationState, AIChatConfig 타입
+[x] 2.  lib/hooks/useSSEStream.ts — fetch + ReadableStream SSE 소비 훅
+[x] 3.  lib/hooks/useAudioRecorder.ts — MediaRecorder + Blob 생성
+[x] 4.  components/fields/ai/Waveform.tsx — AudioContext 시각화
+[x] 5.  components/fields/ai/ConversationPanel.tsx — 메시지 목록 + 스트리밍
+[x] 6.  components/fields/ai/AudioRecorder.tsx — 마이크 UI
+[x] 7.  components/fields/ai/MembershipUpgradeModal.tsx — 업그레이드 모달
+[x] 8.  components/fields/AIChatComponent.tsx — meta + data로 완전 구성
+[ ] 9.  componentMap.tsx 등록 (AI_CHAT) ← **다음 단계**
+[ ] 10. screenMap.ts 등록 (/ai/english, /ai/korean) ← **다음 단계**
+[ ] 11. V26__ai_chat_pages.sql — ui_metadata + query_master (실제 버전 V26 사용)
 [ ] 12. npm run test
 ```
 
