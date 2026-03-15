@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
  * 프로젝트 메모: Next.js(3000포트)와 Spring Boot(8080포트 가정) 연동 환경 설정 [cite: 2026-02-17]
  */
 export default defineConfig({
-    testDir: './tests/e2e', // 테스트 파일이 저장된 경로
+    testDir: './tests', // 테스트 파일이 저장된 상위 경로
     fullyParallel: true,   // 테스트 병렬 실행 여부
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
@@ -31,16 +31,19 @@ export default defineConfig({
     },
 
     projects: [
-// 'setup' 프로젝트를 명시적으로 정의해야 함
         {
             name: 'setup',
-            testMatch: /auth\.setup\.ts/, // 실제 파일명과 일치하는지 확인
+            testMatch: /auth\.setup\.ts/,
         },
         {
             name: 'chromium',
+            testMatch: /e2e\/.*\.test\.ts/, // E2E 폴더 내 파일만 실행
             use: {
                 ...devices['Desktop Chrome'],
+                // 인증 상태 적용
+                storageState: 'playwright/.auth/user.json',
             },
+            dependencies: ['setup'],
         },
     ],
 });
