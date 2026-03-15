@@ -43,4 +43,21 @@ public class AiChatControllerV2 {
         sseExecutor.execute(() -> chatServiceV2.stream(req, userId, emitter));
         return emitter;
     }
+
+    /**
+     * POST /api/ai/v2/chat/translate
+     * 자유 대화용 텍스트 번역 (동기식)
+     */
+    @PostMapping("/chat/translate")
+    public com.domain.demo_backend.global.common.response.ApiResponse<String> translate(
+            @RequestBody java.util.Map<String, String> req) throws Exception {
+
+        String text = req.get("text");
+        String target = req.getOrDefault("target", "en");
+
+        log.info("[V2] 번역 요청 - target={}, length={}", target, text != null ? text.length() : 0);
+
+        String translated = chatServiceV2.translate(text, target);
+        return com.domain.demo_backend.global.common.response.ApiResponse.success(translated);
+    }
 }

@@ -55,6 +55,11 @@ public class ChatServiceV2 {
         }
     }
 
+    public String translate(String text, String target) throws Exception {
+        log.info("[V2] 번역 요청 - target={}, textLength={}", target, text.length());
+        return openAiClientV2.translate(text, target);
+    }
+
     private String escapeJson(String text) {
         return text.replace("\\", "\\\\")
                 .replace("\"", "\\\"")

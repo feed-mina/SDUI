@@ -146,10 +146,11 @@ public class OpenAiClientV2 {
      */
     public byte[] generateSpeech(String text, String voice) throws Exception {
         Map<String, Object> body = Map.of(
-                "model", "tts-1",
                 "input", text,
                 "voice", (voice != null && !voice.isBlank()) ? voice : "alloy"
         );
+        body = new java.util.HashMap<>(body);
+        body.put("model", "tts-1");
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(OPENAI_BASE_URL + "/audio/speech"))
@@ -167,6 +168,48 @@ public class OpenAiClientV2 {
         }
 
         return response.body();
+    }
+
+    /**
+     * Translate V2: OpenAI Chat Completions API를 사용한 고도화된 번역
+     */
+    public String translate(String text, String targetLanguage) throws Exception {
+        String prompt = String.format(
+                "Translate the following text into %s. Respond ONLY with the translated text. do not add any explanation or quotes.\n\nText: %s",
+                targetLanguage, text
+        );
+
+        List<Map<String, String>> messages = List.of(
+                Map.of("role", "system", "content", "You are a professional translator."),
+                Map.of("role", "user", "content", prompt)
+        );
+
+        String jsonBody = objectMapper.writeValueAsString(Map.of(
+                "model", model,
+                "messages", messages,
+                "temperature", 0.0
+        ));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(OPENAI_BASE_URL + "/chat/completions"))
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        log.info("[V2] Translation 요청 시작: target={}, length={}", targetLanguage, text.length());
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new IllegalStateException("OpenAI Translation 오류: HTTP " + response.statusCode() + " - " + response.body());
+        }
+
+        Map<String, Object> data = objectMapper.readValue(response.body(), Map.class);
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) data.get("choices");
+        if (choices == null || choices.isEmpty()) return text;
+
+        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+        return message.get("content").toString().trim();
     }
 
     @SuppressWarnings("unchecked")

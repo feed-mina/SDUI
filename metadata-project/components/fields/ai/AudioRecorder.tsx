@@ -60,7 +60,18 @@ export default function AudioRecorder({
                                 className={`mic-btn ${micClassName || ''}`}
                                 onClick={() => onStart('en')}
                                 disabled={disabled || isProcessing}
-                                style={{ background: '#E8EAF6', border: 'none', cursor: 'pointer', borderRadius: '50%', width: '88px', height: '88px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(63, 81, 181, 0.1)' }}
+                                style={{ 
+                                    background: '#E8EAF6', 
+                                    border: '1.5px solid #C5CAE9', 
+                                    cursor: 'pointer', 
+                                    borderRadius: '50%', 
+                                    width: '88px', 
+                                    height: '88px', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    boxShadow: '0 4px 15px rgba(63, 81, 181, 0.15)' 
+                                }}
                                 title="English Mode (Phonetic)"
                             >
                                 <MicIcon />
@@ -74,7 +85,18 @@ export default function AudioRecorder({
                                 className={`mic-btn ko-mic-btn ${micClassName || ''}`}
                                 onClick={() => onStart('ko')}
                                 disabled={disabled || isProcessing}
-                                style={{ background: '#E8EAF6', border: 'none', cursor: 'pointer', borderRadius: '50%', width: '88px', height: '88px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(63, 81, 181, 0.1)' }}
+                                style={{ 
+                                    background: '#E8EAF6', 
+                                    border: '1.5px solid #C5CAE9', 
+                                    cursor: 'pointer', 
+                                    borderRadius: '50%', 
+                                    width: '88px', 
+                                    height: '88px', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    boxShadow: '0 4px 15px rgba(63, 81, 181, 0.15)' 
+                                }}
                                 title="Speak in Korean (Translation)"
                             >
                                 <div className="flex flex-col items-center">

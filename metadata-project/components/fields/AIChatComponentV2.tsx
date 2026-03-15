@@ -90,12 +90,19 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
 
         const systemMsg: ChatMessage = {
             role: 'system',
-            content: `You are a professional English tutor. 
-            RULES:
-            1. ALWAYS respond in English for the primary conversation, regardless of user's language.
-            2. Your response MUST be in JSON format: { "en": "English response", "ko": "Korean translation" }.
-            3. Do NOT include any text outside the JSON.
-            4. Keep the English response clear and educational.`
+            content: `You are a professional and engaging English tutor.
+            YOUR GOAL: Help the user improve their English through natural conversation.
+            
+            CORE INSTRUCTIONS:
+            1. BE CONVERSATIONAL: Never just echo or translate the user's input. Respond human-like, give feedback on their English if needed, and always end with an open-ended question to keep the dialogue moving.
+            2. TEACHER INSIGHT: If the user makes a mistake or sounds unnatural, provide a "Better way to say it" in your response.
+            3. ENGLISH ONLY: Your conversation must be 100% English.
+            4. JSON RESPONSE: You MUST respond in this JSON format:
+               {
+                 "en": "Your proactive tutor response (in English)",
+                 "ko": "A natural Korean translation of your response (for the user's reference)"
+               }
+            Do not include any other text.`
         };
         const messagesWithSystem = [systemMsg, ...msgs];
 
@@ -106,25 +113,30 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
         setIsStarted(true);
     };
 
-    // 스트리밍 종료 시 JSON 파싱 처리 (정규식으로 더 견고하게 추출)
+    // 스트리밍 종료 시 JSON 파싱 처리 (더 견고하게 고도화)
     const handleDone = useCallback(() => {
         setIsStreaming(false);
         setMessages(prev => {
             const last = prev[prev.length - 1];
-            if (last && last.role === 'assistant') {
+            if (last && last.role === 'assistant' && last.content) {
                 try {
-                    // JSON 객체만 추출 ({ ... })
-                    const jsonMatch = last.content.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        const json = JSON.parse(jsonMatch[0]);
-                        return [...prev.slice(0, -1), { 
-                            ...last, 
-                            content: json.en || last.content, 
-                            translation: json.ko 
-                        }];
+                    // 1. JSON 형태의 블록들을 모두 찾음 (최대한 유연하게)
+                    const jsonBlocks = last.content.match(/\{[\s\S]*?\}/g);
+                    if (jsonBlocks && jsonBlocks.length > 0) {
+                        // 가장 마지막에 나타난 JSON 블록을 선택 (보통 AI가 최종적으로 뱉는 정보)
+                        const lastJsonStr = jsonBlocks[jsonBlocks.length - 1];
+                        const parsed = JSON.parse(lastJsonStr);
+                        
+                        if (parsed.en || parsed.ko) {
+                            return [...prev.slice(0, -1), { 
+                                ...last, 
+                                content: parsed.en || last.content, 
+                                translation: parsed.ko 
+                            }];
+                        }
                     }
                 } catch (e) {
-                    console.warn('AI response parsing failed:', e);
+                    console.warn('[V2] JSON 파싱 실패, 원문 그대로 유지:', e);
                 }
             }
             return prev;
@@ -178,21 +190,23 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
                     return;
                 }
 
-                // [고도화] 한국어 모드일 경우 무조건 영어로 번역하여 화면에 표시
-                // 만약 'en' 모드인데 한국어가 잡힌 경우에도(가입자 실수 등) 번역 처리하여 UI는 영어로 유지
-                const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(transcript);
-                if (currentRecordingMode === 'ko' || hasKorean) {
-                    console.log('[V2] 한국어 감지 또는 한국어 모드 → 영어 번역 처리');
+                // [Phase 18] 한글 포함 여부 체크 시 공백/특수문자 제외하고 검사
+                const containsKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(transcript.replace(/\s/g, ''));
+                
+                if (currentRecordingMode === 'ko' || containsKorean) {
+                    console.log(`[Phase 19] 번역 수행 (모드: ${currentRecordingMode}, 한글여부: ${containsKorean})`);
                     try {
                         const transRes = await api.post('/api/ai/v2/chat/translate', { 
                             text: transcript, 
                             target: 'en' 
                         });
-                        if (transRes.data?.data) {
+                        if (transRes.data && transRes.data.data) {
                             transcript = transRes.data.data;
+                            console.log('[Phase 19] 번역 완료 텍스트:', transcript);
                         }
                     } catch (e) {
-                        console.warn('User speech translation failed, using original transcript');
+                        console.error('[Phase 19] 번역 API 호출 실패 (404/ServerError):', e);
+                        // 실패 시 최소한 한국어라도 표시되게 유지하되, 로그를 남김
                     }
                 }
 
