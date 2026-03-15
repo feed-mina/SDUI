@@ -29,7 +29,7 @@ public class ChatService {
                     chunk -> {
                         try {
                             emitter.send(SseEmitter.event()
-                                    .data("{\"chunk\":\"" + escapeJson(chunk) + "\"}"));
+                                    .data("{\"content\":\"" + escapeJson(chunk) + "\"}"));
                         } catch (Exception e) {
                             log.warn("SSE 청크 전송 실패 (userId={})", userId, e);
                         }
