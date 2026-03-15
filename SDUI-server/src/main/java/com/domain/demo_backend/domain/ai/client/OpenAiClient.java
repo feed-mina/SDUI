@@ -66,7 +66,9 @@ public class OpenAiClient {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", audioResource);
         body.add("model", whisperModel);
-        body.add("language", language != null ? language : "en");
+        if (language != null && !language.isBlank()) {
+            body.add("language", language); // 명시적 언어만 전달, null이면 Whisper 자동 감지
+        }
 
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
 
