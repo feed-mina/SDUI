@@ -11,6 +11,7 @@ export function useAudioRecorder({ onAudioReady, onAnalyser }: UseAudioRecorderO
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
     const chunksRef = useRef<Blob[]>([]);
+    const isDiscardingRef = useRef(false);
 
     const startRecording = useCallback(async () => {
         try {
@@ -33,12 +34,17 @@ export function useAudioRecorder({ onAudioReady, onAnalyser }: UseAudioRecorderO
             };
 
             recorder.onstop = () => {
-                const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-                onAudioReady(blob);
+                if (isDiscardingRef.current) {
+                    isDiscardingRef.current = false;
+                    setState('idle');
+                } else {
+                    const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+                    onAudioReady(blob);
+                    setState('processing');
+                }
                 stream.getTracks().forEach(t => t.stop());
                 audioContextRef.current?.close();
                 audioContextRef.current = null;
-                setState('processing');
             };
 
             recorder.start();
@@ -57,5 +63,12 @@ export function useAudioRecorder({ onAudioReady, onAnalyser }: UseAudioRecorderO
 
     const resetState = useCallback(() => setState('idle'), []);
 
-    return { state, startRecording, stopRecording, resetState };
+    const cancelRecording = useCallback(() => {
+        if (mediaRecorderRef.current?.state === 'recording') {
+            isDiscardingRef.current = true;
+            mediaRecorderRef.current.stop();
+        }
+    }, []);
+
+    return { state, startRecording, stopRecording, cancelRecording, resetState };
 }
