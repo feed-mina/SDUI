@@ -154,16 +154,18 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
         init();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // ── V2 STT: koreanMode 기반으로 language 결정 ──
+    const [currentRecordingMode, setCurrentRecordingMode] = useState<'en' | 'ko'>('en');
+
+    // ── V2 STT: mode 기반으로 language 결정 ──
     const { state: recordingState, startRecording, stopRecording, cancelRecording, resetState } = useAudioRecorder({
         onAudioReady: async (blob) => {
             try {
                 const formData = new FormData();
                 formData.append('audio', blob, 'recording.webm');
 
-                // V2: language=undefined → Whisper 자동 감지 (영어 위주)
-                const sttLanguage = language === 'ko' ? 'ko' : undefined;
-                console.log('[V2 STT] language 파라미터:', sttLanguage ?? '자동감지(영어위주)');
+                // V2: 사용자가 선택한 모드에 따라 STT 언어 및 번역 여부 결정
+                const sttLanguage = currentRecordingMode === 'ko' ? 'ko' : 'en';
+                console.log(`[V2 STT] 모드: ${currentRecordingMode}, STT 언어: ${sttLanguage}`);
 
                 const res = await api.post('/api/ai/stt', formData, {
                     params: { language: sttLanguage },
@@ -176,9 +178,11 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
                     return;
                 }
 
-                // [고도화] 한국어로 인식된 경우, AI에게 번역을 요청하여 영어로 변환
-                if (language === 'ko' || /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(transcript)) {
-                    console.log('[V2] 한국어 감지 → 영어 번역 시도');
+                // [고도화] 한국어 모드일 경우 무조건 영어로 번역하여 화면에 표시
+                // 만약 'en' 모드인데 한국어가 잡힌 경우에도(가입자 실수 등) 번역 처리하여 UI는 영어로 유지
+                const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(transcript);
+                if (currentRecordingMode === 'ko' || hasKorean) {
+                    console.log('[V2] 한국어 감지 또는 한국어 모드 → 영어 번역 처리');
                     try {
                         const transRes = await api.post('/api/ai/v2/chat/translate', { 
                             text: transcript, 
@@ -195,8 +199,8 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
                 const audioUrl = URL.createObjectURL(blob);
                 const userMsg: ChatMessage = { 
                     role: 'user', 
-                    content: transcript,
-                    audioUrl: audioUrl // 본인 목소리 듣기 기능용
+                    content: transcript, // 이제 항상 영어이거나 영어로 번역된 텍스트가 들어감
+                    audioUrl: audioUrl 
                 };
                 const updatedMsgs = [...messages, userMsg];
                 setMessages(updatedMsgs);
@@ -209,6 +213,11 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
         onAnalyser: setAnalyser,
     });
 
+    const handleStartRecording = (mode: 'en' | 'ko') => {
+        setCurrentRecordingMode(mode);
+        startRecording();
+    };
+
     // ── 대화 종료 ──
     const handleEnd = () => {
         abort();
@@ -218,7 +227,7 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
 
     return (
         <div 
-            className={`ai-chat-container AI_ENGLISH_CHAT_PAGE2 ${containerClass}`}
+            className={`ai-chat-container AI_ENGLISH_CHAT_PAGE ${containerClass}`}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', minHeight: '100vh', background: '#F5F7FA' }}
         >
             {!isStarted ? (
@@ -295,7 +304,7 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentV2Props
                                 analyser={analyser}
                                 micBtnLabel={micBtnLabel}
                                 submitBtnLabel={submitBtnLabel}
-                                onStart={startRecording}
+                                onStart={handleStartRecording}
                                 onStop={stopRecording}
                                 onCancel={cancelRecording}
                                 disabled={isDisabled || isStreaming}

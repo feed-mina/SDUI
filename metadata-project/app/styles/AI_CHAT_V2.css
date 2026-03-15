@@ -13,7 +13,7 @@
     --v2-white: #FFFFFF;
 }
 
-.AI_ENGLISH_CHAT_PAGE2.ai-chat-container {
+.AI_ENGLISH_CHAT_PAGE.ai-chat-container {
     background-color: var(--v2-bg-light);
     font-family: 'Outfit', -apple-system, sans-serif;
     display: flex;
@@ -24,7 +24,7 @@
 }
 
 /* ── 1. Intro / Permission Screen ── */
-.AI_ENGLISH_CHAT_PAGE2 .intro-screen {
+.AI_ENGLISH_CHAT_PAGE .intro-screen {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -36,26 +36,25 @@
     background: #fff;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .intro-icon-box {
+.AI_ENGLISH_CHAT_PAGE .intro-icon-box {
     width: 140px;
     height: 140px;
-    background: var(--v2-primary);
-    border-radius: 50%; /* 원형으로 변경 */
+    background: transparent; /* 배경 제거 (워터마크 느낌 제거) */
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 32px;
-    box-shadow: 0 10px 30px rgba(63, 81, 181, 0.3);
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .intro-title {
+.AI_ENGLISH_CHAT_PAGE .intro-title {
     font-size: 2rem;
     font-weight: 800;
     color: var(--v2-secondary);
     margin-bottom: 32px;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .mic-permission-box {
+.AI_ENGLISH_CHAT_PAGE .mic-permission-box {
     background: #fff;
     border: 1px solid var(--v2-border);
     border-radius: 20px;
@@ -68,7 +67,7 @@
     align-items: center; /* 내부 요소 중앙 정렬 */
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .start-chat-btn {
+.AI_ENGLISH_CHAT_PAGE .start-chat-btn {
     margin-top: 24px;
     width: 100%;
     background: #fff;
@@ -82,7 +81,7 @@
     cursor: pointer;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .start-chat-btn:hover {
+.AI_ENGLISH_CHAT_PAGE .start-chat-btn:hover {
     background: var(--v2-bg-light);
     border-color: var(--v2-primary);
     color: var(--v2-primary);
@@ -91,7 +90,7 @@
 }
 
 /* ── 2. Chat Header ── */
-.AI_ENGLISH_CHAT_PAGE2 .ai-chat-header {
+.AI_ENGLISH_CHAT_PAGE .ai-chat-header {
     background: #fff;
     border-bottom: 1px solid var(--v2-border);
     height: 70px; /* 고도화: 높이 약간 확대 */
@@ -105,7 +104,7 @@
 }
 
 /* ── 2.1 Progress Gauge Bar ── */
-.AI_ENGLISH_CHAT_PAGE2 .gauge-container {
+.AI_ENGLISH_CHAT_PAGE .gauge-container {
     width: 100%;
     height: 6px;
     background: #E8EAF6;
@@ -113,7 +112,7 @@
     z-index: 10;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .gauge-fill {
+.AI_ENGLISH_CHAT_PAGE .gauge-fill {
     height: 100%;
     background: linear-gradient(90deg, #3949AB, #5C6BC0); /* 더 선명한 Indigo 그라데이션 */
     transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* 바운스 효과 추가 */
@@ -121,17 +120,17 @@
 }
 
 /* ── 3. Conversation Panel & Bubbles ── */
-.AI_ENGLISH_CHAT_PAGE2 .message-bubble {
+.AI_ENGLISH_CHAT_PAGE .message-bubble {
     margin-bottom: 24px;
     max-width: 85%;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .message-avatar {
+.AI_ENGLISH_CHAT_PAGE .message-avatar {
     font-size: 1.5rem;
 }
 
 /* AI Bubble (Left) */
-.AI_ENGLISH_CHAT_PAGE2 .message-assistant .message-content {
+.AI_ENGLISH_CHAT_PAGE .message-assistant .message-content {
     background: #fff;
     border: 1px solid var(--v2-border);
     border-radius: 16px;
@@ -139,7 +138,7 @@
     padding: 20px;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .translation-text {
+.AI_ENGLISH_CHAT_PAGE .translation-text {
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px dashed var(--v2-border);
@@ -148,12 +147,12 @@
 }
 
 /* User Bubble (Right) */
-.AI_ENGLISH_CHAT_PAGE2 .message-user {
+.AI_ENGLISH_CHAT_PAGE .message-user {
     align-self: flex-end;
     margin-left: auto;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .message-user .message-content {
+.AI_ENGLISH_CHAT_PAGE .message-user .message-content {
     background: var(--v2-secondary);
     color: #fff;
     border-radius: 16px;
@@ -162,7 +161,7 @@
     box-shadow: 0 4px 12px rgba(26, 35, 126, 0.2);
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .msg-stats {
+.AI_ENGLISH_CHAT_PAGE .msg-stats {
     font-size: 0.85rem;
     color: var(--v2-text-sub);
     text-align: right;
@@ -170,14 +169,14 @@
 }
 
 /* ── 4. Action Buttons ── */
-.AI_ENGLISH_CHAT_PAGE2 .bubble-actions {
+.AI_ENGLISH_CHAT_PAGE .bubble-actions {
     display: flex;
     align-items: center;
     gap: 20px; /* 두 버튼 사이 간격 20px로 확대 */
     margin-top: 14px;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .action-btn-main {
+.AI_ENGLISH_CHAT_PAGE .action-btn-main {
     background: #fff;
     color: var(--v2-secondary);
     padding: 10px 20px; /* 패딩 확대 */
@@ -193,7 +192,7 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .action-btn-main:hover {
+.AI_ENGLISH_CHAT_PAGE .action-btn-main:hover {
     background: #fff;
     border-color: var(--v2-primary);
     color: var(--v2-primary);
@@ -201,7 +200,7 @@
     box-shadow: 0 6px 15px rgba(63, 81, 181, 0.15);
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .action-btn-main.playing {
+.AI_ENGLISH_CHAT_PAGE .action-btn-main.playing {
     background: #FFF5F5;
     color: #ef4444;
     border-color: #ef4444;
@@ -214,7 +213,7 @@
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .action-btn-mini {
+.AI_ENGLISH_CHAT_PAGE .action-btn-mini {
     background: #fff;
     border: 1.5px solid var(--v2-border); /* 보더 두께 1.5px */
     color: var(--v2-text-main);
@@ -226,7 +225,7 @@
     transition: all 0.2s;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .action-btn-mini:hover {
+.AI_ENGLISH_CHAT_PAGE .action-btn-mini:hover {
     background: #fff;
     border-color: var(--v2-primary);
     color: var(--v2-primary);
@@ -235,7 +234,7 @@
 }
 
 /* ── 5. Bottom Controls (Horizontal) ── */
-.AI_ENGLISH_CHAT_PAGE2 .audio-recorder-bar {
+.AI_ENGLISH_CHAT_PAGE .audio-recorder-bar {
     background: #fff;
     border-top: 1px solid var(--v2-border);
     padding: 40px 24px;
@@ -248,20 +247,20 @@
     margin: 0 auto;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .mic-instruction {
+.AI_ENGLISH_CHAT_PAGE .mic-instruction {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--v2-text-sub);
     margin-bottom: 24px;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .control-buttons {
+.AI_ENGLISH_CHAT_PAGE .control-buttons {
     display: flex;
     gap: 20px;
     width: 100%;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .finish-btn {
+.AI_ENGLISH_CHAT_PAGE .finish-btn {
     flex: 2;
     background: #fff;
     color: var(--v2-secondary);
@@ -274,13 +273,13 @@
     transition: all 0.2s;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .finish-btn:hover {
+.AI_ENGLISH_CHAT_PAGE .finish-btn:hover {
     background: var(--v2-bg-light);
     border-color: var(--v2-primary);
     color: var(--v2-primary);
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .cancel-btn {
+.AI_ENGLISH_CHAT_PAGE .cancel-btn {
     flex: 1;
     background: #fff;
     border: 1.5px solid var(--v2-border);
@@ -293,14 +292,14 @@
     transition: all 0.2s;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .cancel-btn:hover {
+.AI_ENGLISH_CHAT_PAGE .cancel-btn:hover {
     background: var(--v2-bg-light);
     border-color: #ef4444;
     color: #ef4444;
 }
 
 /* ── 6. End Chat Button (Bottom) ── */
-.AI_ENGLISH_CHAT_PAGE2 .end-session-btn {
+.AI_ENGLISH_CHAT_PAGE .end-session-btn {
     width: 100%;
     background: #fff;
     border: 1.5px solid var(--v2-border);
@@ -313,34 +312,42 @@
     transition: all 0.2s;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .end-session-btn:hover {
+.AI_ENGLISH_CHAT_PAGE .end-session-btn:hover {
     background: #FFF5F5;
     border-color: #ef4444;
     color: #ef4444;
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .mic-btn-main {
+.AI_ENGLISH_CHAT_PAGE .mic-btn {
     width: 88px;
     height: 88px;
-    background: var(--v2-primary);
+    background: #E8EAF6;
     border-radius: 50%;
-    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: none;
     cursor: pointer;
-    box-shadow: 0 8px 25px rgba(63, 81, 181, 0.25);
+    box-shadow: 0 4px 12px rgba(63, 81, 181, 0.1);
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .mic-btn-main--active {
-    background: #FF5252;
+.AI_ENGLISH_CHAT_PAGE .mic-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    background: #fff;
+    box-shadow: 0 10px 25px rgba(63, 81, 181, 0.2);
+}
+
+/* Specific button overrides if needed */
+
+.AI_ENGLISH_CHAT_PAGE .mic-btn-main--active {
+    background: #FF5252 !important;
     animation: micPulseV2 2s infinite;
     transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(255, 82, 82, 0.4);
 }
 
-.AI_ENGLISH_CHAT_PAGE2 .loading-spinner-small {
+.AI_ENGLISH_CHAT_PAGE .loading-spinner-small {
     width: 18px;
     height: 18px;
     border: 2px solid rgba(63, 81, 181, 0.1);
