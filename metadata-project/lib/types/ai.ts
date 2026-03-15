@@ -7,26 +7,57 @@ export interface ChatMessage {
 
 export interface ChatRequest {
     messages: ChatMessage[];
-    language: 'en' | 'ko';
+    language: string; // 'en' | 'ko' | 'ja' 등 확장 가능하게 string으로 변경
 }
 
 export type RecordingState = 'idle' | 'recording' | 'processing';
 export type ConversationState = 'idle' | 'ai_speaking' | 'user_turn' | 'processing';
 
-export interface AIChatConfig {
-    mic_btn_label: string;
-    submit_btn_label: string;
-    end_btn_label: string;
-    welcome_message: string;
-    language: 'en' | 'ko';
-    required_tier: string;
-    upgrade_message: string;
+/**
+ * SDUI Meta 인터페이스
+ */
+export interface AIChatMeta {
+    labelText?: string;
+    label_text?: string;
+    cssClass?: string;
+    css_class?: string;
+    actionType?: string;
+    action_type?: string;
+    placeholder?: string;
+    isReadonly?: boolean;
+    is_readonly?: boolean;
+    // 추가적인 제어용 메타데이터 (언어 설정 등)
+    target_language?: string; 
+    system_prompt_template?: string;
 }
 
+/**
+ * SDUI Data 인터페이스 (query_master 등에 설정된 값)
+ */
+export interface AIChatConfig {
+    mic_btn_label?: string;
+    submit_btn_label?: string;
+    end_btn_label?: string;
+    welcome_message?: string;
+    language?: string;
+    required_tier?: string;
+    upgrade_message?: string;
+}
+
+/**
+ * AIChat 전용 Props (DynamicEngine용)
+ */
+export interface AIChatComponentProps {
+    meta: AIChatMeta;
+    data?: AIChatConfig;
+    [key: string]: any;
+}
+
+// 면접 관련 타입 (유지)
 export interface InterviewStartRequest {
     resumeText?: string;
-    resumeImageBase64?: string; // Phase 2: 이미지 업로드 (백엔드 패치 필요)
-    language?: 'ko' | 'en';
+    resumeImageBase64?: string;
+    language?: string;
 }
 
 export type ResumeInputType = 'text' | 'pdf' | 'image';
@@ -37,7 +68,7 @@ export interface AIInterviewConfig {
     answer_btn_label: string;
     mic_btn_label: string;
     end_btn_label: string;
-    language: 'ko' | 'en';
+    language: string;
     required_tier: string;
     upgrade_message: string;
 }

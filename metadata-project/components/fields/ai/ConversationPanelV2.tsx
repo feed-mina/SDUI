@@ -56,31 +56,31 @@ export default function ConversationPanelV2({ messages, isStreaming }: Conversat
     const userMessages = messages.filter(m => m.role === 'user');
 
     return (
-        <div className="conversation-panel flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        <div className="ai-conversation-thread">
             {messages.filter(msg => msg.role !== 'system').map((msg, i) => {
                 const isUser = msg.role === 'user';
                 const turnIndex = isUser ? userMessages.indexOf(msg) + 1 : -1;
 
                 return (
-                    <div key={i} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+                    <div key={i} className={`ai-message-row ${isUser ? 'user-row' : 'assistant-row'}`}>
                         {/* 사용자 턴/단어 정보 */}
                         {isUser && (
-                            <div className="msg-stats mb-1 mr-1 text-xs text-gray-400">
+                            <div className="ai-message-stats">
                                 {turnIndex}턴 | {getWordCount(msg.content)} 단어
                             </div>
                         )}
 
-                        <div className={`message-bubble message-${msg.role} w-full max-w-[85%]`}>
-                            <div className={`flex items-start gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                                <div className="message-avatar flex-shrink-0">
+                        <div className={`ai-message-bubble ${isUser ? 'user-bubble' : 'assistant-bubble'}`}>
+                            <div className="ai-message-inner">
+                                <div className="ai-message-avatar">
                                     {isUser ? '👤' : '🤖'}
                                 </div>
                                 
-                                <div className="message-content shadow-sm flex-1">
-                                    <div className="text-content whitespace-pre-wrap">{msg.content}</div>
+                                <div className="ai-message-body">
+                                    <div className="ai-text-content">{msg.content}</div>
                                     
                                     {!isUser && msg.translation && showTranslations[i] && (
-                                        <div className="translation-text border-t border-dashed border-gray-100 mt-2 pt-2 text-sm text-gray-500">
+                                        <div className="ai-translation-box">
                                             {msg.translation}
                                         </div>
                                     )}
@@ -88,24 +88,23 @@ export default function ConversationPanelV2({ messages, isStreaming }: Conversat
                             </div>
 
                             {/* 하단 액션바 */}
-                            <div className={`bubble-actions px-1 mt-1 flex items-center gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                            <div className="ai-bubble-actions">
                                 {!isUser && (
                                     <>
                                         <button 
-                                            className={`action-btn-main ${playingIndex === i ? 'playing' : ''}`}
+                                            className={`ai-action-btn-pill ${playingIndex === i ? 'is-playing' : ''}`}
                                             onClick={() => handlePlay(msg.content, i)}
-                                            title="AI 목소리 듣기"
                                         >
                                             {playingIndex === i ? '⏹ Stop' : '🔊 Listen AI'}
                                         </button>
-                                        <button className="action-btn-mini text-xs opacity-60 hover:opacity-100" onClick={() => toggleTranslation(i)}>
+                                        <button className="ai-action-btn-text" onClick={() => toggleTranslation(i)}>
                                             {showTranslations[i] ? '번역 숨기기' : '한글 번역 보기'}
                                         </button>
                                     </>
                                 )}
                                 {isUser && msg.audioUrl && (
                                     <button 
-                                        className={`action-btn-mini text-xs ${playingIndex === i ? 'text-red-500' : 'opacity-60'}`} 
+                                        className={`ai-action-btn-text ${playingIndex === i ? 'is-playing' : ''}`} 
                                         onClick={() => handlePlay('', i, true, msg.audioUrl)}
                                     >
                                         {playingIndex === i ? '⏹ Stop' : '🎧 Play My Voice'}
@@ -118,8 +117,9 @@ export default function ConversationPanelV2({ messages, isStreaming }: Conversat
             })}
             
             {isStreaming && (
-                <div className="flex items-center gap-2 text-gray-400 text-sm ml-2 animate-pulse">
-                    AI가 생각 중입니다...
+                <div className="ai-streaming-indicator">
+                    <div className="ai-dot-pulse" />
+                    <span>AI가 생각 중입니다...</span>
                 </div>
             )}
             <div ref={bottomRef} />
