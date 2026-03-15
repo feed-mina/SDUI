@@ -1,6 +1,8 @@
 export interface ChatMessage {
-    role: 'user' | 'assistant';
+    role: 'user' | 'assistant' | 'system';
     content: string;
+    audioUrl?: string; // 사용자가 녹음한 본인 목소리 URL
+    translation?: string; // 한국어 번역
 }
 
 export interface ChatRequest {
