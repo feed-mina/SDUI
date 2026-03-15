@@ -72,3 +72,5 @@ out/
 # fix_content_list_key_mismatch.sql
 # fix_sdui_issues.sql
 # diagnose_content_list.sql
+metadata-project/node_modules/
+metadata-project/.next/
