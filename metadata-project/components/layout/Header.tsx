@@ -69,6 +69,22 @@ export default function Header() {
                         )}
                     </div>
                 </div>
+                {isRealLoggedIn && (
+                    <div className="header-ai-shortcuts">
+                        <button
+                            className={`header-ai-btn ja${pathname === '/view/AI_JAPANESE_CHAT_PAGE' ? ' active' : ''}`}
+                            onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/AI_JAPANESE_CHAT_PAGE' })}>
+                            <span className="ai-badge">AI</span>
+                            일본어 채팅
+                        </button>
+                        <button
+                            className={`header-ai-btn en${pathname === '/view/AI_ENGLISH_CHAT_PAGE' ? ' active' : ''}`}
+                            onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/AI_ENGLISH_CHAT_PAGE' })}>
+                            <span className="ai-badge">AI</span>
+                            영어 채팅
+                        </button>
+                    </div>
+                )}
                 <div className="header-bottom-row">
                     <div className="time-card">
                         <RecordTimeComponent />
