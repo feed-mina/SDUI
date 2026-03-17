@@ -1,8 +1,13 @@
 export interface ChatMessage {
     role: 'user' | 'assistant' | 'system';
     content: string;
-    audioUrl?: string; // 사용자가 녹음한 본인 목소리 URL
-    translation?: string; // 한국어 번역
+    audioUrl?: string;              // 사용자가 녹음한 본인 목소리 URL
+    translation?: string;           // 한국어 번역
+    originalText?: string;          // 한국어로 말하기 모드에서 원본 한국어 텍스트
+    pronunciationScore?: number;    // 표현 품질 점수 (0~100)
+    pronunciationSpoken?: string;   // 사용자가 실제로 발화한 텍스트 (STT 결과)
+    pronunciationIdeal?: string;    // GPT가 생성한 이상적 표현
+    pronunciationFeedback?: string; // 피드백 메시지
 }
 
 export interface ChatRequest {

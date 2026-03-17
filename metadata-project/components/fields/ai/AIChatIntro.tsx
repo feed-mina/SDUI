@@ -2,13 +2,15 @@
 
 import React from 'react';
 import IntroBotIcon from '@/components/assets/icons/ai/IntroBotIcon';
+import MicIcon from '@/components/assets/icons/ai/MicIcon';
 
 interface AIChatIntroProps {
     title: string;
+    subtitle?: string;
     onStart: () => void;
 }
 
-export default function AIChatIntro({ title, onStart }: AIChatIntroProps) {
+export default function AIChatIntro({ title, subtitle = 'Elevate your English with AI', onStart }: AIChatIntroProps) {
     return (
         <div className="ai-intro-container">
             <div className="ai-intro-icon-box">
@@ -17,12 +19,12 @@ export default function AIChatIntro({ title, onStart }: AIChatIntroProps) {
             
             <div className="ai-intro-header">
                 <h1 className="ai-intro-title">{title}</h1>
-                <p className="ai-intro-subtitle">Elevate your English with AI</p>
+                <p className="ai-intro-subtitle">{subtitle}</p>
             </div>
 
             <div className="ai-permission-card">
                 <div className="ai-permission-header">
-                    <span className="ai-mic-emoji text-2xl">🎤</span>
+                    <MicIcon width="24px" height="24px" color="#6366F1" />
                     <span className="ai-mic-label">마이크 사용 권한</span>
                 </div>
                 <p className="ai-permission-desc">

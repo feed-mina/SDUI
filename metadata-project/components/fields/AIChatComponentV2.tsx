@@ -19,13 +19,15 @@ import api from '@/services/axios';
  */
 export default function AIChatComponentV2({ meta, data }: AIChatComponentProps) {
     // ── configuration via metadata ──
-    const title = meta.labelText || meta.label_text || 'AI English Tutor';
+    const rawTitle = meta.labelText || meta.label_text || 'AI English Tutor';
+    const title = rawTitle.replace(/\s*[Vv]2\s*$/, '').trim();
     const containerClass = meta.cssClass || meta.css_class || '';
     const isDisabled = meta.isReadonly === true || meta.is_readonly === true;
     const actionType = meta.actionType || meta.action_type || '';
     
     // Logic setup
-    const targetLanguage = meta.target_language || data?.language || (actionType.includes('EN') ? 'en' : 'ko');
+    const targetLanguage = meta.target_language || data?.language ||
+        (actionType.includes('EN') ? 'en' : actionType.includes('JA') ? 'ja' : 'ko');
     const systemPromptTemplate = meta.system_prompt_template || ''; // Placeholder for template logic
     
     const [isStarted, setIsStarted] = useState(false);
@@ -63,22 +65,27 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentProps) 
     }, [isDisabled]);
 
     // ── SDUI Sub-Field Rendering Logic ──
-    const renderIntro = () => <AIChatIntro title={title} onStart={() => setIsStarted(true)} />;
+    const introSubtitle = targetLanguage === 'ja'
+        ? 'AI와 함께 일본어를 배워보세요'
+        : 'Elevate your English with AI';
+
+    const renderIntro = () => <AIChatIntro title={title} subtitle={introSubtitle} onStart={() => setIsStarted(true)} />;
     
     const renderMain = () => (
         <>
             <AIChatHeader title={title} userMessageCount={userMessageCount} />
             
             <div className="ai-chat-main-content">
-                <ConversationPanelV2 
-                    messages={messages} 
-                    isStreaming={isStreaming} 
+                <ConversationPanelV2
+                    messages={messages}
+                    isStreaming={isStreaming}
+                    language={targetLanguage}
                 />
             </div>
 
             <div className="ai-chat-footer-area">
                 <div className="ai-chat-input-wrapper">
-                    <AudioRecorder 
+                    <AudioRecorder
                         state={recordingState}
                         analyser={analyser}
                         micBtnLabel={data?.mic_btn_label || '🎤'}
@@ -87,6 +94,7 @@ export default function AIChatComponentV2({ meta, data }: AIChatComponentProps) 
                         onStop={stopRecording}
                         onCancel={cancelRecording}
                         disabled={isDisabled || isStreaming}
+                        language={targetLanguage}
                     />
                 </div>
                 

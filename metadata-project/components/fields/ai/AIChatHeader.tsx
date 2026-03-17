@@ -16,7 +16,6 @@ export default function AIChatHeader({ title, userMessageCount }: AIChatHeaderPr
             <div className="ai-header-content">
                 <div className="ai-header-title-row">
                     <h2 className="ai-header-title">{title}</h2>
-                    <span className="ai-status-tag">Live · SDUI V2</span>
                 </div>
                 
                 <div className="ai-gauge-wrapper">

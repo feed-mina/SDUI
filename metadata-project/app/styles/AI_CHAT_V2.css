@@ -606,6 +606,8 @@
 .pronunciation-score { font-weight: 700; font-size: 1rem; }
 .pronunciation-comparison { display: flex; flex-direction: column; gap: 2px; color: var(--v2-text-sub); }
 .pronunciation-feedback { font-style: italic; color: var(--v2-text-sub); }
+.pronunciation-expected { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.pronunciation-listen-btn { padding: 2px 8px; font-size: 0.75rem; gap: 3px; }
 .pronunciation-badge.score-excellent { border-color: #3B82F6; }
 .pronunciation-badge.score-excellent .pronunciation-score { color: #3B82F6; }
 .pronunciation-badge.score-good { border-color: #22C55E; }
