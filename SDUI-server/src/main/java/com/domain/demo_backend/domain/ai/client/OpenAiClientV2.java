@@ -212,6 +212,63 @@ public class OpenAiClientV2 {
         return message.get("content").toString().trim();
     }
 
+    /**
+     * Expression Evaluation: GPT로 사용자 발화의 표현 품질 평가
+     * @param spoken   사용자 발화 텍스트 (STT 결과)
+     * @param language 언어 코드 (en, ja)
+     * @return Map with keys: score(Number), feedback(String), idealExpression(String)
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> evaluateExpression(String spoken, String language) throws Exception {
+        String targetLangName = "ja".equals(language) ? "Japanese" : "English";
+        String feedbackLangName = "ja".equals(language) ? "Korean" : "English";
+        String prompt = String.format(
+                "User said the following in %s: \"%s\"\n\n" +
+                "Evaluate their expression quality. Respond ONLY in JSON:\n" +
+                "{\"score\": <0-100>, \"feedback\": \"<one sentence in %s>\", \"idealExpression\": \"<natural corrected version in %s>\"}\n\n" +
+                "- score: 100 = perfectly natural native-speaker expression\n" +
+                "- feedback: point out the main issue or praise the expression (MUST be written in %s)\n" +
+                "- idealExpression: natural version of what the user tried to say (MUST be written in %s)",
+                targetLangName, spoken, feedbackLangName, targetLangName, feedbackLangName, targetLangName
+        );
+
+        List<Map<String, String>> messages = List.of(
+                Map.of("role", "system", "content", "You are an expert language teacher evaluating student expression quality."),
+                Map.of("role", "user", "content", prompt)
+        );
+
+        Map<String, Object> requestBody = new java.util.HashMap<>();
+        requestBody.put("model", model);
+        requestBody.put("messages", messages);
+        requestBody.put("temperature", 0.2);
+        requestBody.put("response_format", Map.of("type", "json_object"));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(OPENAI_BASE_URL + "/chat/completions"))
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(requestBody)))
+                .build();
+
+        log.info("[V2] Expression 평가 요청: lang={}, spoken={}", language,
+                spoken.length() > 30 ? spoken.substring(0, 30) + "..." : spoken);
+        HttpResponse<String> httpResp = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (httpResp.statusCode() != 200) {
+            throw new IllegalStateException("OpenAI Expression 평가 오류: HTTP " + httpResp.statusCode() + " - " + httpResp.body());
+        }
+
+        Map<String, Object> data = objectMapper.readValue(httpResp.body(), Map.class);
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) data.get("choices");
+        if (choices == null || choices.isEmpty()) {
+            throw new IllegalStateException("OpenAI 응답에 choices가 없습니다.");
+        }
+
+        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+        String content = message.get("content").toString().trim();
+        return objectMapper.readValue(content, Map.class);
+    }
+
     @SuppressWarnings("unchecked")
     private String extractChunkContent(String json) throws Exception {
         Map<String, Object> data = objectMapper.readValue(json, Map.class);

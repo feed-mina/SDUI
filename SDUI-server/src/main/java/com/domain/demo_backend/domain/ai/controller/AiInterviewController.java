@@ -3,13 +3,18 @@ package com.domain.demo_backend.domain.ai.controller;
 import com.domain.demo_backend.domain.ai.dto.InterviewAnswerRequest;
 import com.domain.demo_backend.domain.ai.dto.InterviewStartRequest;
 import com.domain.demo_backend.domain.ai.service.InterviewService;
+import com.domain.demo_backend.domain.ai.service.S3Service;
+import com.domain.demo_backend.global.common.response.ApiResponse;
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 @Slf4j
@@ -18,12 +23,37 @@ import java.util.concurrent.Executor;
 public class AiInterviewController {
 
     private final InterviewService interviewService;
+    private final S3Service s3Service;
     private final Executor sseExecutor;
 
     public AiInterviewController(InterviewService interviewService,
+                                  S3Service s3Service,
                                   @Qualifier("sseExecutor") Executor sseExecutor) {
         this.interviewService = interviewService;
+        this.s3Service = s3Service;
         this.sseExecutor = sseExecutor;
+    }
+
+    /**
+     * POST /api/ai/interview/resume/upload
+     * 이력서 파일(이미지/PDF) → S3 업로드 → fileKey + fileType 반환
+     * 최대 5MB, 지원 형식: jpg/png/webp/pdf
+     */
+    @PostMapping("/resume/upload")
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadResume(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal CustomUserDetails userDetails) throws Exception {
+
+        log.info("이력서 파일 업로드 요청 - userId={}, fileName={}, size={}B",
+                userDetails.getUserSqno(), file.getOriginalFilename(), file.getSize());
+
+        String fileKey = s3Service.uploadResumeFile(file, userDetails.getUserSqno());
+        String fileType = s3Service.detectFileType(fileKey);
+
+        return ResponseEntity.ok(ApiResponse.success(Map.of(
+                "fileKey", fileKey,
+                "fileType", fileType
+        )));
     }
 
     /**

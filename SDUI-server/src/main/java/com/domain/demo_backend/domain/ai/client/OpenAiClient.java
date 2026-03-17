@@ -83,6 +83,56 @@ public class OpenAiClient {
     }
 
     /**
+     * Chat Completions SSE 스트리밍 (비전 지원 — content가 String 또는 List인 경우)
+     * 이미지 면접 등 멀티모달 메시지에 사용
+     */
+    public void streamChatObjects(
+            List<Map<String, Object>> messages,
+            Consumer<String> onChunk,
+            Runnable onComplete) throws Exception {
+
+        String jsonBody = objectMapper.writeValueAsString(Map.of(
+                "model", model,
+                "messages", messages,
+                "stream", true
+        ));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(OPENAI_BASE_URL + "/chat/completions"))
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+        HttpResponse<InputStream> response = httpClient.send(
+                request, HttpResponse.BodyHandlers.ofInputStream()
+        );
+
+        if (response.statusCode() != 200) {
+            String errorBody = new String(response.body().readAllBytes());
+            throw new IllegalStateException("OpenAI API 오류: HTTP " + response.statusCode() + " - " + errorBody);
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.body()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("data: ") && !line.equals("data: [DONE]")) {
+                    String json = line.substring(6).trim();
+                    try {
+                        String chunk = extractChunkContent(json);
+                        if (chunk != null && !chunk.isEmpty()) {
+                            onChunk.accept(chunk);
+                        }
+                    } catch (Exception e) {
+                        log.warn("SSE 청크 파싱 실패 (무시): {}", json);
+                    }
+                }
+            }
+        }
+        onComplete.run();
+    }
+
+    /**
      * Chat Completions SSE 스트리밍
      * java.net.http.HttpClient (Java 17 내장) 사용 — InputStream 라인 단위 파싱
      */
