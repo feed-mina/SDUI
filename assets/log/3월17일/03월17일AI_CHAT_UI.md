@@ -165,3 +165,19 @@ globals.css → 앱 어디에도 import되지 않음 → AI 스타일 전혀 미
 .pronunciation-expected { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .pronunciation-listen-btn { padding: 2px 8px; font-size: 0.75rem; gap: 3px; }
 ```
+
+---
+
+## 신규 기능: Play EN Voice 버튼
+
+### 목적
+영어 채팅(AI_ENGLISH_CHAT_PAGE)에서 한국어 모드로 말했을 때,
+번역된 영어 텍스트를 TTS로 들을 수 있는 버튼 추가. (Play JA Voice와 동일한 패턴)
+
+### 수정 파일: `ConversationPanelV2.tsx`
+- `playingEnIndex` state + `enAudioRef` 추가
+- `handlePlayEN(text, index)` 함수 추가 — `/api/ai/v2/tts` TTS 호출
+- 유저 버블 액션바에 버튼 추가:
+  - 조건: `language === 'en'` && `msg.originalText` 존재 (KR 모드 메시지만)
+  - 재생 텍스트: `msg.content` (영어 번역본)
+  - `Play JA Voice` 버튼 바로 아래에 위치
