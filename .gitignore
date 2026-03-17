@@ -55,6 +55,7 @@ test-results/
 trace.zip
 video.webm
 *.png
+!metadata-project/public/icons/*.png
 .last-run.json
 
 # Build artifacts
