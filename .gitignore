@@ -56,6 +56,7 @@ trace.zip
 video.webm
 *.png
 !metadata-project/public/icons/*.png
+!metadata-project/public/screenshots/*.png
 .last-run.json
 
 # Build artifacts
