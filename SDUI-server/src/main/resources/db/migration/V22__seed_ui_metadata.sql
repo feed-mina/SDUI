@@ -12,6 +12,12 @@ ALTER TABLE ui_metadata ADD COLUMN IF NOT EXISTS allowed_roles VARCHAR(255);
 ALTER TABLE ui_metadata ADD COLUMN IF NOT EXISTS label_text_overrides JSONB;
 ALTER TABLE ui_metadata ADD COLUMN IF NOT EXISTS css_class_overrides JSONB;
 
+-- 시퀀스 동기화 (기존 DB에서 명시적 ui_id INSERT로 시퀀스가 뒤처진 경우 보정)
+SELECT setval(
+  pg_get_serial_sequence('ui_metadata', 'ui_id'),
+  COALESCE((SELECT MAX(ui_id) FROM ui_metadata), 0)
+);
+
 INSERT INTO ui_metadata
   (screen_id, component_id, label_text, component_type, sort_order,
    is_required, is_readonly, default_value, placeholder,

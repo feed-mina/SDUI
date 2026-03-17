@@ -2577,3 +2577,19 @@ button:hover {
 .pc-sidebar.is-admin .sidebar-auth-btn:hover {
     background-color: #4a5568;
 }
+
+
+/* AI 영어 채팅 프리미엄 배지 */
+.premium-badge::after {
+  content: 'PREMIUM';
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 4px;
+  vertical-align: middle;
+}

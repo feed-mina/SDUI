@@ -1,3 +1,10 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const withPWA = require('next-pwa')({
+    dest: 'public',
+    disable: process.env.NODE_ENV === 'development',
+    register: true,
+    skipWaiting: true,
+});
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -53,6 +60,7 @@ const nextConfig: NextConfig = {
                             "frame-src http://postcode.map.daum.net https://postcode.map.daum.net http://postcode.map.kakao.com https://postcode.map.kakao.com",  // Daum/Kakao 우편번호 iframe (도메인 변경 2026-03-10)
                             "object-src 'none'",
                             "frame-ancestors 'none'",
+                            "worker-src 'self'",  // PWA 서비스 워커
                         ].join('; '),
                     },
                 ],
@@ -61,4 +69,4 @@ const nextConfig: NextConfig = {
     },
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);

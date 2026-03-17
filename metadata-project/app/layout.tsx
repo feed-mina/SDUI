@@ -11,6 +11,13 @@ export default function RootLayout({children}: Readonly<{
 }>) {
     return (
         <html lang="ko">
+        <head>
+            <link rel="manifest" href="/manifest.json" />
+            <meta name="theme-color" content="#4F46E5" />
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+            <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        </head>
         <body className="antialiased">
         {/* 가장 바깥에서 QueryClient를 공급한다  */}
         <ReactQueryProvider>

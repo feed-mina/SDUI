@@ -54,6 +54,24 @@ public class UserMembershipService {
         return new UserMembershipResponse(userMembershipRepository.save(userMembership));
     }
 
+    @Transactional
+    public void grantByMembershipName(Long userId, String membershipName, String grantedBy) {
+        membershipRepository.findByName(membershipName).ifPresent(membership -> {
+            LocalDateTime now = LocalDateTime.now();
+            userMembershipRepository.cancelActiveByUserId(userId, now);
+            UserMembership userMembership = UserMembership.builder()
+                    .userId(userId)
+                    .membership(membership)
+                    .startedAt(now)
+                    .expiresAt(now.plusDays(membership.getDurationDays()))
+                    .status("active")
+                    .grantedBy(grantedBy)
+                    .build();
+            log.info("회원가입 프리미엄 자동 부여 - userId={}, membership={}", userId, membershipName);
+            userMembershipRepository.save(userMembership);
+        });
+    }
+
     @Transactional(readOnly = true)
     public boolean canConverse(Long userId) {
         return userMembershipRepository.findActiveByUserId(userId, LocalDateTime.now())

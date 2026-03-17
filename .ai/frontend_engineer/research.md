@@ -599,6 +599,7 @@ pages.css 추가 클래스:
 | 2026-03-06                              | V8 SQL + pages.css CSS 생성 완료                  | 구현 파일 2개 생성, QA 검증 대기                                        |
 | 2026-03-06                              | 로컬 Docker DB + Flyway 마이그레이션 완전 수정 | `backend_engineer/research.md` 참고                                          |
 | 2026-03-08                              | 어드민 URL 라우팅 패턴 도입 (`/view/admin/*`) | MetadataProvider.tsx — admin 세그먼트 감지, page.tsx PROTECTED_SCREENS에 USER_LIST 추가 |
+| 2026-03-17                              | PWA 설정 추가 (next-pwa v5.6)                 | manifest.json 생성, layout.tsx head 추가, next.config.ts withPWA 래퍼, .gitignore sw.js 제외 |
 | `axios.tsx` localStorage → 쿠키 전환 | **P1**                                      | ✅ 수정됨 (2026-03-01, localStorage 라인 주석 처리)                     |
 | CSP / 보안 헤더 추가                    | **P1**                                      | ✅ 구현됨 (next.config.ts `async headers()`)                          |
 | 백엔드 System.out.println 정리          | **P2**                                      | → `backend_engineer/research.md` 참고                                  |
@@ -765,5 +766,44 @@ BUTTON 타입에서 이 클래스가 시각적으로 비활성화처럼 보이�
 - `react-daum-postcode@3.2.0` 라이브러리: 기본 `scriptUrl`은 여전히 `t1.daumcdn.net` 사용 (v3.x 기준)
 - 2026년 4~5월 이전에 라이브러리를 `react-kakao-postcode`로 교체하거나 `scriptUrl` prop으로 새 URL 지정 필요
 - 참조 이슈: https://github.com/daumPostcode/QnA/issues/1498
+
+---
+
+## PWA 설정 (2026-03-17)
+
+### 구현 내용
+
+| 파일 | 변경 내용 |
+|------|---------|
+| `metadata-project/package.json` | `next-pwa@^5.6.0` 의존성 추가 |
+| `metadata-project/next.config.ts` | `withPWA` CommonJS 래퍼 적용, CSP `worker-src 'self'` 추가 |
+| `metadata-project/app/layout.tsx` | `<head>` 태그에 manifest, theme-color, Apple 메타 태그 추가 |
+| `metadata-project/public/manifest.json` | PWA 앱 매니페스트 생성 |
+| `metadata-project/public/icons/` | icon-192x192.png, icon-512x512.png 배치 |
+| `metadata-project/.gitignore` | `public/sw.js`, `public/workbox-*.js` 자동 생성 파일 제외 |
+
+### next-pwa v5 주요 설정
+
+```ts
+// next.config.ts
+const withPWA = require('next-pwa')({
+    dest: 'public',
+    disable: process.env.NODE_ENV === 'development',  // 개발 환경에서 비활성화
+    register: true,
+    skipWaiting: true,
+});
+export default withPWA(nextConfig);
+```
+
+### 동작 방식
+- **개발 (`npm run dev`)**: 서비스 워커 비활성화 (sw.js 미생성)
+- **프로덕션 (`npm run build`)**: `public/sw.js`, `public/workbox-*.js` 자동 생성
+- **Vercel**: push 시 자동 빌드 → 서비스 워커 자동 생성 및 활성화
+
+### manifest.json 설정
+- `start_url`: `/view/MAIN_PAGE` (루트 리다이렉트 반영)
+- `display`: `standalone` (앱 모드 — 브라우저 UI 숨김)
+- `theme_color`: `#4F46E5` (layout.tsx와 동일)
+- `orientation`: `portrait`
 
 ---
