@@ -6,6 +6,7 @@ import { useDynamicEngine } from "./useDynamicEngine";
 import { DynamicEngineProps, Metadata } from "./type";
 import { useRenderCount } from "@/components/DynamicEngine/hook/useRenderCount";
 import { useDeviceType } from "../../hooks/useDeviceType";
+import PostcodeModal from "@/components/fields/PostcodeModal";
 
 // @@@@ 2026-02-07 주석 추가
 // DynamicEngine 역할 : 분석된 구조를 바탕으로 실제 리액트 컴포넌트를 랜더링
@@ -171,6 +172,7 @@ const DynamicEngine: React.FC<DynamicEngineProps> = (props) => {
                 {renderNodes(treeData)}
             </div>
             {renderModals(treeData)}
+            <PostcodeModal />
         </div>
     );
 };

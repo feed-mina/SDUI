@@ -255,7 +255,7 @@ feat: Flyway 마이그레이션 시스템 구축
 - db/migration/V1~V7: 마이그레이션 스크립트 7개 작성
 - .ai/backend_engineer/: plan, report, guide 문서 작성
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+Co-Authored-By:  <noreply@anthropic.com>
 ```
 
 **변경 통계**:
@@ -849,7 +849,7 @@ curl http://localhost:8081/api/content/list
 
 ---
 
-**Report 작성자**: Claude Sonnet 4.5
+**Report 작성자**: 
 **작성 완료**: 2026-03-03 01:00
 **다음 작업**: 컨테이너 재시작 및 검증
 **Plan 참조**: `.ai/backend_engineer/plans/2026-03-03_container_restart_and_flyway_verification_plan.md`

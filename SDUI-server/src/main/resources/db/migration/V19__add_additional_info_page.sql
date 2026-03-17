@@ -2,6 +2,9 @@
 -- 카카오 OAuth 후 추가 정보 입력 화면 (ROLE_GUEST 신규 사용자용)
 -- WHERE NOT EXISTS로 중복 방지 (이미 존재하면 skip)
 
+-- component_props 컬럼이 없는 경우 추가 (기존 운영 DB에서는 수동 추가됐음)
+ALTER TABLE ui_metadata ADD COLUMN IF NOT EXISTS component_props JSONB;
+
 INSERT INTO ui_metadata
   (screen_id, component_id, label_text, component_type, sort_order,
    is_required, is_readonly, css_class,

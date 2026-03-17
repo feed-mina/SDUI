@@ -1,12 +1,45 @@
+# SDUI-server
+# Gradle build output
+SDUI-server/bin/
+SDUI-server/build/
+SDUI-server/src/main/resources/ application-local.yml 
+SDUI-server/docs/authcontroller_example.java
+# Build results
+SDUI-server/target/
+
+# pronounce-api
+pronounce-api/.env
+pronounce-api/venv311
+# 구글 서비스 계정 비밀키
+pronounce-api/*.json
+pronounce-api/static/* 
+pronounce-api/app/__pycache__/*
+
+# Python/FastAPI
+**/__pycache__/
+*. рус
+** /venv/
+*/.venv/
+. env
+.pytest_cache/
+. coverage
+# Python/FastAPI
+**/__pycache__/
+*.pyc
+**/venv/
+*/.venv/
+.env
+.pytest_cache/
+.coverage
+ 
+#meta-project
+
+
 # 환경 설정
 .env
 .env.*
 .env*
 *.env.*
-
-application-local.properties
-application-ec2.properties
-application-secrets.properties
 
 # 로그
 *.log
@@ -15,15 +48,7 @@ log.txt
 # IDE
 .idea/
 *.iml
-
 dist/*
-
-pronounce-api/.env
-pronounce-api/venv311
-# 구글 서비스 계정 비밀키
-pronounce-api/*.json
-# Build results
-SDUI-server/target/
 
 # Playwright test results
 test-results/
@@ -44,8 +69,9 @@ out/
 *.jar
 *.war
 *.ear
+
 # 기타
-*.log
+*.pem
 *.tmp
 *.bak
 *.zip
@@ -53,19 +79,20 @@ out/
 *.exe
 *.dll
 *.so
-*.pem
 *.key
 *.keystore
 *.bak
 *.old
 *.vscode/
 *.idea/
-fix_content_list_key_mismatch.sql
-fix_sdui_issues.sql
-SDUI-server/docs/authcontroller_example.java
-diagnose_content_list.sql
-*.pem
+# fix_content_list_key_mismatch.sql
+# fix_sdui_issues.sql
+# diagnose_content_list.sql
+metadata-project/node_modules/
+metadata-project/.next/
 
-# Gradle build output
-SDUI-server/bin/
-SDUI-server/build/
+# 클라우드 크리덴셜 (Cloud Credentials) — 절대 커밋 금지
+assets/cloud-info.txt
+assets/*.csv
+assets/*.json
+assets/kdeliver-358f601d765c.json

@@ -64,6 +64,21 @@ export default function Sidebar() {
                                     onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/SET_TIME_PAGE' })}>
                                     약속 관리
                                 </div>
+                                <div className="sidebar-ai-section">
+                                    <span className="sidebar-ai-label">AI 채팅</span>
+                                    <button
+                                        className={`sidebar-ai-btn ja${pathname === '/view/AI_JAPANESE_CHAT_PAGE' ? ' active' : ''}`}
+                                        onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/AI_JAPANESE_CHAT_PAGE' })}>
+                                        <span className="ai-badge">AI</span>
+                                        일본어 채팅
+                                    </button>
+                                    <button
+                                        className={`sidebar-ai-btn en${pathname === '/view/AI_ENGLISH_CHAT_PAGE' ? ' active' : ''}`}
+                                        onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/AI_ENGLISH_CHAT_PAGE' })}>
+                                        <span className="ai-badge">AI</span>
+                                        영어 채팅
+                                    </button>
+                                </div>
                             </nav>
                         )
                     ) : (

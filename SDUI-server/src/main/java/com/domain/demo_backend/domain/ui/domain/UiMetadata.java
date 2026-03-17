@@ -103,6 +103,9 @@ public class UiMetadata {
     @Column(name = "css_class_overrides", columnDefinition = "jsonb")
     private String cssClassOverrides;
 
+    @Column(name = "system_prompt_template", columnDefinition = "TEXT")
+    private String systemPromptTemplate;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();

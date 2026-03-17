@@ -43,3 +43,18 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'user6@test.com');
 
 -- 삽입 확인
 SELECT user_sqno, user_id, email, role, verify_yn FROM users ORDER BY user_sqno;
+
+
+
+SELECT json_build_object(
+    'ui_metadata', (SELECT count(*) FROM ui_metadata),
+    'query_master', (SELECT count(*) FROM query_master),
+    'users', (SELECT count(*) FROM users),
+    'content', (SELECT count(*) FROM content),
+	'system_logs', (SELECT count(*) FROM system_logs),
+	'user_memberships', (SELECT count(*) FROM user_memberships),
+    'memberships', (SELECT count(*) FROM memberships),
+	'interview_resume', (SELECT count(*) FROM interview_resume)
+) AS table_counts;
+
+-- {"ui_metadata" : 187, "query_master" : 18, "users" : 0, "content" : 0, "system_logs" : 5, "user_memberships" : 0, "memberships" : 2, "interview_resume" : 0}

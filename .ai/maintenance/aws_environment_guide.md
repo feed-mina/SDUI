@@ -142,6 +142,13 @@ GitHub Actions에서 사용하는 시크릿 (Settings → Secrets and variables 
 | **DB_PASSWORD** | PostgreSQL 비밀번호 | DB 연결 |
 | **JWT_SECRET_KEY** | JWT 토큰 서명 키 | Spring Security |
 | **MAIL_PASSWORD** | 이메일 발송 비밀번호 | 회원가입 인증 |
+| **OPENAI_API_KEY** | OpenAI API 키 | AI 채팅/인터뷰 기능 |
+| **AWS_ACCESS_KEY** | AWS S3 Access Key | 이력서 파일 업로드 |
+| **AWS_SECRET_KEY** | AWS S3 Secret Key | 이력서 파일 업로드 |
+| **GCP_PROJECT_ID** | GCP 프로젝트 ID (기본: kdeliver) | Document AI (발음 평가) |
+| **GCP_PROCESSOR_ID** | GCP Document AI Processor ID | Document AI |
+| **GCP_CREDENTIALS_PATH** | GCP 서비스 계정 키 파일 경로 | Docker 컨테이너 내 마운트 경로 |
+| **FASTAPI_URL** | FastAPI 서버 URL (예: http://sdui-fastapi:8001) | TTS/발음평가 AI 서비스 |
 
 ### application-prod.yml에서 사용하는 환경변수
 
@@ -159,6 +166,72 @@ jwt:
 ```
 
 **중요**: 환경변수는 GitHub Actions `.github/workflows/deploy.yml`의 `docker run` 명령어에서 `-e` 플래그로 주입됩니다.
+
+---
+
+## 5-1. AWS 배포 시 신규 환경변수 추가 절차 (2026-03-17 기준)
+
+### 현재 `deploy.yml`에 누락된 환경변수
+
+`application-prod.yml`에 새 항목이 추가되었으나 `deploy.yml`의 `docker run`에 아직 `-e` 플래그가 없음:
+
+```yaml
+# deploy.yml docker run에 추가 필요:
+-e AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
+-e AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
+-e FASTAPI_URL=http://sdui-fastapi:8001 \
+-e GCP_PROJECT_ID=kdeliver \
+-e GCP_PROCESSOR_ID=6ed87cfefab39a91 \
+-e GCP_CREDENTIALS_PATH=/app/gcp-credentials.json \
+```
+
+### GCP 자격증명 파일 처리
+
+GCP credentials는 JSON 파일이라 환경변수 직접 주입이 불가. 두 가지 방법:
+
+**방법 A (권장) — GitHub Secret + EC2에서 파일 생성:**
+```bash
+# GitHub Secrets에 GCP_CREDENTIALS_JSON (파일 내용 전체 base64 인코딩)
+# deploy.yml SSH script에 추가:
+echo "${{ secrets.GCP_CREDENTIALS_JSON }}" | base64 -d > /home/ubuntu/gcp-credentials.json
+
+# docker run에 볼륨 마운트 추가:
+-v /home/ubuntu/gcp-credentials.json:/app/gcp-credentials.json:ro \
+```
+
+**방법 B — EC2에 파일 직접 배치:**
+```bash
+# SSH로 EC2 접속 후 1회만 실행:
+scp assets/kdeliver-358f601d765c.json ubuntu@43.201.237.68:/home/ubuntu/gcp-credentials.json
+```
+
+### `application-prod.yml` 추가 필요 항목
+
+현재 `application-prod.yml`에 아래 섹션이 없어 `application.yml`의 기본값 사용:
+
+```yaml
+# application-prod.yml에 추가 필요:
+fastapi:
+  url: ${FASTAPI_URL:http://sdui-fastapi:8001}
+  internal-api-key: ${FASTAPI_INTERNAL_API_KEY:sdui-internal-dev-key}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET:sdui-273354627025-ap-northeast-2-an}
+      region: ${AWS_REGION:ap-northeast-2}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+  gcp:
+    document-ai:
+      project-id: ${GCP_PROJECT_ID:kdeliver}
+      location: us
+      processor-id: ${GCP_PROCESSOR_ID:6ed87cfefab39a91}
+      credentials-path: ${GCP_CREDENTIALS_PATH:/app/gcp-credentials.json}
+```
+
+> **주의**: S3/GCP/FastAPI 기능 미사용 시 기본값(dummy-local)으로 Bean 초기화는 되지만 실제 호출 시 오류 발생. 해당 기능 배포 전에 반드시 실제 값 주입 필요.
 
 ---
 
@@ -414,6 +487,6 @@ docker logs sdui-backend-lab 2>&1 | grep -i "GET\|POST\|PUT\|DELETE"
 ---
 
 **문서 관리**:
-- 작성자: Claude Sonnet 4.5
+ 
 - 최종 업데이트: 2026-03-03
 - 다음 리뷰 예정일: 2026-04-03 (1개월 후)

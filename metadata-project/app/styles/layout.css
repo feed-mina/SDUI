@@ -193,3 +193,101 @@
 
 .kakao_logout_button { background-color: var(--kakao-yellow); color: var(--text-dark); margin-top: 12px; }
 .kakao_logout_button:hover { opacity: 0.9; }
+
+/* ==========================================
+   AI 채팅 버튼 — 사이드바 (PC)
+   ========================================== */
+.sidebar-ai-section {
+    margin-top: 16px;
+    padding: 14px;
+    background: linear-gradient(135deg, #f8fdf4 0%, #f0fdf9 100%);
+    border-radius: 14px;
+    border: 1px solid #d1fae5;
+}
+
+.sidebar-ai-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    margin-bottom: 10px;
+}
+
+.sidebar-ai-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    background: #ffffff;
+    color: #374151;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+    transition: all 0.18s ease;
+    text-align: left;
+}
+.sidebar-ai-btn:last-child { margin-bottom: 0; }
+.sidebar-ai-btn:hover { transform: translateX(3px); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1); }
+
+.sidebar-ai-btn.ja { border-left: 3px solid #7c3aed; }
+.sidebar-ai-btn.ja:hover, .sidebar-ai-btn.ja.active { background: #faf5ff; color: #7c3aed; }
+
+.sidebar-ai-btn.en { border-left: 3px solid var(--secondary-color); }
+.sidebar-ai-btn.en:hover, .sidebar-ai-btn.en.active { background: #f0fdf4; color: var(--secondary-color); }
+
+.sidebar-ai-btn .ai-badge {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+.sidebar-ai-btn.ja .ai-badge { background: #ede9fe; color: #7c3aed; }
+.sidebar-ai-btn.en .ai-badge { background: #d1fae5; color: #065f46; }
+
+/* ==========================================
+   AI 채팅 버튼 — 헤더 (Mobile)
+   ========================================== */
+.header-ai-shortcuts {
+    display: flex;
+    gap: 8px;
+    padding: 8px 20px 10px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.header-ai-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.18s ease;
+    background: transparent;
+}
+
+.header-ai-btn .ai-badge {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+.header-ai-btn.ja { background: #ede9fe; color: #7c3aed; }
+.header-ai-btn.ja:hover, .header-ai-btn.ja.active { background: #ddd6fe; }
+.header-ai-btn.ja .ai-badge { background: #7c3aed; color: white; }
+
+.header-ai-btn.en { background: #d1fae5; color: #065f46; }
+.header-ai-btn.en:hover, .header-ai-btn.en.active { background: #a7f3d0; }
+.header-ai-btn.en .ai-badge { background: #065f46; color: white; }

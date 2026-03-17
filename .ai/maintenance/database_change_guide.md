@@ -170,7 +170,7 @@ git commit -m "feat: Add notifications table (V8 migration)
 - user_sqno 외래 키 설정
 - 성능 최적화를 위한 인덱스 추가
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+Co-Authored-By:  <noreply@anthropic.com>"
 
 # lab/claude-dev 브랜치로 푸시 (또는 PR 생성)
 git push origin feature/add-notifications-table
@@ -1022,6 +1022,6 @@ VALUES
 ---
 
 **문서 관리**:
-- 작성자: Claude Sonnet 4.5
+ 
 - 최종 업데이트: 2026-03-03
 - 다음 리뷰 예정일: 2026-04-03

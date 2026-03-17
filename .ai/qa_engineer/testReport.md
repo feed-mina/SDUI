@@ -394,5 +394,5 @@ npm run build
 ---
 
 **작성일**: 2026-03-01
-**작성자**: QA Engineer (Claude Sonnet 4.5)
+**작성자**: QA Engineer ()
 **다음 업데이트**: 백엔드 테스트 실행 완료 후

@@ -72,6 +72,30 @@ kakao:
   token-admin: ${KAKAO_TOKEN_ADMIN:96ed9105639fb627fb2c710f39e6516f}
   redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/kakao/callback}
 
+openai:
+  api-key: ${OPENAI_API_KEY:dummy-local}
+  model: gpt-4o-mini
+  whisper-model: whisper-1
+
+fastapi:
+  url: http://localhost:8001
+  internal-api-key: sdui-internal-dev-key
+
+cloud:
+  aws:
+    s3:
+      bucket: sdui-273354627025-ap-northeast-2-an
+      region: ap-northeast-2
+    credentials:
+      access-key: ${AWS_ACCESS_KEY:dummy-local}
+      secret-key: ${AWS_SECRET_KEY:dummy-local}
+  gcp:
+    document-ai:
+      project-id: ${GCP_PROJECT_ID:kdeliver}
+      location: us
+      processor-id: ${GCP_PROCESSOR_ID:6ed87cfefab39a91}
+      credentials-path: ${GCP_CREDENTIALS_PATH:assets/kdeliver-358f601d765c.json}
+
 logging:
   file:
     name: log.txt

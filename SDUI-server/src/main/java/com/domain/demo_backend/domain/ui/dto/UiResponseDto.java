@@ -5,6 +5,7 @@ package com.domain.demo_backend.domain.ui.dto;
 
 import com.domain.demo_backend.domain.ui.domain.UiMetadata;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,6 +45,10 @@ public class UiResponseDto {
     private String dataSqlKey;
     private String refDataId;
 
+    // AI 컴포넌트 전용
+    @JsonProperty("system_prompt_template")
+    private String systemPromptTemplate;
+
     // 트리 구조의 핵심 ㅣ 자식 노드 리스트
     @JsonInclude(JsonInclude.Include.NON_EMPTY) // 자식이 없을 때 필드 자체를 숨기고 싶다면 사용
     private List<UiResponseDto> children = new ArrayList<>();
@@ -68,6 +73,7 @@ public class UiResponseDto {
         this.dataSqlKey = entity.getDataSqlKey();
         this.refDataId = entity.getRefDataId();
         this.groupDirection = entity.getGroupDirection();
+        this.systemPromptTemplate = entity.getSystemPromptTemplate();
 
         // 역할별 label_text 오버라이드 처리
         this.labelText = resolveOverriddenValue(

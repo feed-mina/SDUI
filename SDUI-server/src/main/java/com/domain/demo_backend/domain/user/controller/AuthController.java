@@ -7,6 +7,7 @@ import com.domain.demo_backend.domain.user.domain.User;
 import com.domain.demo_backend.domain.user.domain.UserRepository;
 import com.domain.demo_backend.domain.user.dto.AdditionalInfoRequest;
 import com.domain.demo_backend.domain.user.dto.RegisterRequest;
+import com.domain.demo_backend.domain.membership.service.UserMembershipService;
 import com.domain.demo_backend.domain.user.service.AuthService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import com.domain.demo_backend.global.security.JwtUtil;
@@ -38,6 +39,7 @@ import java.util.Map;
 public class AuthController {
     private final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
+    private final UserMembershipService userMembershipService;
     private Map<String, String> emailVerificationMap = new HashMap<>();
     private JwtUtil jwtUtil;
     private User user;
@@ -50,12 +52,14 @@ public class AuthController {
         AuthService authService,
         JwtUtil jwtUtil,
         RefreshTokenRepository refreshTokenRepository,
-        UserRepository userRepository
+        UserRepository userRepository,
+        UserMembershipService userMembershipService
     ) {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
+        this.userMembershipService = userMembershipService;
     }
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -425,6 +429,9 @@ public class AuthController {
         user.setRole("ROLE_USER");
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
+
+        // 신규 가입자 프리미엄 멤버십 자동 부여
+        userMembershipService.grantByMembershipName(user.getUserSqno(), "프리미엄", "register");
 
         log.info("추가 정보 입력 완료: email={}, role=ROLE_USER", email);
 

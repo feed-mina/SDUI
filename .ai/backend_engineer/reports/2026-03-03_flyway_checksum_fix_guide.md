@@ -211,5 +211,5 @@ curl http://43.201.237.68:8081/api/content/list
 
 ---
 
-**작성자**: Claude Sonnet 4.5
+**작성자**: 
 **관련 Plan**: `.ai/backend_engineer/plans/2026-03-03_container_restart_and_flyway_verification_plan.md`

@@ -38,6 +38,10 @@ if (!Element.prototype.scrollTo) {
     Element.prototype.scrollTo = jest.fn();
 }
 
+if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = jest.fn();
+}
+
 // window.alert 모킹 (axios.tsx에서 사용)
 global.alert = jest.fn();
 

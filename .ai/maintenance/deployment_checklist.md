@@ -610,6 +610,6 @@ docker run -d --name sdui-backend-lab \
 ---
 
 **문서 관리**:
-- 작성자: Claude Sonnet 4.5
+ 
 - 최종 업데이트: 2026-03-03
 - 다음 리뷰 예정일: 2026-04-03

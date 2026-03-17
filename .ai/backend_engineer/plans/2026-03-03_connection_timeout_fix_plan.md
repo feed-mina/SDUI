@@ -294,7 +294,6 @@ docker exec sdui-db psql -U postgres -d SDUI_LAB \
 
 ---
 
-**Plan 작성자**: Claude Sonnet 4.5
 **검토 필요**: AWS 보안 그룹 접근 권한 확인
 **승인 대기**: ⏳ 사용자 승인 대기
 

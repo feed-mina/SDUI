@@ -325,6 +325,5 @@ curl http://43.201.237.68:8081/api/content/list
 
 ---
 
-**Plan 작성자**: Claude Sonnet 4.5
 **자동 승인**: YES (사용자 요청에 따라 묻지 않고 진행)
 **실행 시작**: 즉시

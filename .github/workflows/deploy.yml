@@ -62,6 +62,13 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/sdui-app:${{ env.BRANCH_TAG }}
           docker push ${{ secrets.DOCKER_USERNAME }}/sdui-app:latest
 
+      # [FastAPI 비활성화] AI 면접관 이력서 분석 기능 구현 시 if: false 제거
+      - name: Build and push FastAPI image
+        if: false
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/sdui-fastapi:latest ./pronounce-api
+          docker push ${{ secrets.DOCKER_USERNAME }}/sdui-fastapi:latest
+
       - name: Deploy to AWS
         uses: appleboy/ssh-action@master
         with:
@@ -80,6 +87,22 @@ jobs:
             # 오래된 이미지 정리 (디스크 공간 확보)
             docker image prune -af --filter "until=24h" || true
 
+            # GCP 자격증명 파일 생성
+            echo "${{ secrets.GCP_CREDENTIALS_JSON }}" | base64 -d > /home/ubuntu/gcp-credentials.json
+
+            # [FastAPI 비활성화] AI 면접관 이력서 분석 기능 구현 시 주석 해제
+            # docker pull ${{ secrets.DOCKER_USERNAME }}/sdui-fastapi:latest
+            # docker stop sdui-fastapi || true
+            # docker rm sdui-fastapi || true
+            # docker run -d --name sdui-fastapi \
+            #   --network sdui-network \
+            #   -p 8001:8001 \
+            #   -e INTERNAL_API_KEY=${{ secrets.FASTAPI_INTERNAL_API_KEY }} \
+            #   -e ENV=production \
+            #   -e GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-credentials.json \
+            #   -v /home/ubuntu/gcp-credentials.json:/app/gcp-credentials.json:ro \
+            #   ${{ secrets.DOCKER_USERNAME }}/sdui-fastapi:latest
+
             # 기존 컨테이너 중지 및 제거
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm ${{ env.CONTAINER_NAME }} || true
@@ -95,9 +118,17 @@ jobs:
               -e SPRING_DATA_REDIS_HOST=sdui-redis \
               -e SPRING_MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
               -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
+              -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
               -e KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
               -e KAKAO_REDIRECT_URI=https://sdui-delta.vercel.app/api/kakao/callback \
               -e WEB_URL=https://sdui-delta.vercel.app \
+              -e AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \
+              -e AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }} \
+              -e FASTAPI_URL=http://sdui-fastapi:8001 \
+              -e GCP_PROJECT_ID=kdeliver \
+              -e GCP_PROCESSOR_ID=6ed87cfefab39a91 \
+              -e GCP_CREDENTIALS_PATH=/app/gcp-credentials.json \
+              -v /home/ubuntu/gcp-credentials.json:/app/gcp-credentials.json:ro \
               ${{ secrets.DOCKER_USERNAME }}/sdui-app:${{ env.BRANCH_TAG }}
 
             # 헬스 체크 (30초 대기)

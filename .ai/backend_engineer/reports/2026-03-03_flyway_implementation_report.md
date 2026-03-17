@@ -472,7 +472,7 @@ INSERT INTO content SELECT * FROM diary_backup;
 
 ---
 
-**작성자**: Claude Sonnet 4.5
+**작성자**: 
 **검토자**: (추후 추가)
 **승인자**: (추후 추가)
 **버전**: 1.0
