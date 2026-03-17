@@ -31,6 +31,11 @@ module.exports = {
         "<rootDir>/tests/**/*.(test|spec).(ts|tsx)",
         "<rootDir>/src/**/__tests__/**/*.(ts|tsx)"
     ],
+    // @@@@ Playwright E2E 테스트는 Jest에서 제외 (npx playwright test 로 실행)
+    testPathIgnorePatterns: [
+        "<rootDir>/node_modules/",
+        "<rootDir>/tests/e2e/"
+    ],
     reporters: [
         "default",  // 터미널 출력을 위해 기본 리포터 유지
         ["jest-html-reporter", {
