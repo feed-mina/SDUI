@@ -4,11 +4,11 @@ import os
 import time
 import logging
 import httpx
+from difflib import SequenceMatcher
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Header, HTTPException
 from konlpy.tag import Okt
-from transformers import pipeline
 from googletrans import Translator
 from google.cloud import texttospeech
 from gtts import gTTS
@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 # .env 파일 불러오기
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/leeyu/Project/speak_diary/pronounce-api/adroit-flare-458213-j4-e36e1e1e5502.json"
 DOMAIN_NAME = os.getenv("DOMAIN_NAME", "http://localhost:8001")
+INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY", "sdui-internal-dev-key")
 
 HF_API_URL_KO_EN = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-ko-en"
 HF_API_URL_EN_JA = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-en-jap"
@@ -68,6 +68,40 @@ okt = Okt()
 # pydantic 모델
 class Diary(BaseModel):
     content: str
+
+class PronunciationRequest(BaseModel):
+    spoken: str
+    expected: str
+    language: str = "en"
+
+@app.post("/pronunciation-score")
+async def pronunciation_score(
+    req: PronunciationRequest,
+    x_internal_api_key: str = Header(None, alias="X-Internal-Api-Key")
+):
+    """사용자의 발화(spoken)와 기대 텍스트(expected)를 비교하여 유사도 점수를 반환"""
+    if x_internal_api_key != INTERNAL_API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    spoken = req.spoken.lower().strip()
+    expected = req.expected.lower().strip()
+
+    if not spoken or not expected:
+        return {"score": 0, "feedback": "텍스트가 비어 있습니다."}
+
+    ratio = SequenceMatcher(None, spoken, expected).ratio()
+    score = round(ratio * 100)
+
+    if score >= 85:
+        feedback = "Excellent! Very accurate pronunciation."
+    elif score >= 65:
+        feedback = "Good job! Minor improvements needed."
+    elif score >= 45:
+        feedback = "Keep practicing! You're making progress."
+    else:
+        feedback = "Try again - focus on matching the phrase more closely."
+
+    logger.info(f"/pronunciation-score: score={score}, lang={req.language}")
+    return {"score": score, "feedback": feedback}
 
 @app.get("/")
 async def root():
@@ -245,13 +279,6 @@ async def tts_only(text_request: TextRequest):
     return {"tts_audio_url": f"{DOMAIN_NAME}/static/{filename}"}
 
 
-@app.post("/translate_only")
-async def translate_only(diary: Diary):
-    text = diary.content
-    english = translator.translate(text, src='ko', dest='en').text
-    japanese = translator.translate(english, src='en', dest='ja').text
-    return {"translated_text": japanese}
-
 @app.post("/translate_and_tts")
 async def translate_and_tts(diary: Diary):
     text = diary.content
@@ -268,44 +295,6 @@ async def translate_and_tts(diary: Diary):
         "tts_audio_url": f"{DOMAIN_NAME}/static/{tts_filename}"
     }
 
-@app.post("/tts_only_test")
-async def tts_only_test(text_request: TextRequest):
-    text = text_request.text
-    logger.info(f" TTS 요청 받은 텍스트: {text}")
-
-    client = texttospeech.TextToSpeechClient()
-
-    synthesis_input = texttospeech.SynthesisInput(text=text)
-    voice = texttospeech.VoiceSelectionParams(
-        language_code="ja-JP",
-        ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL
-    )
-    audio_config = texttospeech.AudioConfig(
-        audio_encoding=texttospeech.AudioEncoding.MP3
-    )
-
-    response = client.synthesize_speech(
-        input=synthesis_input,
-        voice=voice,
-        audio_config=audio_config
-    )
-
-    # audio_bytes = response.audio_content
-    logger.info(" 생성된 음성 데이터 길이: %d 바이트", len(audio_bytes))
-
-    # 메모리에 저장
-    audio_bytes = response.audio_content
-    audio_stream = io.BytesIO(audio_bytes)
-
-    return StreamingResponse(
-        audio_stream,
-        media_type="audio/mpeg",
-        headers={
-            "Content-Disposition": "inline; filename=output.mp3",
-            "Content-Length": str(len(audio_bytes)),
-        }
-    )
-
 @app.post("/translate1")
 async def translate_text(diary: Diary):
     text = diary.content
@@ -319,18 +308,23 @@ async def translate_text(diary: Diary):
     return {"translated_text": japanese_text}
 
 
-# 모델 불러오기
-ko_to_en = pipeline("translation", model="Helsinki-NLP/opus-mt-ko-en")
-en_to_ja = pipeline("translation", model="staka/fugumt-en-ja")
+@app.post("/tts_gtts")
+async def tts_gtts(text_request: TextRequest):
+    """gTTS (무료) 기반 TTS — Google Cloud TTS 키 없이 사용 가능"""
+    text = text_request.text
+    lang = "ja"
+    logger.info(f"/tts_gtts 요청: {text[:30]}...")
 
-@app.post("/translate2")
-async def translate2_text(diary: Diary):
-    text = diary.content
+    if not text.strip():
+        return Response(status_code=400, content="텍스트가 비어 있음")
 
-    # 1단계: 한국어 -> 영어
-    english = ko_to_en(text)[0]['translation_text']
+    tts = gTTS(text=text, lang=lang)
+    audio_stream = io.BytesIO()
+    tts.write_to_fp(audio_stream)
+    audio_stream.seek(0)
 
-    # 2단계: 영어 -> 일본어
-    japanese = en_to_ja(english)[0]['translation_text']
-
-    return {"translated_text": japanese}
+    return StreamingResponse(
+        audio_stream,
+        media_type="audio/mpeg",
+        headers={"Content-Disposition": "inline; filename=tts_gtts.mp3"}
+    )
