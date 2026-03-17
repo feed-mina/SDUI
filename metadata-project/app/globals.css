@@ -1,6 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "./styles/AI_CHAT.css";
 @import "./styles/AI_CHAT_V2.css";
+@import "./styles/AI_INTERVIEW.css";
+@import "./styles/AI_JAPANESE.css";
 
 
 :root {
