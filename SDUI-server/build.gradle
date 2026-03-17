@@ -58,6 +58,14 @@ dependencies {
 
 //    5. flywaydb_DB 마이그레이션
     implementation 'org.flywaydb:flyway-core'
+
+    //    6. AWS S3 (SDK v2)
+    implementation platform('software.amazon.awssdk:bom:2.25.0')
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:auth'
+
+    //    7. Google Cloud Document AI (PDF OCR)
+    implementation 'com.google.cloud:google-cloud-document-ai:2.91.0'
 }
 
 tasks.named('test') {
