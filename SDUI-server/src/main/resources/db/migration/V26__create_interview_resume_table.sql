@@ -1,5 +1,6 @@
--- V40: AI 면접 이력서 업로드 추적 테이블
+-- V26: AI 면접 이력서 업로드 추적 테이블
 -- 파일은 S3에 저장되며, 이 테이블은 업로드 이력 및 만료 관리를 위한 메타데이터만 보관
+-- 통합 범위: 구 V40
 
 CREATE TABLE IF NOT EXISTS interview_resume (
     id          BIGSERIAL PRIMARY KEY,
@@ -12,3 +13,5 @@ CREATE TABLE IF NOT EXISTS interview_resume (
 
 CREATE INDEX IF NOT EXISTS idx_interview_resume_user_id ON interview_resume (user_id);
 CREATE INDEX IF NOT EXISTS idx_interview_resume_expires_at ON interview_resume (expires_at);
+
+DO $$ BEGIN RAISE NOTICE 'V26 완료 - interview_resume 테이블 생성'; END $$;
