@@ -14,16 +14,18 @@ export const useRecordTime = () => {
 
     const isValidUser = isLoggedIn && user?.userSqno && Number(user.userSqno) !== 9999;
     // [API] 목표시간 데이터 가져오기 React Query
-    const {data: goalTime} = useQuery({
+    const {data: goalData} = useQuery({
         queryKey: ['goalTime', user?.userSqno],
         queryFn: async () => {
             const res = await axios.get('/api/goalTime/getGoalTime');
-            return res.data.goalTime ?? null;
+            return res.data ?? null;
         },
         enabled: isLoggedIn, // 로그인 상태일때만 호출 (API 최적화)
         staleTime: 1000 * 60 * 5, // @@@@ 2026-02-08 추가 Infinity 대신 5분으로 변경.
         // staleTime: Infinity
     });
+    const goalTime = goalData?.goalTime ?? null;
+    const todaysMessage = goalData?.todaysMessage ?? null;
 
 
     // [API] 목표시간 리스트 가져오기 useQuery
@@ -122,5 +124,5 @@ export const useRecordTime = () => {
         return () => clearInterval(timer);
     }, [goalTime]);
 
-    return {isLoggedIn, goalTime, goalList, remainTimeText, arrivalMutation, handleLinkToSetup, router, handleArrival};
+    return {isLoggedIn, goalTime, todaysMessage, goalList, remainTimeText, arrivalMutation, handleLinkToSetup, router, handleArrival};
 };

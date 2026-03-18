@@ -2244,10 +2244,12 @@ button:hover {
     .main-bento .formatted-time {
         font-size: 20px;
         margin-bottom: 2px;
+        white-space: nowrap;
     }
 
     .main-bento .remain-time {
         font-size: 20px;
+        white-space: nowrap;
     }
 
     .main-bento .arrival-button {
@@ -2259,6 +2261,16 @@ button:hover {
     .main-bento .arrival-button-container {
         width: 100%;
     }
+}
+
+/* 메모(각오) 텍스트 */
+.goal-memo-text {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #6b7280;
+    font-style: italic;
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 /* ── 벤토 내 INPUT 라벨 숨김 (구버전 AWS 배포 호환) ──

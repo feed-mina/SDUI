@@ -36,4 +36,13 @@ public class GoalSetting {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "notif_sent_30min")
+    private boolean notifSent30min = false;
+
+    @Column(name = "notif_sent_90min")
+    private boolean notifSent90min = false;
+
+    @Column(name = "notif_sent_180min")
+    private boolean notifSent180min = false;
 }

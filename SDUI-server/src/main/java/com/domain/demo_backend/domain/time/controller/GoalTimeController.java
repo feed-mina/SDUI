@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,8 +37,12 @@ public class GoalTimeController {
         Long userSqno = (userDetails != null) ? userDetails.getUserSqno() : null;
         String targetTime = goalTimeQueryService.getGoalTime(userSqno);
         log.debug("targetTime: {}", targetTime);
-        if (targetTime == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(Map.of("goalTime", targetTime != null ? targetTime : ""));
+        if (targetTime == null || targetTime.isEmpty()) return ResponseEntity.notFound().build();
+        Map<String, String> result = new HashMap<>();
+        result.put("goalTime", targetTime);
+        String memo = goalTimeQueryService.getGoalMemo(userSqno);
+        if (memo != null && !memo.isBlank()) result.put("todaysMessage", memo);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/save")
