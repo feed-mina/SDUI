@@ -17,6 +17,10 @@ public interface GoalSettingRepository extends JpaRepository<GoalSetting, Long> 
     // 가장 최근에 등록된 기록 하나를 가져오고 싶을 때 사용
     GoalSetting findFirstByUserSqnoOrderByCreatedAtDesc(Long userSqno);
 
+    // getGoalTime과 동일한 기준(status IS NULL, target_time >= 오늘 시작, ASC)으로 가장 가까운 미래 goal 조회
+    GoalSetting findFirstByUserSqnoAndStatusIsNullAndTargetTimeGreaterThanEqualOrderByTargetTimeAsc(
+            Long userSqno, LocalDateTime startOfDay);
+
     // 3개 알림 창(30/90/180분)을 한 번에 조회 — DB 쿼리 3회 → 1회 최적화
     // 각 창은 최소 154분 간격이므로 동일 goal이 여러 창에 동시 매칭되지 않음
     @Query("SELECT g FROM GoalSetting g WHERE g.status IS NULL AND (" +
