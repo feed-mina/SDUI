@@ -830,3 +830,55 @@ ALTER TABLE goal_settings
   ADD COLUMN notif_sent_90min  BOOLEAN NOT NULL DEFAULT FALSE,
   ADD COLUMN notif_sent_180min BOOLEAN NOT NULL DEFAULT FALSE;
 ```
+
+## 카카오 알림 버그 수정 (2026-03-18)
+
+### 버그 1: 메모가 이전 값으로 표시되는 문제
+
+**증상**: SET_TIME_PAGE에서 새 메모를 저장해도 RecordTimeComponent에 이전 메모("화이팅")가 표시됨
+
+**원인**: `getGoalTime()`과 `getGoalMemo()`가 **다른 row**를 참조
+- `getGoalTime()` → `GET_USER_GOAL_TIME` SQL: `ORDER BY target_time ASC LIMIT 1` (가장 이른 미래 goal)
+- `getGoalMemo()` → `findFirstByUserSqnoOrderByCreatedAtDesc()` (가장 최근 저장된 goal)
+- 여러 개의 goal이 있을 때 두 메서드가 서로 다른 row를 반환할 수 있음
+
+**수정 파일**:
+- `domain/time/domain/GoalSettingRepository.java` — `getGoalTime()`과 동일 기준 메서드 추가
+  ```java
+  GoalSetting findFirstByUserSqnoAndStatusIsNullAndTargetTimeGreaterThanEqualOrderByTargetTimeAsc(
+          Long userSqno, LocalDateTime startOfDay);
+  ```
+- `domain/time/service/GoalTimeQueryService.java` — `getGoalMemo()`를 동일 기준으로 수정
+  ```java
+  LocalDateTime startOfToday = LocalDate.now(ZoneId.of("Asia/Seoul")).atStartOfDay();
+  GoalSetting goal = goalSettingRepository
+          .findFirstByUserSqnoAndStatusIsNullAndTargetTimeGreaterThanEqualOrderByTargetTimeAsc(
+                  userSqno, startOfToday);
+  ```
+
+---
+
+### 버그 2: EC2/브라우저 환경에서 카카오 알림 미발송
+
+**증상**: 로컬 Docker(Windows KST)에서는 카카오 메시지 발송되지만, EC2 서버(UTC)에서는 미발송
+
+**원인**: 타임존 불일치
+- `GoalTimeController.saveGoalTime()` → 항상 KST로 변환 후 `LocalDateTime`으로 저장
+  ```java
+  finalTargetTime = ZonedDateTime.parse(targetTimeStr)
+          .withZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime();  // KST 기준 저장
+  ```
+- `AppointmentNotificationScheduler` → `LocalDateTime.now()` 사용
+  - 로컬 Windows(KST): `now` = KST → DB 값과 일치 → 알림 발송 ✓
+  - EC2 서버(UTC): `now` = UTC → DB 값(KST)과 9시간 차이 → 알림 창 불일치 → 미발송 ✗
+
+**수정 파일**: `domain/kakao/scheduler/AppointmentNotificationScheduler.java`
+```java
+// 변경 전
+LocalDateTime now = LocalDateTime.now();
+// 변경 후
+LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+```
+
+**근본 원인**: DB에 타임존 정보 없는 `LocalDateTime`을 KST 기준으로 저장하는 방식의 한계. 향후 개선 시 `TIMESTAMP WITH TIME ZONE` (UTC 저장) 방식 권장.
+
