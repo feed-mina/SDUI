@@ -1,8 +1,23 @@
 import "./styles/index.css";
+import type { Metadata } from 'next';
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider"; // 방금 만든 방 가져오기
 import {MetadataProvider} from "@/components/providers/MetadataProvider";
 import { AuthProvider } from '@/context/AuthContext';
 import AppShell from "@/components/layout/AppShell";
+
+export const metadata: Metadata = {
+    title: 'SDUI',
+    description: '스마트한 일정 관리 앱',
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://yerin.duckdns.org'),
+    openGraph: {
+        title: 'SDUI',
+        description: '스마트한 일정 관리 앱',
+        images: [{ url: '/icons/icon-512x512.png', width: 512, height: 512 }],
+        type: 'website',
+        locale: 'ko_KR',
+    },
+};
+
 //  @@@@ 2026-02-08 수정 MetadataProvider 적용
 // layout.tsx 에 있는 컴포넌트들이 undefined 에러 없이 데이터를 안정적으로 받아오게 하는 API 흐름 설계
 // @@@@ layout 역할 :  프론트앤드 전체 레이아웃 구조

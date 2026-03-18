@@ -112,10 +112,18 @@ export default function ConversationPanelV2({ messages, isStreaming, language }:
         setShowTranslations(prev => ({ ...prev, [index]: !prev[index] }));
     };
 
+    const visibleMessages = messages.filter(msg => msg.role !== 'system');
+
     return (
         <div className="ai-conversation-thread">
-            {messages.filter(msg => msg.role !== 'system').map((msg, i) => {
+            {visibleMessages.map((msg, i) => {
                 const isUser = msg.role === 'user';
+                const userTurn = isUser
+                    ? visibleMessages.slice(0, i + 1).filter(m => m.role === 'user').length
+                    : null;
+                const wordCount = isUser
+                    ? msg.content.trim().split(/\s+/).filter(w => w.length > 0).length
+                    : null;
 
                 return (
                     <div key={i} className={`ai-message-row ${isUser ? 'user-row' : 'assistant-row'}`}>
@@ -161,6 +169,9 @@ export default function ConversationPanelV2({ messages, isStreaming, language }:
 
                             {/* 하단 액션바 */}
                             <div className="ai-bubble-actions">
+                                {isUser && userTurn !== null && (
+                                    <span className="ai-turn-info">{userTurn}턴 · {wordCount} 단어</span>
+                                )}
                                 {!isUser && (
                                     <>
                                         <button
