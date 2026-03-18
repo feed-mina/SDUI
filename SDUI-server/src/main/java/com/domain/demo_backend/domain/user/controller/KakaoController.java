@@ -25,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -76,11 +77,9 @@ public class KakaoController {
             KakaoUserInfo kakaoUserInfo = kakaoService.getKakaoUserInfo(kakaoAuthRequest.getAccessToken());
 
             // 2. 사용자 정보를 이용해 DB에 회원가입 또는 조회를 진행해
-            // JWT 토큰을 발급받아
-            // String jwtToken = kakaoService.registerKakaoUser(kakaoUserInfo,
-            // kakaoAuthRequest.getAccessToken());
+            // /login은 프론트엔드가 OAuth 처리 후 access_token만 전달 → refresh_token 없음
             TokenResponse tokenResponse = kakaoService.registerKakaoUser(kakaoUserInfo,
-                    kakaoAuthRequest.getAccessToken());
+                    kakaoAuthRequest.getAccessToken(), null, null);
 
             // 5. Refresh Token 쿠키 생성
             ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", tokenResponse.getRefreshToken())
@@ -147,12 +146,15 @@ public class KakaoController {
                 request,
                 Map.class);
         String kakaoAccessToken = (String) tokenResponse.getBody().get("access_token");
+        String kakaoRefreshToken = (String) tokenResponse.getBody().get("refresh_token");
+        Integer expiresIn = (Integer) tokenResponse.getBody().getOrDefault("expires_in", 21600);
+        LocalDateTime tokenExpiresAt = LocalDateTime.now().plusSeconds(expiresIn);
 
         // 2. 사용자 정보 조회
         KakaoUserInfo userInfo = kakaoService.getKakaoUserInfo(kakaoAccessToken);
 
-        // 3. JWT 발급
-        TokenResponse jwtToken = kakaoService.registerKakaoUser(userInfo, kakaoAccessToken);
+        // 3. JWT 발급 (토큰 저장 포함)
+        TokenResponse jwtToken = kakaoService.registerKakaoUser(userInfo, kakaoAccessToken, kakaoRefreshToken, tokenExpiresAt);
 
         // 4. Access Token 쿠키 생성
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())

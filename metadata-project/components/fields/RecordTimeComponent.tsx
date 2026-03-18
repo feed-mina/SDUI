@@ -21,6 +21,7 @@ const RecordTimeComponent = ({data, onChange}: RecordTimeProps) => {
     const {formatGoalDate, formatTimePretty, formatDateOnly} = dateFormatter();
     const {
         goalTime,
+        todaysMessage,
         goalList,
         remainTimeText,
         handleLinkToSetup,
@@ -54,6 +55,9 @@ const RecordTimeComponent = ({data, onChange}: RecordTimeProps) => {
                     <div className="remain-time">
                         {remainTimeText}
                     </div>
+                    {todaysMessage && (
+                        <div className="goal-memo-text">{todaysMessage}</div>
+                    )}
                 </div>
 
                 <div className="arrival-button-container">

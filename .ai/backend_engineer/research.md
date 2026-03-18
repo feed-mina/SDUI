@@ -763,3 +763,70 @@ public Collection<? extends GrantedAuthority> getAuthorities() {
 | 2026-03-10 | ADDITIONAL_INFO_PAGE `data:[]` 문제 분석 및 V19 마이그레이션 작성 | Vercel(`sdui-delta.vercel.app`) 접속 시 `/api/ui/ADDITIONAL_INFO_PAGE` → `data:[]` 반환. Flyway V1~V18 중 어느 파일에도 ADDITIONAL_INFO_PAGE 메타데이터 INSERT 없음(V1은 MAIN_SECTION 1건만). `backup_aws_data.sql`에 해당 화면 데이터(ui_id 1036~1039) 존재하나 SDUI_TD에 미적용 상태. V19__add_additional_info_page.sql 작성: HEADER_TEXT(TEXT), PHONE_INPUT(INPUT/ref_data_id=phone), ADDRESS_GROUP(ADDRESS_SEARCH_GROUP), SUBMIT_BTN(BUTTON/SUBMIT_ADDITIONAL_INFO) — WHERE NOT EXISTS 중복 방지. 커밋 대기 중. |
 | 2026-03-17 | V23~V26 Flyway squash 완료 + AI 영어 채팅 멤버십 연동 구현 | (1) V23~V40 → V23~V26 squash 마이그레이션 완료. (2) Docker DB V22 PK 충돌 수정: `V22__seed_ui_metadata.sql`에 `SELECT setval(pg_get_serial_sequence('ui_metadata','ui_id'), COALESCE((SELECT MAX(ui_id) FROM ui_metadata),0))` 추가. (3) V26(`interview_resume` 테이블) 끝에 AI 영어 채팅 전환 4개 UPDATE 통합(V27 삭제). (4) `MembershipRepository.findByName(String)` 추가. (5) `UserMembershipService.grantByMembershipName(Long,String,String)` 추가 — 기존 `grant(UserMembershipRequest)` 대신 직접 엔티티 빌더 사용(Request DTO에 setter/builder 없음). (6) `AuthController` SUBMIT_ADDITIONAL_INFO 처리 후 `grantByMembershipName(user.getUserSqno(),"프리미엄","register")` 호출 추가 — 신규 가입자 전원 프리미엄 자동 부여. (7) `application.yml`에 `cloud.gcp.document-ai.*`, `cloud.aws.*`, `fastapi.*` 기본값 추가 — no-profile bootRun(Docker DB 테스트) 시 Bean 초기화 실패 방지. |
 | 2026-03-17 | FastAPI 서버 Docker 배포 설정 추가 → 비활성화 | (1) `pronounce-api/Dockerfile` 생성 — python:3.11-slim + default-jdk-headless(konlpy/JPype용). (2) `docker-compose.yml`·`deploy.yml`에 sdui-fastapi 서비스/배포 추가. **→ 현재 비활성화**: Spring Boot가 FastAPI 대신 OpenAI GPT를 직접 호출하고 있어 주석 처리. 재활성화 조건: AI 면접관 이력서 분석 기능 구현 시 — docker-compose.yml의 `sdui-fastapi` 서비스, `depends_on`, `FASTAPI_URL` 주석 해제 + deploy.yml 빌드 step의 `if: false` 제거 + EC2 스크립트 주석 해제. |
+| 2026-03-17 | 카카오톡 약속 알림 기능 구현 (V27 마이그레이션) | SET_TIME_PAGE 약속 시간 저장 시 3시간/1.5시간/30분 전 카카오톡 자동 알림 3회 발송 기능 구현. 상세 사양은 아래 섹션 참조. |
+
+---
+
+## 카카오톡 약속 알림 기능 구현 사양 (2026-03-17)
+
+### 기능 개요
+`SET_TIME_PAGE`에서 약속 시간 저장 시, 해당 약속 **3시간 / 1시간 30분 / 30분** 전에 카카오톡 "나에게 보내기" 메시지 3회 자동 발송.
+
+### 아키텍처 결정
+- 방식: Spring Boot `@Scheduled` (1분 주기) + 카카오 "나에게 보내기" API (`/v2/api/talk/memo/default/send`)
+- 토큰: `users` 테이블에 `kakao_access_token` / `kakao_refresh_token` 컬럼 추가 저장
+- 알림 추적: `goal_settings` 테이블에 `notif_sent_30min` / `notif_sent_90min` / `notif_sent_180min` boolean 컬럼 추가
+- 이메일 로그인 유저: `kakao_access_token IS NULL` → 스케줄러에서 skip (별도 UI 변경 없음)
+
+### 카카오 토큰 생명주기
+- access_token 유효기간: 6시간
+- refresh_token 유효기간: 60일
+- 발송 직전 만료 확인(5분 버퍼) → 만료 시 `POST https://kauth.kakao.com/oauth/token` (grant_type=refresh_token)으로 갱신 후 발송
+- `/api/kakao/callback` (웹 OAuth 흐름): access_token + refresh_token 모두 저장
+- `/api/kakao/login` (프론트엔드 OAuth 흐름): access_token만 저장, refresh_token=null
+
+### 주요 신규 파일
+| 파일 경로 | 역할 |
+|-----------|------|
+| `domain/kakao/service/KakaoNotificationService.java` | 메시지 구성 + 카카오 API 발송 + 토큰 갱신 |
+| `domain/kakao/scheduler/AppointmentNotificationScheduler.java` | 1분마다 알림 대상 조회 + 발송 트리거 |
+| `resources/db/migration/V27__add_kakao_tokens_and_notif_flags.sql` | DB 스키마 변경 |
+
+### 수정 파일
+| 파일 | 변경 내용 |
+|------|-----------|
+| `DemoBackendApplication.java` | `@EnableScheduling` 추가 (누락 상태였음) |
+| `domain/user/domain/User.java` | kakaoAccessToken, kakaoRefreshToken, kakaoTokenExpiresAt 필드 추가 |
+| `domain/user/service/KakaoService.java` | registerKakaoUser() 시그니처 변경 + refreshKakaoToken() 추가 |
+| `domain/user/controller/KakaoController.java` | /callback에서 refresh_token, expires_in 추출 후 KakaoService에 전달 |
+| `domain/time/domain/GoalSetting.java` | notifSent30min / notifSent90min / notifSent180min 필드 추가 |
+| `domain/time/domain/GoalSettingRepository.java` | 각 시간 창별 알림 대상 조회 JPQL 쿼리 3개 추가 |
+
+### 스케줄러 로직
+- `fixedDelay = 60,000ms` (1분)
+- 각 약속에 대해 3개 시간 창 체크 (±2분 오차 허용):
+  - 180분(3h) 전: `targetTime BETWEEN now+178min AND now+182min`
+  - 90분(1.5h) 전: `targetTime BETWEEN now+88min AND now+92min`
+  - 30분 전:      `targetTime BETWEEN now+28min AND now+32min`
+- 해당 플래그(`notifSent*`)가 `false`인 건만 처리, 성공 후 `true`로 업데이트
+- 발송 실패 시 log.error() 후 예외 전파 없이 계속 진행
+
+### 메시지 포맷
+| 시간 | 메시지 |
+|------|--------|
+| 3시간 전 | "⏰ 3시간 뒤에 약속이 있습니다!\n목표 시간: HH:mm\n각오: {todaysMessage}" |
+| 1시간 30분 전 | "⏰ 1시간 30분 뒤에 약속이 있습니다!\n목표 시간: HH:mm" |
+| 30분 전 | "⏰ 30분 뒤에 약속이 있습니다!\n목표 시간: HH:mm" |
+
+### DB 마이그레이션 (V27)
+```sql
+ALTER TABLE users
+  ADD COLUMN kakao_access_token     TEXT,
+  ADD COLUMN kakao_refresh_token    TEXT,
+  ADD COLUMN kakao_token_expires_at TIMESTAMP;
+
+ALTER TABLE goal_settings
+  ADD COLUMN notif_sent_30min  BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN notif_sent_90min  BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN notif_sent_180min BOOLEAN NOT NULL DEFAULT FALSE;
+```

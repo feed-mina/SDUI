@@ -39,6 +39,11 @@ public class GoalTimeQueryService {
 //        System.out.println("🔥🔥🔥 Redis 초기화 완료! 🔥🔥🔥");
 //    }
 
+    public String getGoalMemo(Long userSqno) {
+        GoalSetting goal = goalSettingRepository.findFirstByUserSqnoOrderByCreatedAtDesc(userSqno);
+        return goal != null ? goal.getTodaysMessage() : null;
+    }
+
     public String getGoalTime(Long userSqno) {
         // 1. Rddis에서 사용자의 목표 시간이 이미 계산되어 있는지 확인
         String cacheKey = "USER_GOAL:" + userSqno;

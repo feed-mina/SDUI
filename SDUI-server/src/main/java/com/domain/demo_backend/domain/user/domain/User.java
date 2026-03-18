@@ -72,6 +72,15 @@ public class User {
 
     private String zipCode;
 
+    @Column(name = "kakao_access_token")
+    private String kakaoAccessToken;
+
+    @Column(name = "kakao_refresh_token")
+    private String kakaoRefreshToken;
+
+    @Column(name = "kakao_token_expires_at")
+    private LocalDateTime kakaoTokenExpiresAt;
+
     private String roadAddress;
 
     private String detailAddress;
