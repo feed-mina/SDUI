@@ -85,11 +85,13 @@ export default function Header() {
                         </button>
                     </div>
                 )}
-                <div className="header-bottom-row">
-                    <div className="time-card">
-                        <RecordTimeComponent />
+                {pathname !== '/view/MAIN_PAGE' && (
+                    <div className="header-bottom-row">
+                        <div className="time-card">
+                            <RecordTimeComponent />
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </header>
     );
