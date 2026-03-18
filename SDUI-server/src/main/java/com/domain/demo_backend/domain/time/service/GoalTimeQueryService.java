@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +42,10 @@ public class GoalTimeQueryService {
 //    }
 
     public String getGoalMemo(Long userSqno) {
-        GoalSetting goal = goalSettingRepository.findFirstByUserSqnoOrderByCreatedAtDesc(userSqno);
+        LocalDateTime startOfToday = LocalDate.now(ZoneId.of("Asia/Seoul")).atStartOfDay();
+        GoalSetting goal = goalSettingRepository
+                .findFirstByUserSqnoAndStatusIsNullAndTargetTimeGreaterThanEqualOrderByTargetTimeAsc(
+                        userSqno, startOfToday);
         return goal != null ? goal.getTodaysMessage() : null;
     }
 

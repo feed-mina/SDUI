@@ -114,6 +114,20 @@
     margin-top: 8px;
 }
 
+/* time-card RecordTimeComponent: sticky/z-index 해제 + 텍스트 줄바꿈 방지 */
+.time-card .time-record-container {
+    position: relative !important;
+    z-index: auto !important;
+}
+.time-card .formatted-time,
+.time-card .remain-time {
+    white-space: nowrap;
+}
+/* arrival-button은 clock-container 안에서 가로 배치이므로 width: auto */
+.time-card .arrival-button {
+    width: auto;
+}
+
 /* ==========================================
    2. MAIN_PAGE (메인 페이지)
    ========================================== */

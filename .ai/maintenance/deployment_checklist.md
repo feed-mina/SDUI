@@ -600,6 +600,25 @@ docker run -d --name sdui-backend-lab \
 
 ---
 
+## PWA 배포 체크리스트 (2026-03-17 추가)
+
+### 배포 전 확인
+- [ ] `package.json` build 스크립트에 `--webpack` 플래그 있는가? (`next build --webpack`)
+- [ ] `public/icons/icon-192x192.png`, `public/icons/icon-512x512.png` git 추적 상태인가?
+- [ ] 루트 `.gitignore`에 `!metadata-project/public/icons/*.png` 예외 있는가?
+
+### 배포 후 PWA 확인 (Vercel)
+1. Chrome으로 `https://sdui-delta.vercel.app/view/MAIN_PAGE` 접속
+2. DevTools → Application → Manifest 탭에서 에러 없는지 확인
+3. 주소창 오른쪽 설치 아이콘 또는 "앱 설치" 다이얼로그 확인
+4. DevTools → Application → Service Workers에서 `sw.js` Activated 상태 확인
+
+### 알려진 PWA 경고 (수용 가능)
+- **스크린샷 없음**: `public/screenshots/mobile.png`, `public/screenshots/desktop.png` 파일 추가 시 해소 (풍부한 설치 UI 활성화)
+- **로컬 dev**: 서비스 워커 비활성화 상태 — 정상 (의도된 설정)
+
+---
+
 ## 참고 자료
 
 - **AWS 환경 가이드**: `.ai/maintenance/aws_environment_guide.md`
@@ -611,5 +630,5 @@ docker run -d --name sdui-backend-lab \
 
 **문서 관리**:
  
-- 최종 업데이트: 2026-03-03
-- 다음 리뷰 예정일: 2026-04-03
+- 최종 업데이트: 2026-03-17
+- 다음 리뷰 예정일: 2026-04-17

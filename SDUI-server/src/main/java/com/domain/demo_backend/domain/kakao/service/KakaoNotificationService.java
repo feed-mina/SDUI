@@ -13,6 +13,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -56,7 +58,10 @@ public class KakaoNotificationService {
             case 180 -> "3시간";
             default  -> minutesBefore + "분";
         };
-        String targetTimeStr = goal.getTargetTime().format(TIME_FMT);
+        String targetTimeStr = goal.getTargetTime()
+                .atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
+                .format(TIME_FMT);
         String text = "⏰ " + timeLabel + " 뒤에 약속이 있습니다!\n목표 시간: " + targetTimeStr;
         if (goal.getTodaysMessage() != null && !goal.getTodaysMessage().isBlank()) {
             text += "\n각오: " + goal.getTodaysMessage();

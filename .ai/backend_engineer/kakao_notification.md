@@ -165,3 +165,33 @@ SELECT notif_sent_30min, todays_message FROM goal_settings ORDER BY id DESC LIMI
 4. 1분 대기 → `notif_sent_30min = true` 확인
 5. 카카오톡 수신 → **메모가 본문에 포함**됐는지 확인
 6. `./gradlew build -x test` 빌드 성공
+
+---
+
+## 버그 수정 이력 (2026-03-18)
+
+### BUG-1: EC2에서 카카오 알림 미발송 (타임존 불일치)
+
+| 항목 | 내용 |
+|------|------|
+| **현상** | 로컬(Docker/Windows)에서는 알림이 오지만 EC2 배포 환경에서는 미발송 |
+| **원인** | `saveGoalTime()`은 KST 기준으로 `LocalDateTime` 저장, 스케줄러는 `LocalDateTime.now()` (JVM 기본 타임존) 사용 → EC2 서버가 UTC이면 9시간 차이 발생, 알림 창 불일치 |
+| **수정** | `AppointmentNotificationScheduler.java`: `LocalDateTime.now()` → `LocalDateTime.now(ZoneId.of("Asia/Seoul"))` |
+| **파일** | `domain/kakao/scheduler/AppointmentNotificationScheduler.java` |
+
+### BUG-2: 메시지 포맷 메모 표시 — 이전 goal 메모 표시 문제
+
+| 항목 | 내용 |
+|------|------|
+| **현상** | 새 약속 저장 후 RecordTimeComponent에 이전 메모가 표시됨 |
+| **원인** | `getGoalMemo()`가 `created_at DESC` (최신 생성 row) 기준 → `getGoalTime()`의 `target_time ASC` (가장 이른 미래 goal) 기준과 불일치, 다른 row를 참조 |
+| **수정** | `getGoalMemo()`를 `status IS NULL AND target_time >= 오늘 00:00 ORDER BY target_time ASC` 기준으로 변경 |
+| **파일** | `domain/time/domain/GoalSettingRepository.java`, `domain/time/service/GoalTimeQueryService.java` |
+
+### 메시지 포맷 최종 (버그 수정 후)
+
+| 시점 | 메모 있음 | 메모 없음 |
+|------|-----------|-----------|
+| 3시간 전 | ⏰ 3시간 뒤에 약속이 있습니다!<br>목표 시간: HH:mm<br>각오: {메모} | ⏰ 3시간 뒤에 약속이 있습니다!<br>목표 시간: HH:mm |
+| 1시간 30분 전 | ⏰ 1시간 30분 뒤에 약속이 있습니다!<br>목표 시간: HH:mm<br>각오: {메모} | ⏰ 1시간 30분 뒤에 약속이 있습니다!<br>목표 시간: HH:mm |
+| 30분 전 | ⏰ 30분 뒤에 약속이 있습니다!<br>목표 시간: HH:mm<br>각오: {메모} | ⏰ 30분 뒤에 약속이 있습니다!<br>목표 시간: HH:mm |

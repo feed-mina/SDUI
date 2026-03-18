@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 /**
@@ -29,7 +30,8 @@ public class AppointmentNotificationScheduler {
 
     @Scheduled(fixedDelay = 60000)
     public void checkAndSendNotifications() {
-        LocalDateTime now = LocalDateTime.now();
+        // saveGoalTime()이 KST 기준 LocalDateTime으로 저장하므로 비교도 KST 기준으로 수행
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         LocalDateTime w30s  = now.plusMinutes(28),  w30e  = now.plusMinutes(32);
         LocalDateTime w90s  = now.plusMinutes(88),  w90e  = now.plusMinutes(92);
         LocalDateTime w180s = now.plusMinutes(178), w180e = now.plusMinutes(182);
