@@ -48,9 +48,9 @@ export const useRecordTime = () => {
             });
         },
         onSuccess: () => {
-            // 데이터 갱신을 위해 쿼리 무효화
-            queryClient.invalidateQueries({queryKey: ['goalTime']});
-            queryClient.invalidateQueries({queryKey: ['goalList']});
+            // 캐시 무효화 후 즉시 refetch (staleTime 무관)
+            queryClient.removeQueries({queryKey: ['goalTime']});
+            queryClient.removeQueries({queryKey: ['goalList']});
         },
     });
 
