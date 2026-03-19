@@ -59,17 +59,16 @@ const RecordTimeComponent = ({data, onChange}: RecordTimeProps) => {
                         <div className="goal-memo-text">{todaysMessage}</div>
                     )}
                 </div>
-
-                <div className="arrival-button-container">
-                    <ArrivalButton onClick={handleArrival}/>
-                </div>
             </div>
 
-            {/* 하단 영역: 여기 조건을 풀었습니다! */}
+            {/* 하단 영역 */}
             <div className="more-list-section">
                 <div className="bottom-btn-group">
 
-                    {/* (1) 시간 추가 버튼 (항상 보임) */}
+                    {/* (1) 도착 완료 버튼 */}
+                    <ArrivalButton onClick={handleArrival}/>
+
+                    {/* (2) 시간 추가 버튼 */}
                     <button onClick={handleLinkToSetup} className="add-time-btn">
                         + 시간 추가
                     </button>

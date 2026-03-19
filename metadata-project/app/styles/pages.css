@@ -123,9 +123,9 @@
 .time-card .remain-time {
     white-space: nowrap;
 }
-/* arrival-button은 clock-container 안에서 가로 배치이므로 width: auto */
+/* 도착 완료 버튼: bottom-btn-group 내 전체 너비 */
 .time-card .arrival-button {
-    width: auto;
+    width: 100%;
 }
 
 /* ==========================================
@@ -1584,16 +1584,21 @@ readonly 공통 레이아웃
     padding-top: 15px;
 }
 
-/* 하단 버튼들을 감싸는 박스 (시간추가 + 점세개) */
+/* 하단 버튼들을 감싸는 박스 (도착완료 + 시간추가 + 점세개) — 세로 배치 */
 .bottom-btn-group {
     display: flex;
-    justify-content: center;
-    /* 가운데 정렬 */
-    align-items: center;
-    gap: 20px;
-    /* 두 버튼 사이의 간격 */
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
     width: 100%;
     position: relative;
+}
+
+/* PC 헤더(pc-top-utility)에서는 가로 배치 유지 */
+.pc-top-utility .bottom-btn-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
 }
 
 /* 컨테이너: 상단에 가로로 배치되는 바 형태 */
@@ -1663,11 +1668,6 @@ readonly 공통 레이아웃
     font-size: 26px;
     color: #ff5722;
     font-weight: bold;
-}
-
-/* 도착 버튼 컨테이너 (우측 배치용) */
-.arrival-button-container {
-    /* 필요 시 추가 스타일 */
 }
 
 /* 도착 완료 버튼 */
@@ -2272,8 +2272,8 @@ button:hover {
         font-size: 15px;
     }
 
-    .main-bento .arrival-button-container {
-        width: 100%;
+    .main-bento .bottom-btn-group {
+        gap: 8px;
     }
 }
 
