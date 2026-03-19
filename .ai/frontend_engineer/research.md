@@ -807,3 +807,147 @@ export default withPWA(nextConfig);
 - `orientation`: `portrait`
 
 ---
+
+## PWA 배포 완료 및 후속 수정 (2026-03-17)
+
+### Vercel 빌드 실패 — Turbopack vs webpack 충돌
+
+**증상**: `Error: Call retries were exceeded` at `WorkerError`
+**원인**: Next.js 16.1.3에서 Turbopack이 빌드 기본값으로 변경됨. `next-pwa@5.6.0`은 webpack 플러그인이므로 Turbopack과 충돌.
+**수정**: `package.json` build 스크립트에 `--webpack` 플래그 추가
+```json
+"build": "next build --webpack"
+```
+
+### PWA 아이콘 404 오류
+
+**증상**: `/icons/icon-192x192.png: 404`
+**원인**: 루트 `.gitignore`의 `*.png` 규칙(Playwright 스크린샷 제외 목적)이 PWA 아이콘도 차단
+**수정**:
+1. `git add -f public/icons/` 로 강제 추가
+2. 루트 `.gitignore`에 예외 추가:
+```
+*.png
+!metadata-project/public/icons/*.png
+!metadata-project/public/screenshots/*.png
+```
+
+### PWA 설치 UI 정상 동작 확인 (2026-03-17)
+
+Chrome DevTools > Application > Manifest에서 **앱 설치 다이얼로그 정상 표시 확인**:
+- 앱 아이콘, 이름("SDUI"), 설명("AI 영어 학습 & 목표 관리 앱") 표시
+- 앱 화면 미리보기 자동 표시
+- `sdui-delta.vercel.app/view/MAIN_PAGE` 에서 "설치" 버튼 정상 동작
+
+### manifest.json 개선 (2026-03-17)
+
+Chrome DevTools PWA 경고 해소:
+
+| 경고 | 수정 내용 |
+|------|---------|
+| `id` 필드 없음 | `"id": "/view/MAIN_PAGE"` 추가 |
+| `purpose: "any maskable"` 권장 안 됨 | `"any"` 로 변경 (별도 maskable 아이콘 없음) |
+| 스크린샷 없음 (풍부한 설치 UI 불가) | `screenshots` 필드 추가 (mobile/desktop PNG 필요) |
+
+```json
+{
+  "id": "/view/MAIN_PAGE",
+  "screenshots": [
+    { "src": "/screenshots/mobile.png", "sizes": "390x844", "form_factor": "narrow" },
+    { "src": "/screenshots/desktop.png", "sizes": "1280x800", "form_factor": "wide" }
+  ]
+}
+```
+
+> **TODO**: `public/screenshots/mobile.png`, `public/screenshots/desktop.png` 실제 캡처 파일 추가 필요
+
+### layout.tsx 메타 태그 수정 (2026-03-17)
+
+`apple-mobile-web-app-capable` deprecated 경고 해소:
+```html
+<!-- 추가: 표준 태그 -->
+<meta name="mobile-web-app-capable" content="yes" />
+<!-- 유지: iOS Safari 전용 -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+```
+
+---
+
+## 모바일 RecordTimeComponent UI 수정 (2026-03-18)
+
+### 문제 1: RecordTimeComponent 헤더 overlay (z-index 충돌)
+
+**증상**: 모바일 MAIN_PAGE에서 헤더의 RecordTimeComponent가 벤토 카드 위에 overlay되어 날짜 텍스트 위에 "목표시간 월 일 요일 오전 시 분 분 남음" 겹쳐 표시
+
+**원인 분석**:
+- `pages.css`: `.time-record-container { position: sticky; top: 0; z-index: 100 }` (기본값)
+- `Header.tsx`의 `header-bottom-row > time-card` 내부 RecordTimeComponent에 `.main-bento` override가 없어 sticky 유지
+
+**수정**:
+1. `Header.tsx` — MAIN_PAGE에서 `header-bottom-row` 렌더링 제외 (벤토에 이미 TIME_RECORD_WIDGET 존재)
+   ```tsx
+   {pathname !== '/view/MAIN_PAGE' && (
+       <div className="header-bottom-row">
+           <div className="time-card"><RecordTimeComponent /></div>
+       </div>
+   )}
+   ```
+2. `pages.css` — time-card 컨텍스트의 sticky/z-index 해제 + 줄바꿈 방지
+   ```css
+   .time-card .time-record-container { position: relative !important; z-index: auto !important; }
+   .time-card .formatted-time, .time-card .remain-time { white-space: nowrap; }
+   .time-card .arrival-button { width: auto; }
+   ```
+
+---
+
+## AI 컴포넌트 프론트엔드 설계 (2026-03-11, .ai2 병합)
+
+> 원본: `.ai2/frontend_engineer/research.md`
+
+### 신규 컴포넌트
+
+| 컴포넌트 | 경로 | 역할 |
+|----------|------|------|
+| `AIChatComponent.tsx` | `components/fields/` | AI 영어/한국어 대화 |
+| `AIChatComponentV2.tsx` | `components/fields/` | V2 (글래스모피즘) |
+| `AIInterviewComponent.tsx` | `components/fields/` | AI 면접관 |
+| `ConversationPanelV2.tsx` | `components/fields/` | V2 말풍선 렌더링 |
+
+### SSE 소비 패턴 (EventSource 대신 fetch)
+
+```typescript
+// EventSource는 GET 전용 + 커스텀 헤더 불가
+// fetch + ReadableStream 사용 (POST body + JWT 지원)
+const response = await fetch('/api/ai/chat/stream', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jwt}` },
+  body: JSON.stringify({ messages, language: 'en' }),
+});
+const reader = response.body!.getReader();
+// AbortController로 컴포넌트 언마운트 시 정리 필수
+```
+
+### AudioContext 단일 인스턴스 패턴
+
+```typescript
+const audioContextRef = useRef<AudioContext | null>(null);
+// 브라우저 최대 6개 제한 → useRef로 단일 인스턴스 유지
+// 컴포넌트 언마운트 시 audioContextRef.current?.close()
+```
+
+### componentMap 등록
+
+```typescript
+AI_CHAT: AIChatComponent,
+AI_CHAT_V2: AIChatComponentV2,
+AI_INTERVIEW: AIInterviewComponent,
+```
+
+### 분석 히스토리
+
+| 날짜 | 분석 내용 | 결론 |
+|------|-----------|------|
+| 2026-03-11 | SSE 소비 방식 결정 | fetch + ReadableStream 채택 (POST + JWT 지원) |
+| 2026-03-11 | AI 응답 방식 결정 | TTS 없음, 텍스트 채팅창만 표시 |
+| 2026-03-11 | 언어 모드 결정 | 영어/한국어 별도 screenId로 분리 |

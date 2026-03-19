@@ -882,3 +882,73 @@ LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
 **근본 원인**: DB에 타임존 정보 없는 `LocalDateTime`을 KST 기준으로 저장하는 방식의 한계. 향후 개선 시 `TIMESTAMP WITH TIME ZONE` (UTC 저장) 방식 권장.
 
+---
+
+## AI 도메인 백엔드 설계 (2026-03-11, .ai2 병합)
+
+> 원본: `.ai2/backend_engineer/research.md`
+
+### 신규 패키지 구조
+```
+SDUI-server/src/main/java/com/domain/demo_backend/
+├── domain/
+│   ├── ai/          # STT, Chat, Interview (AiSttController, AiChatController 등)
+│   └── membership/  # Membership, UserMembership
+└── global/config/
+    └── AsyncConfig.java  # SseEmitter용 ThreadPool
+```
+
+### OpenAI RestClient 패턴
+
+```java
+// Chat Completions SSE 스트리밍
+restClient.post()
+    .uri("/chat/completions")
+    .body(requestBody)
+    .exchange((request, response) -> {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(response.getBody()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("data: ") && !line.equals("data: [DONE]")) {
+                    String chunk = extractContent(line.substring(6));
+                    onChunk.accept(chunk);
+                }
+            }
+            onComplete.run();
+        }
+        return null;
+    });
+```
+
+### SseEmitter 패턴
+```java
+@PostMapping(value = "/api/ai/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+public SseEmitter chat(@RequestBody ChatRequest req) {
+    SseEmitter emitter = new SseEmitter(30_000L);
+    executor.execute(() -> chatService.stream(req, emitter));
+    return emitter;
+}
+```
+
+### 멤버십 DB 스키마
+
+| 테이블 | 주요 컬럼 |
+|--------|-----------|
+| `memberships` | id, name, can_learn, can_converse, can_analyze, duration_days, price_cents |
+| `user_memberships` | id, user_id, membership_id, started_at, expires_at, status, granted_by |
+
+### build.gradle 추가
+```groovy
+implementation 'org.apache.pdfbox:pdfbox:3.0.2'  // PDF 파싱
+// RestClient는 Spring Boot 내장, 별도 추가 불필요
+```
+
+### 분석 히스토리
+
+| 날짜 | 분석 내용 | 결론 |
+|------|-----------|------|
+| 2026-03-11 | OpenAI SDK vs RestClient | RestClient 채택 (의존성 최소화) |
+| 2026-03-11 | SseEmitter vs WebFlux | SseEmitter 채택 (기존 MVC 유지) |
+| 2026-03-11 | pronounce-api 역할 재정의 | 발음 채점만 유지, STT/TTS → OpenAI |
+

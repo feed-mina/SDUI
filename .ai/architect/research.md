@@ -163,3 +163,49 @@ MY_PAGE, CONTENT_LIST, CONTENT_WRITE, CONTENT_DETAIL, CONTENT_MODIFY
 |------|-----------|------|
 | 2026-02-28 | 전체 코드베이스 초기 분석 | 위 내용 도출 |
 | 2026-03-06 | componentMap/screenMap/Redis 재확인 | LINK_BUTTON 추가(18개), DIARY→CONTENT 전환 반영, UI Redis 캐시(`ui:metadata:{screenId}`, 1h) 확인 |
+| 2026-03-11 | 링글 과제 → SDUI AI 튜터+면접관 전환 분석 | .ai2 작업 → 아래 섹션 병합 완료 |
+
+---
+
+## AI 튜터 + 면접관 아키텍처 분석 (2026-03-11, .ai2 병합)
+
+> 원본: `.ai2/architect/research.md`
+
+### 요구사항 비교
+
+| 기능 | 원안 (링글) | SDUI 확장 |
+|------|------------|-----------|
+| 백엔드 | Rails 7 | Spring Boot (SDUI-server) |
+| 인증 | X-User-Id 헤더 | 기존 JWT 그대로 |
+| 어드민 UI | 별도 React 페이지 | SDUI ui_metadata |
+| AI 응답 표시 | TTS 음성 | 채팅창 텍스트 스트리밍 |
+| 언어 | 영어 전용 | 영어 + 한국어 |
+| 신규 기능 | 없음 | AI 면접관 (이력서 → 질문 → 음성 답변) |
+
+### 기술 선택
+
+| 항목 | 선택 | 이유 |
+|------|------|------|
+| STT | OpenAI `whisper-1` | 영어/한국어 모두 지원 |
+| LLM | `gpt-4o` + Streaming | 대화 + 이력서 분석 |
+| TTS | 미사용 (텍스트만 표시) | 사용자 요청 |
+| HTTP 클라이언트 | Spring `RestClient` (내장) | 외부 SDK 의존성 없음 |
+| SSE | Spring `SseEmitter` | 기존 MVC 유지 (WebFlux 불필요) |
+
+### SDUI 커스텀 컴포넌트 등록 패턴
+
+```typescript
+// componentMap.tsx 추가
+AI_CHAT: AIChatComponent,
+AI_CHAT_V2: AIChatComponentV2,
+AI_INTERVIEW: AIInterviewComponent,
+```
+
+### 리스크
+
+| 리스크 | 대응 |
+|--------|------|
+| OpenAI 레이턴시 | SSE Streaming으로 체감 지연 감소 |
+| AudioContext 최대 6개 | useRef 단일 인스턴스 패턴 |
+| SseEmitter 타임아웃 | 30초 설정 + 클라이언트 retry |
+| Flyway label_text NOT NULL | GROUP 행에 `label_text, ''` 명시 |
