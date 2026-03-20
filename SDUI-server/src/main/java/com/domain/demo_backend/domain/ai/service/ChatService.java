@@ -55,6 +55,8 @@ public class ChatService {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
     public String createGuestReply(String message, String lang) {
         try {
             String systemPrompt = "You are a helpful BTS Gwanghwamun Event Guide. Answer user questions about the event, locations, and safety. " +
