@@ -13,15 +13,15 @@ import LivePip from "@/components/LivePip";
 import CheerMode from "@/components/CheerMode";
 import { Bell } from "lucide-react";
 
-// KakaoMap must be loaded client-side only (no SSR)
-const KakaoMap = dynamic(() => import("@/components/Map/KakaoMap"), {
+// LeafletMap must be loaded client-side only (no SSR)
+const LeafletMap = dynamic(() => import("@/components/Map/LeafletMap"), {
   ssr: false,
   loading: () => (
     <div
-      className="flex items-center justify-center h-full"
+      className="flex items-center justify-center h-full bg-[#1a1a2e]"
       style={{ color: "var(--text-secondary)" }}
     >
-      지도 로딩 중...
+      🗺️ 지도 로딩 중...
     </div>
   ),
 });
@@ -93,7 +93,7 @@ export default function HomePage() {
         {tab === "map" && (
           <div className="flex flex-col h-full">
             <div className="flex-1 overflow-hidden relative">
-              <KakaoMap activeLayers={layers} lang={lang} />
+              <LeafletMap activeLayers={layers} lang={lang} />
               
               {/* Floating UI on Map */}
               <StatusCard lang={lang} />

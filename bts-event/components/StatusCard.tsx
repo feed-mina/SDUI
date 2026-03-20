@@ -10,16 +10,16 @@ interface Props {
 export default function StatusCard({ lang }: Props) {
   const [showWeather, setShowWeather] = useState(false);
   
-  // Static data for Gwanghwamun (BTS Event Day)
-  const temp = 21;
-  const congestion = lang === "ko" ? "매우 혼잡 🔥" : "Very Crowded 🔥";
-  const rainChance = "5%";
-  const weatherUrl = "https://m.kma.go.kr/m/main.jsp";
+  // Real-time data placeholder (for now static)
+  const temp = 18;
+  const congestion = lang === "ko" ? "혼잡 (여유로움) 💜" : "Moderate 💜";
+  const rainChance = "0%";
+  const weatherUrl = "https://www.weather.go.kr/w/m/index.do";
 
   return (
     <>
       <div 
-        className="status-card cursor-pointer hover:bg-bg-dark transition-all border-l-4 border-bts-purple-light"
+        className="status-card cursor-pointer hover:scale-105 active:scale-95 transition-all border-l-4 border-bts-purple-light"
         onClick={() => setShowWeather(true)}
         title={lang === "ko" ? "기상청 실시간 정보 보기" : "View Live Weather Info"}
       >
@@ -33,18 +33,18 @@ export default function StatusCard({ lang }: Props) {
         <div className="status-item mt-1">
           <Users size={14} className="text-purple-400" />
           <span className="text-purple-100">{congestion}</span>
-          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse ml-1" />
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse ml-1" />
         </div>
         <div className="text-[9px] text-gray-500 mt-1 flex items-center gap-1">
           <ExternalLink size={8} />
-          {lang === "ko" ? "기상청 자동 연결" : "Source: KMA"}
+          {lang === "ko" ? "기상청 실시간 상세정보" : "Source: Weather.go.kr"}
         </div>
       </div>
 
       {/* Weather Info Modal */}
       {showWeather && (
         <div className="modal-overlay" onClick={() => setShowWeather(false)}>
-          <div className="modal-content !max-w-[450px] !p-0 overflow-hidden flex flex-col h-[70vh]" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content !max-w-[500px] !p-0 overflow-hidden flex flex-col h-[75vh]" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header !mb-0 p-4 border-b border-border bg-bg-card flex items-center justify-between shrink-0">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 ⛅️ {lang === "ko" ? "실시간 날씨 (기상청)" : "Live Weather Info"}
@@ -57,10 +57,16 @@ export default function StatusCard({ lang }: Props) {
               <iframe 
                 src={weatherUrl}
                 className="w-full h-full border-none"
-                title="KMA Mobile Weather"
+                title="Official Weather Info"
               />
-              <div className="absolute inset-0 pointer-events-none bg-indigo-50/5 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                 {/* Empty fallback hint if needed */}
+              <div className="absolute inset-x-0 bottom-4 px-6 pointer-events-none">
+                 <div className="bg-black/70 backdrop-blur rounded-lg p-3 text-center border border-white/20 pointer-events-auto">
+                   <p className="text-[10px] text-white/80 mb-2">
+                     {lang === "ko" 
+                       ? "⚠️ 화면이 보이지 않으면 아래 버튼을 클릭하여 공식 사이트로 이동해 주세요." 
+                       : "⚠️ If blank, click the button below to view official weather site."}
+                   </p>
+                 </div>
               </div>
             </div>
             <div className="p-3 bg-bg-card border-t border-border flex justify-between items-center shrink-0">
