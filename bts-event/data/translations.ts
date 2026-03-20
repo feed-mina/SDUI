@@ -22,7 +22,28 @@ export const translations = {
     boardReady: "팬 게시판 준비 중",
     boardDesc: "전 세계 ARMY가 함께하는 게시판이 곧 오픈됩니다.",
     notice: "알림",
-    close: "닫기"
+    close: "닫기",
+    write: "글쓰기",
+    update: "수정",
+    submit: "등록",
+    empty: "게시물이 없습니다. 첫 번째 글을 작성해보세요!",
+    category: "구분",
+    placeholderTitle: "제목을 입력하세요",
+    placeholderContent: "내용을 입력하세요",
+    boardTabs: {
+      ALL: "전체",
+      REPORT: "현황제보",
+      LOST: "분실물",
+      CHEER: "응원하기"
+    },
+    boardFields: {
+      title: "제목",
+      content: "내용",
+      location: "위치 태그",
+      tags: "태그 (#뷔 #화장실 등)",
+      image: "이미지 첨부"
+    },
+    boardSuccess: "게시글이 성공적으로 등록되었습니다! 💜"
   },
   en: {
     title: "💜 BTS Gwanghwamun",
@@ -44,7 +65,28 @@ export const translations = {
     boardReady: "Fan Board Coming Soon",
     boardDesc: "A board for ARMYs worldwide will be open soon.",
     notice: "Notice",
-    close: "Close"
+    close: "Close",
+    write: "Write",
+    update: "Edit",
+    submit: "Post",
+    empty: "No posts yet. Be the first to share!",
+    category: "Category",
+    placeholderTitle: "Enter title",
+    placeholderContent: "Enter content",
+    boardTabs: {
+      ALL: "All",
+      REPORT: "Status",
+      LOST: "Lost & Found",
+      CHEER: "Cheer"
+    },
+    boardFields: {
+      title: "Title",
+      content: "Content",
+      location: "Location Tag",
+      tags: "Tags (e.g., #V #BTS)",
+      image: "Attach Image"
+    },
+    boardSuccess: "Post registered successfully! 💜"
   },
   ja: {
     title: "💜 BTS 光化門",
@@ -60,12 +102,33 @@ export const translations = {
     layers: {
       cafe: "24h カフェ",
       charging: "🔋 充電",
-      emergency: "🏥 救급",
+      emergency: "🏥 救急",
       subway: "🚇 地下鉄"
     },
     boardReady: "ファン掲示板準備中",
-    boardDesc: "世界中のARMYが参加できる掲시판がまもなくオープンします。",
+    boardDesc: "世界中のARMYが参加できる掲示板がまもなくオープンします。",
     notice: "お知らせ",
-    close: "閉じる"
+    close: "閉じる",
+    write: "書く",
+    update: "編集",
+    submit: "登録",
+    empty: "投稿がありません。最初の投稿をしてみましょう！",
+    category: "区分",
+    placeholderTitle: "タイトルを入力してください",
+    placeholderContent: "内容を入力してください",
+    boardTabs: {
+      ALL: "すべて",
+      REPORT: "現況報告",
+      LOST: "落し物",
+      CHEER: "応援"
+    },
+    boardFields: {
+      title: "タイトル",
+      content: "内容",
+      location: "位置タグ",
+      tags: "タグ (例: #V #トイレ)",
+      image: "画像添付"
+    },
+    boardSuccess: "投稿が完了しました！ 💜"
   }
 };
