@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { X, Heart } from "lucide-react";
 
 interface Props {
@@ -9,8 +9,6 @@ interface Props {
 }
 
 export default function CheerMode({ onClose, lang }: Props) {
-  const [pulse, setPulse] = useState(1);
-
   useEffect(() => {
     // Keep the screen awake if possible? (Not reliable without Web API)
     document.body.style.overflow = "hidden";
