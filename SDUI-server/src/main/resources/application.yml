@@ -72,6 +72,9 @@ kakao:
   token-admin: ${KAKAO_TOKEN_ADMIN:96ed9105639fb627fb2c710f39e6516f}
   redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/kakao/callback}
 
+slack:
+  webhook-url: ${SLACK_WEBHOOK_URL:}
+
 openai:
   api-key: ${OPENAI_API_KEY:dummy-local}
   model: gpt-4o-mini

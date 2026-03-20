@@ -9,12 +9,12 @@ import com.domain.demo_backend.global.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -26,46 +26,41 @@ public class KakaoService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final WebClient webClient;
     private final Logger log = LoggerFactory.getLogger(KakaoService.class);
 
     @Value("${kakao.client-id}")
     private String clientId;
 
-    public KakaoService(RefreshTokenRepository refreshTokenRepository, JwtUtil jwtUtil, UserRepository userRepository) {
+    public KakaoService(RefreshTokenRepository refreshTokenRepository, JwtUtil jwtUtil,
+                        UserRepository userRepository, WebClient.Builder webClientBuilder) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
+        this.webClient = webClientBuilder.build();
     }
 
     public KakaoUserInfo getKakaoUserInfo(String accessToken) {
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-        HttpEntity<HttpHeaders> request = new HttpEntity<>(headers);
-
         log.info("KAKAOSERVICE-@@@@@@@@@@@@@@@@@@@@@@@@");
         log.info("KAKAOSERVICE-getKakaoUserInfo");
         log.info("KAKAOSERVICE-accessToken : " + accessToken);
-        log.info("KAKAOSERVICE-request : " + request);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                "https://kapi.kakao.com/v2/user/me",
-                HttpMethod.GET,
-                request,
-                Map.class
-        );
-
-        Map<String, Object> body = response.getBody();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = webClient.get()
+                .uri("https://kapi.kakao.com/v2/user/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
         if (body == null) {
             throw new RuntimeException("카카오에서 사용자 정보를 받지 못했어요!");
         }
 
         log.info("KAKAOSERVICE-body : " + body);
-        log.info("KAKAOSERVICE-response : " + response);
 
         try {
-            Map<String, Object> kakaoAccount = (Map<String, Object>) response.getBody().get("kakao_account");
+            Map<String, Object> kakaoAccount = (Map<String, Object>) body.get("kakao_account");
             Map<String, Object> properties = (Map<String, Object>) body.get("properties");
 
             log.error("@@@@@kakaoAccount", kakaoAccount);
@@ -159,19 +154,19 @@ public class KakaoService {
         }
 
         try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("grant_type", "refresh_token");
             params.add("client_id", clientId);
             params.add("refresh_token", user.getKakaoRefreshToken());
 
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-            ResponseEntity<Map> response = restTemplate.exchange(KAKAO_TOKEN_URL, HttpMethod.POST, request, Map.class);
-
-            Map<String, Object> body = response.getBody();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body = webClient.post()
+                    .uri(KAKAO_TOKEN_URL)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(params)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
             if (body == null) throw new RuntimeException("빈 응답");
 
             String newAccessToken = (String) body.get("access_token");

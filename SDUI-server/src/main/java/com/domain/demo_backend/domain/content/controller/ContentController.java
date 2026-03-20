@@ -42,7 +42,7 @@ public class ContentController {
 
     @GetMapping("/viewContentItem/{contentId}")
     @ResponseBody
-    public ResponseEntity<?> viewContentItem(@PathVariable("contentId") Long contentId, @AuthenticationPrincipal CustomUserDetails userDetails , HttpServletRequest request) {
+    public ResponseEntity<?> viewContentItem(@PathVariable("contentId") Long contentId, @AuthenticationPrincipal CustomUserDetails userDetails, HttpServletRequest request, Authentication authentication) {
 //        String userId = userIds != null && !userIds.isEmpty() ? userIds.get(0) : null;
 
         log.debug("viewContentItem contentId: {}", contentId);
@@ -57,7 +57,7 @@ public class ContentController {
         contentReq.setUserId(userDetails.getUserId());
         try {
             log.debug("viewContentItem 서비스 로직 진입");
-            Optional<Content> contentItem = contentService.viewContentItem(contentReq);
+            Optional<Content> contentItem = contentService.viewContentItem(contentReq, authentication);
             log.debug("viewContentItem 결과: {}", contentItem);
             return ResponseEntity.ok(Map.of("contentItem", contentItem));
         } catch (Exception e) {

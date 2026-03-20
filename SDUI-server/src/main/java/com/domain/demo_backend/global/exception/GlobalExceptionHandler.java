@@ -1,5 +1,6 @@
 package com.domain.demo_backend.global.exception;
 
+import com.domain.demo_backend.domain.kakao.service.OperationAlertService;
 import com.domain.demo_backend.global.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -22,6 +23,11 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private final OperationAlertService operationAlertService;
+
+    public GlobalExceptionHandler(OperationAlertService operationAlertService) {
+        this.operationAlertService = operationAlertService;
+    }
 
     /**
      * 비즈니스 예외 처리 (커스텀)
@@ -128,6 +134,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         log.error("[NullPointerException] Null 참조 오류", e);
+        operationAlertService.sendError("NullPointerException", e.getMessage(), request.getRequestURI());
 
         ApiResponse<Void> response = ApiResponse.error(
                 "서버 내부 오류가 발생했습니다",
@@ -147,6 +154,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         log.error("[Exception] 예상치 못한 오류 발생", e);
+        operationAlertService.sendError(e.getClass().getSimpleName(), e.getMessage(), request.getRequestURI());
 
         ApiResponse<Void> response = ApiResponse.error(
                 "서버 오류가 발생했습니다",

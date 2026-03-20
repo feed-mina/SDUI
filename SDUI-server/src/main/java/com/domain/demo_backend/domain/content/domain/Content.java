@@ -87,6 +87,10 @@ public class Content {
     @Column(name = "frst_dt")
     private LocalDateTime frstRegDt;
 
+    @Builder.Default
+    @Column(name = "is_private")
+    private boolean isPrivate = false;
+
     @Column(name = "role_cd")
     private String roleCd;
 

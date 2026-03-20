@@ -1,6 +1,6 @@
 # .ai 문서 마스터 인덱스
 
-> 최종 수정: 2026-03-19
+> 최종 수정: 2026-03-20 (콘텐츠 나만 보기 기능 추가)
 > 이 파일은 `.ai` 폴더 내 모든 문서의 목적과 위치를 안내합니다.
 
 ---
@@ -23,6 +23,7 @@
 | [research.md](backend_engineer/research.md) | Spring Boot 도메인 분석, AI RestClient 패턴, 멤버십 스키마, 카카오 알림 (2026-02-28 ~ 03-18) |
 | [plan.md](backend_engineer/plan.md) | 백엔드 구현 계획 |
 | [kakao_notification.md](backend_engineer/kakao_notification.md) | 카카오톡 약속 알림 설계 및 구현 |
+| [slack_notification.md](backend_engineer/slack_notification.md) | Slack 웹훅 알림 모듈 — 현재 구현 + 4단계 로드맵 (Phase 0 완료) |
 | [plans/](backend_engineer/plans/) | 개별 기능 계획서 (타임아웃 수정, Flyway 검증 등) |
 | [reports/](backend_engineer/reports/) | 배포 트러블슈팅, Flyway 체크섬 수정 가이드 |
 

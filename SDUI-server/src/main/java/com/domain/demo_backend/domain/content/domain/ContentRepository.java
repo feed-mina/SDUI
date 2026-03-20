@@ -35,6 +35,8 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
 
     Optional<Content> findByContentIdAndUserIdAndDelYn(Long contentId, String userId, String delYn);
 
+    Optional<Content> findByContentIdAndDelYn(Long contentId, String delYn);
+
     // 객체 대신 ID로 개수
     @Query("SELECT COUNT(d) FROM Content d WHERE d.user.userSqno = :userSqno AND d.delYn = :delYn")
     int countByUserIdAndDelYn(@Param("userSqno") Long userSqno, @Param("delYn") String delYn);

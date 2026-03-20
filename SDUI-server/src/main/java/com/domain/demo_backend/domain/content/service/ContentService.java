@@ -113,7 +113,7 @@ public class ContentService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<Content> viewContentItem(ContentRequest contentReq) throws NotFoundException {
+    public Optional<Content> viewContentItem(ContentRequest contentReq, Authentication authentication) throws NotFoundException {
 
         log.debug("viewContentItem 서비스 로직 진입: {}", contentReq);
         if (contentReq.getContentId() == null) {
@@ -122,13 +122,27 @@ public class ContentService {
 
         Long contentId = contentReq.getContentId().longValue();
         String userId = contentReq.getUserId();
-        Optional<Content> content = contentRepository.findByContentIdAndUserIdAndDelYn(contentId, userId, "N");
 
-        if (content.isEmpty()) { // [수정] null 체크가 아닌 isEmpty 체크 [cite: 2026-02-16]
+        // 삭제 여부만 필터링하여 조회 (user_id 무관)
+        Optional<Content> contentOpt = contentRepository.findByContentIdAndDelYn(contentId, "N");
+
+        if (contentOpt.isEmpty()) {
             throw new NotFoundException("해당 콘텐츠를 찾을 수 없습니다.");
         }
 
-        return content;
+        Content content = contentOpt.get();
+
+        // 비공개 콘텐츠: 작성자 또는 어드민만 접근 가능
+        if (content.isPrivate()) {
+            boolean isOwner = content.getUserId() != null && content.getUserId().equals(userId);
+            boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            if (!isOwner && !isAdmin) {
+                throw new NotFoundException("해당 콘텐츠를 찾을 수 없습니다.");
+            }
+        }
+
+        return contentOpt;
     }
 
 
@@ -161,6 +175,7 @@ public class ContentService {
                 .dayTag1(contentRequest.getDayTag1() != null ? contentRequest.getDayTag1() : "")
                 .dayTag2(contentRequest.getDayTag2() != null ? contentRequest.getDayTag2() : "")
                 .dayTag3(contentRequest.getDayTag3() != null ? contentRequest.getDayTag3() : "")
+                .isPrivate(Boolean.TRUE.equals(contentRequest.getIsPrivate()))
                 .contentStatus(contentRequest.getContentStatus() != null ? contentRequest.getContentStatus() : "true")
                 .contentType(contentRequest.getContentType() != null ? contentRequest.getContentType() : "N")
                 .delYn("N")

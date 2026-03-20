@@ -952,3 +952,364 @@ implementation 'org.apache.pdfbox:pdfbox:3.0.2'  // PDF 파싱
 | 2026-03-11 | SseEmitter vs WebFlux | SseEmitter 채택 (기존 MVC 유지) |
 | 2026-03-11 | pronounce-api 역할 재정의 | 발음 채점만 유지, STT/TTS → OpenAI |
 
+
+---
+
+## Slack 웹훅 알림 연동 (2026-03-19)
+
+### 개요
+카카오톡 약속 알림과 동일한 이벤트(30/90/180분 전)에 Slack 웹훅으로 동시 발송.
+`slack.webhook-url` 미설정 시 자동 skip → 개발/테스트 환경에서 부작용 없음.
+
+### 신규 파일
+
+| 파일 | 역할 |
+|------|------|
+| `domain/kakao/service/SlackNotificationService.java` | 웹훅 POST 발송, 내부 예외 처리 (caller에 전파 안 함) |
+
+### 수정 파일
+
+| 파일 | 변경 내용 |
+|------|-----------|
+| `domain/kakao/scheduler/AppointmentNotificationScheduler.java` | `SlackNotificationService` 필드 추가, `sendAndMark()` 안에서 Kakao 직후 Slack 호출 |
+| `src/test/.../AppointmentNotificationSchedulerTest.java` | `@Mock SlackNotificationService slackNotifService` 추가 |
+| `src/main/resources/application.yml` | `slack.webhook-url: ${SLACK_WEBHOOK_URL:<default>}` 추가 |
+
+### 설정
+
+```yaml
+# application.yml
+slack:
+  webhook-url: ${SLACK_WEBHOOK_URL:https://hooks.slack.com/services/...}
+```
+
+**GitHub Actions Secret**: `SLACK_WEBHOOK_URL` 으로 등록 → EC2 배포 시 환경변수로 주입.
+`application.yml` 기본값은 로컬 개발용. 프로덕션에서는 환경변수가 우선 적용됨.
+
+### 발송 흐름 (sendAndMark)
+
+```
+카카오 sendReminder() ──→ 성공
+                        ↓
+                Slack sendReminder() ──→ 성공/실패(내부 처리)
+                        ↓
+               notifSent 플래그 저장 (goalRepo.save)
+```
+- 카카오 실패 → 예외 catch → Slack도 미발송 → 플래그 미저장 → 1분 후 재시도
+- Slack 실패 → 로그만 기록 → 플래그 정상 저장 (재발송 없음)
+
+### 분석 히스토리 추가
+
+| 날짜 | 분석 내용 | 결론 |
+|------|-----------|------|
+| 2026-03-19 | Slack 웹훅 채널 선택 | 웹훅(Incoming Webhook) 채택 — Bot API 불필요 |
+
+---
+
+## 일일 LeetCode 문제 Slack 발송 — Phase 2.5 (2026-03-19)
+
+### 개요
+취업 준비생 코딩 인터뷰 습관 형성을 위해 매일 09:00 KST에 LeetCode Top Interview 문제를 Slack으로 발송.
+FastAPI 불필요 — Spring Boot + DB로 모든 로직 처리.
+
+### 신규 파일
+
+| 파일 | 역할 |
+|------|------|
+| `domain/leetcode/domain/LeetcodeProblem.java` | JPA 엔티티 — `id, title, slug, difficulty, category, displayOrder, sentDate` |
+| `domain/leetcode/domain/LeetcodeProblemRepository.java` | `findFirstBySentDateIsNullOrderByDisplayOrderAsc()` 파생 쿼리 |
+| `domain/leetcode/scheduler/DailyLeetcodeScheduler.java` | `@Scheduled(cron="0 0 9 * * *", zone="Asia/Seoul")`, sent_date 마킹 |
+| `resources/db/migration/V28__add_leetcode_problems.sql` | `leetcode_problems` 테이블 + 부분 인덱스 + 57문제 시드 |
+
+### 수정 파일
+
+| 파일 | 변경 내용 |
+|------|-----------|
+| `domain/kakao/service/SlackNotificationService.java` | `sendDailyLeetcode(LeetcodeProblem)` 추가 — 이모지 난이도(🟢🟡🔴) + 제목 + URL |
+
+### DB 스키마 (V28)
+
+```sql
+CREATE TABLE leetcode_problems (
+    id            SERIAL PRIMARY KEY,
+    title         VARCHAR(200) NOT NULL,
+    slug          VARCHAR(200) NOT NULL UNIQUE,
+    difficulty    VARCHAR(10)  NOT NULL,
+    category      VARCHAR(50)  NOT NULL,
+    display_order INT          NOT NULL,
+    sent_date     DATE                      -- NULL = 미발송
+);
+CREATE INDEX idx_leetcode_unsent ON leetcode_problems (display_order)
+    WHERE sent_date IS NULL;
+```
+
+시드: Array·Strings·Linked List·Trees·Sorting·DP·Design·Math·Others 카테고리 57문제.
+
+### 중복 방지 전략
+- `sent_date IS NULL` 인 문제만 조회 → 발송 직후 `LocalDate.now(ZoneId.of("Asia/Seoul"))` 마킹
+- 57문제 전부 발송 완료 시 로그만 출력 (`전체 문제 발송 완료 (57/57)`)
+
+### 빌드 결과
+`./gradlew build` — BUILD SUCCESSFUL (3m 10s)
+
+### 분석 히스토리 추가
+
+| 날짜 | 분석 내용 | 결론 |
+|------|-----------|------|
+| 2026-03-19 | LeetCode 공식 API 부재 | slug + URL 조합 방식 채택 (ToS 위반 없음) |
+| 2026-03-19 | FastAPI vs Spring Boot | Spring Boot 직접 관리 — AI 불필요, 스케줄러 책임 단일화 |
+| 2026-03-19 | Slack 실패 시 retry 정책 | Kakao 성공 기준으로 플래그 저장, Slack은 best-effort |
+
+---
+
+## 운영 모니터링 Slack 알림 — Phase 1-A (2026-03-19)
+
+### 개요
+서비스 운영 중 발생하는 주요 이벤트를 Slack으로 실시간 알림.
+
+| 알림 종류 | 트리거 조건 | 발송 내용 |
+|-----------|------------|-----------|
+| 신규 가입 | 추가정보 입력 완료 (`/api/auth/update-profile`) | 🎉 가입 이메일 + 누적 회원수 |
+| 5xx 서버 오류 | NPE, 기타 Exception (전역 핸들러) | 🔴 예외 타입 + 경로 + 메시지 |
+| OpenAI 비용 초과 | 일일 추정 비용 >= 임계값 (`$5.0` 기본) | 💸 일일 비용 + 임계값 |
+
+### 신규 파일
+
+#### `domain/kakao/service/OperationAlertService.java`
+- `sendNewUser(String email, long totalCount)` — 신규 가입 알림
+- `sendError(String exceptionType, String message, String path)` — 5xx 오류 알림
+- `sendCostAlert(double dailyCost, double threshold)` — OpenAI 비용 임계 알림
+- `SlackNotificationService.sendAlert()` 위임 구조
+
+### 수정 파일
+
+#### `domain/kakao/service/SlackNotificationService.java`
+`sendAlert(String text)` 메서드 추가 — 임의 텍스트를 Slack으로 발송
+
+#### `global/exception/GlobalExceptionHandler.java`
+- `OperationAlertService` 생성자 주입
+- `handleNullPointerException` + `handleGenericException` (5xx)에만 `sendError()` 호출
+- 400 계열 (`BusinessException`, `Validation`, `DataIntegrity`, `IllegalArgument`) 은 알림 제외
+
+#### `domain/user/controller/AuthController.java`
+- `OperationAlertService` 생성자 주입
+- `updateAdditionalInfo()` 완료 후 `sendNewUser(email, userRepository.count())`
+
+#### `domain/ai/client/OpenAiClient.java`
+- `@Value("${openai.cost.threshold:5.0}")` — application.yml 수정 없이 기본값 사용
+- `AtomicLong dailyMicroDollars` — 쓰레드 안전 누적 카운터
+- `@Scheduled(cron="0 0 0 * * *", zone="Asia/Seoul") resetDailyCost()` — KST 자정 초기화
+- `trackCost(int inputChars, int outputChars)` — GPT-4o 단가로 추정 비용 계산
+  - 입력: $2.5/1M tokens × (chars/4)
+  - 출력: $10/1M tokens × (chars/4)
+  - 단위: 마이크로달러(μ$), 임계 초과 시 알림 발송 후 카운터 초기화
+- `streamChat()` / `streamChatObjects()` — `trackCost()` 호출 추가
+  - 입력 chars: `messages` 스트림으로 사전 집계
+  - 출력 chars: `AtomicLong outputChars`로 청크 누적, `onComplete.run()` 직후 trackCost 호출
+
+### 아키텍처 결정
+
+| 항목 | 결정 | 이유 |
+|------|------|------|
+| 비용 추적 대상 | `OpenAiClient` V1만 (V2 제외) | V2는 테스트 복사본, 실 트래픽은 V1 경유 |
+| 알림 중복 방지 | 임계 초과 후 카운터 0 초기화 | 알림 폭탄 방지, 최소 $5 간격으로 재알림 |
+| Token 추정 방식 | 4자 = 1 token 근사 | 한국어 포함 범용 근사, 정확 집계는 API usage 필드 필요 |
+| 5xx 알림 범위 | NPE + 기타 Exception만 | 400은 비즈니스 정상 흐름, Slack 노이즈 방지 |
+
+### 빌드 결과
+`./gradlew test --no-build-cache` — BUILD SUCCESSFUL (3m 8s)
+
+### 분석 히스토리 추가
+
+| 날짜 | 분석 내용 | 결론 |
+|------|-----------|------|
+| 2026-03-19 | OpenAI SSE는 토큰 수 미반환 | char 수로 근사 추정, 추후 non-streaming 전환 시 usage 필드 활용 가능 |
+| 2026-03-19 | OperationAlertService 위치 | `domain/kakao/service/` — Slack 알림 모듈과 동일 패키지 |
+| 2026-03-19 | 400 vs 5xx 알림 범위 | 400은 제외, 5xx (NPE + 미처리 Exception)만 알림 |
+
+---
+
+## 일일 면접 질문 Slack 발송 — Phase ⭐2 (2026-03-19)
+
+### 개요
+매일 09:10 KST에 미발송 면접 질문 1개를 랜덤 선택하여 Slack으로 발송한다.
+
+### 발송 흐름
+
+```
+매일 09:10 KST (DailyInterviewQuestionScheduler)
+    │
+    ├─ DB: interview_questions WHERE sent_date IS NULL ORDER BY RANDOM() LIMIT 1
+    └─ Slack: 🎯 오늘의 면접 질문 [카테고리]
+                'question text'
+                → 바로 연습하기: https://sdui-delta.vercel.app/view/INTERVIEW_PAGE
+```
+
+> LeetCode(09:00)와 시간을 10분 다르게 하여 Slack 메시지 타이밍 분리
+
+### 신규 파일
+
+| 파일 | 역할 |
+|------|------|
+| `domain/interview/domain/InterviewQuestion.java` | JPA 엔티티 (id, question, category, sentDate) |
+| `domain/interview/domain/InterviewQuestionRepository.java` | `findRandomUnsent()` native query |
+| `domain/interview/scheduler/DailyInterviewQuestionScheduler.java` | `@Scheduled(cron="0 10 9 * * *")` |
+| `resources/db/migration/V29__add_interview_questions.sql` | 테이블 + 30문제 시드 |
+
+### DB 스키마 (V29)
+
+```sql
+CREATE TABLE interview_questions (
+    id        SERIAL PRIMARY KEY,
+    question  TEXT        NOT NULL,
+    category  VARCHAR(50) NOT NULL,  -- 공통/경험역량/가치관/직무/상황대처/마무리
+    sent_date DATE                   -- NULL = 미발송
+);
+```
+
+### 수정 파일
+
+#### `domain/kakao/service/SlackNotificationService.java`
+`sendDailyInterviewQuestion(InterviewQuestion)` 메서드 추가
+
+### 시드 데이터 구성 (30문제)
+
+| 카테고리 | 문제 수 |
+|---------|--------|
+| 공통 | 6 |
+| 경험역량 | 6 |
+| 가치관 | 5 |
+| 직무 | 5 |
+| 상황대처 | 5 |
+| 마무리 | 3 |
+
+### 아키텍처 결정
+
+| 항목 | 결정 | 이유 |
+|------|------|------|
+| 선택 방식 | `ORDER BY RANDOM()` (글로벌 랜덤) | 매일 새로운 질문, 편향 없음 |
+| 발신 채널 | 전체 공용 Slack webhook (단일) | 개인 채널 연동은 Phase 2 이후 |
+| 질문 풀 | 정적 30문제 시드 | FastAPI 불필요, LeetCode 패턴 재사용 |
+| 전체 발송 완료 시 | 로그만 출력 (정지) | 30일 후 재활용 로직은 추후 추가 |
+| 스케줄 시간 | 09:10 KST | LeetCode(09:00)와 구분 |
+
+### 빌드 결과
+`./gradlew test` — BUILD SUCCESSFUL (3m 59s)
+
+### 분석 히스토리 추가
+
+| 날짜 | 분석 내용 | 결론 |
+|------|-----------|------|
+| 2026-03-19 | 개인화 vs 공유 채널 | 1개 Slack webhook → 공유 채널 발송; 개인화는 Phase 2 |
+| 2026-03-19 | 랜덤 vs 순서 | ORDER BY RANDOM() — 매일 다른 카테고리 질문 노출 효과 |
+
+---
+
+## Phase ⭐3 — 면접 D-1 리마인더 (2026-03-20)
+
+### 구현 범위
+
+사용자가 면접 날짜를 등록하면 전날 09:00 KST에 Slack D-1 리마인더를 발송.
+
+### 신규 파일
+
+| 파일 | 역할 |
+|------|------|
+| `resources/db/migration/V30__create_interview_schedule.sql` | `interview_schedule` 테이블 생성 + 부분 인덱스 |
+| `domain/interview/domain/InterviewSchedule.java` | JPA 엔티티 (id, userSqno, interviewDate, company, notifSentD1, createdAt) |
+| `domain/interview/domain/InterviewScheduleRepository.java` | `findAllByInterviewDateAndNotifSentD1False()` / `findAllByUserSqnoOrderByInterviewDateAsc()` |
+| `domain/interview/service/InterviewScheduleService.java` | create / findByUser / delete |
+| `domain/interview/controller/InterviewScheduleController.java` | POST / GET / DELETE `/api/interview-schedule` |
+| `domain/interview/scheduler/InterviewReminderScheduler.java` | `@Scheduled(cron = "0 0 9 * * *", zone = "Asia/Seoul")` D-1 체크 |
+
+### 수정 파일
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `domain/kakao/service/SlackNotificationService.java` | `sendInterviewReminder(InterviewSchedule)` 추가 |
+
+### Slack 메시지 포맷
+
+```
+📋 내일 면접이 있습니다! 파이팅!
+📅 날짜: 3월 21일 (토)
+🏢 회사: 카카오
+→ 면접 연습하기: https://sdui-delta.vercel.app/view/INTERVIEW_PAGE
+```
+
+### 아키텍처 결정
+
+| 항목 | 결정 | 이유 |
+|------|------|------|
+| 스케줄 시간 | 09:00 KST (매일) | LeetCode(09:00)와 동일 — 실제로는 순서 비결정적이나 문제 없음 |
+| notifSentD1 플래그 | 발송 성공 후 즉시 마킹 | 스케줄러 재실행 시 중복 방지 |
+| 삭제 RBAC | 본인 일정만 삭제 가능 | `userSqno` 비교로 소유권 확인 |
+
+### API 엔드포인트
+
+| 메서드 | URL | 설명 |
+|--------|-----|------|
+| POST | `/api/interview-schedule` | 면접 일정 등록 (`interviewDate`, `company`) |
+| GET | `/api/interview-schedule` | 내 일정 목록 (날짜 오름차순) |
+| DELETE | `/api/interview-schedule/{id}` | 일정 삭제 (본인 소유 확인) |
+
+### 빌드 결과
+
+`./gradlew test` — BUILD SUCCESSFUL (4m 44s)
+`interview_schedule` 테이블 Hibernate drop/create 확인
+
+### 분석 히스토리 추가
+
+| 날짜 | 분석 내용 | 결론 |
+|------|-----------|------|
+| 2026-03-20 | GoalSetting 확장 vs 신규 테이블 | 신규 `interview_schedule` 테이블 — 관심사 분리, 독립 CRUD |
+| 2026-03-20 | 운영자 입력 vs 사용자 직접 | REST API 사용자 직접 등록 — 확장성 우선 |
+
+---
+
+## 콘텐츠 "나만 보기" (is_private) 기능 (2026-03-20)
+
+### 개요
+
+콘텐츠 작성 시 "나만 보기" 체크박스를 추가하여 비공개 처리. 공개 목록에서 완전 제거, 상세 조회는 작성자·어드민만 허용.
+
+### DB 변경 (V31)
+
+| 변경 | 내용 |
+|------|------|
+| `content.is_private` 컬럼 | `BOOLEAN NOT NULL DEFAULT FALSE` |
+| `GET_CONTENT_LIST_PAGE` 쿼리 | `AND d.is_private = FALSE` 조건 추가 — 공개 목록에서 비공개 완전 제외 |
+| `COUNT_CONTENT_LIST` 쿼리 | 동일하게 `AND d.is_private = FALSE` 추가 |
+| `ui_metadata` | CONTENT_WRITE 화면에 CHECKBOX 컴포넌트(`is_private`, sort_order=65) 추가 |
+
+### role_nm / role_cd 분석 결과
+
+| 컬럼 | 역할 |
+|------|------|
+| `role_nm` | 콘텐츠 작성 시점 사용자 역할 기록 (`ROLE_USER`, `ROLE_ADMIN`) — 감사 이력. `addContent()`에서 `user.getRole()` 복사 |
+| `role_cd` | 현재 **미사용** (모두 NULL). 향후 역할 코드 체계 예약 컬럼 |
+
+사용자 식별 기준: `user_sqno`(Long FK) 주 식별자, `user_id`(String) 보조.
+
+### 가시성 정책
+
+| 상황 | 동작 |
+|------|------|
+| 공개 목록(`GET_CONTENT_LIST_PAGE`) | `is_private = false`만 노출 — 타인에게 완전 숨김 |
+| 내 콘텐츠 목록(`GET_MEMBER_CONTENT_LIST`) | 본인의 비공개 글 포함 전체 표시 (필터 없음) |
+| 상세 조회(`viewContentItem`) | 비공개면 작성자 또는 `ROLE_ADMIN`만 허용, 타인은 404 |
+
+### 수정된 파일
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `Content.java` | `isPrivate boolean` 필드 (`@Builder.Default = false`) |
+| `ContentRequest.java` | `@JsonProperty("is_private") Boolean isPrivate` |
+| `ContentRepository.java` | `findByContentIdAndDelYn()` 추가 |
+| `ContentService.java` | `addContent()` isPrivate 저장 + `viewContentItem()` 권한 체크 + `Authentication` 파라미터 추가 |
+| `ContentController.java` | `viewContentItem()`에 `Authentication` 주입 → 서비스로 전달 |
+
+### 빌드 결과
+
+`./gradlew build -x test` — BUILD SUCCESSFUL
+| 2026-03-20 | Slack plain text → Block Kit 포맷 | Block Kit 전환 (header/section/context) + WebClient 교체 — Phase 1-B 완료 |

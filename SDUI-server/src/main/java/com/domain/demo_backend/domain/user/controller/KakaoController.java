@@ -20,10 +20,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -40,6 +39,7 @@ public class KakaoController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final KakaoService kakaoService;
     private final JwtUtil jwtUtil;
+    private final WebClient webClient;
 
     @Value("${app.url.web}")
     private String webUrl;
@@ -57,10 +57,12 @@ public class KakaoController {
 
     // 생성자 주입
     @Autowired
-    public KakaoController(RefreshTokenRepository refreshTokenRepository, KakaoService kakaoService, JwtUtil jwtUtil) {
+    public KakaoController(RefreshTokenRepository refreshTokenRepository, KakaoService kakaoService,
+                           JwtUtil jwtUtil, WebClient.Builder webClientBuilder) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.kakaoService = kakaoService;
         this.jwtUtil = jwtUtil;
+        this.webClient = webClientBuilder.build();
     }
 
     @PostMapping("/login")
@@ -122,39 +124,36 @@ public class KakaoController {
 
         log.info("KAKAOCONTROLLER-@@@@@@@@@@@@@@@@@@@@@@@@");
         log.info("KAKAOCONTROLLER-kakao callback");
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        String body = "grant_type=authorization_code" +
-                "&client_id=" + clientId +
-                "&redirect_uri=" + redirectUri +
-                "&code=" + code;
-
-        log.info("KAKAOCONTROLLER-headers : " + headers);
-        log.info("KAKAOCONTROLLER-body : " + body);
         log.info("KAKAOCONTROLLER-client_id : " + clientId);
         log.info("KAKAOCONTROLLER-redirectUri : " + redirectUri);
         log.info("KAKAOCONTROLLER-code : " + code);
 
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
+        formParams.add("grant_type", "authorization_code");
+        formParams.add("client_id", clientId);
+        formParams.add("redirect_uri", redirectUri);
+        formParams.add("code", code);
 
-        ResponseEntity<Map> tokenResponse = restTemplate.exchange(
-                "https://kauth.kakao.com/oauth/token",
-                HttpMethod.POST,
-                request,
-                Map.class);
-        String kakaoAccessToken = (String) tokenResponse.getBody().get("access_token");
-        String kakaoRefreshToken = (String) tokenResponse.getBody().get("refresh_token");
-        Integer expiresIn = (Integer) tokenResponse.getBody().getOrDefault("expires_in", 21600);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> tokenBody = webClient.post()
+                .uri("https://kauth.kakao.com/oauth/token")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue(formParams)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+        String kakaoAccessToken = (String) tokenBody.get("access_token");
+        String kakaoRefreshToken = (String) tokenBody.get("refresh_token");
+        Integer expiresIn = (Integer) tokenBody.getOrDefault("expires_in", 21600);
         LocalDateTime tokenExpiresAt = LocalDateTime.now().plusSeconds(expiresIn);
 
         // 2. 사용자 정보 조회
         KakaoUserInfo userInfo = kakaoService.getKakaoUserInfo(kakaoAccessToken);
 
         // 3. JWT 발급 (토큰 저장 포함)
-        TokenResponse jwtToken = kakaoService.registerKakaoUser(userInfo, kakaoAccessToken, kakaoRefreshToken, tokenExpiresAt);
+        TokenResponse jwtToken = kakaoService.registerKakaoUser(userInfo, kakaoAccessToken, kakaoRefreshToken,
+                tokenExpiresAt);
 
         // 4. Access Token 쿠키 생성
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())
@@ -268,7 +267,7 @@ public class KakaoController {
         Integer pomodoroCount = (Integer) data.getOrDefault("pomodoroCount", 0);
         Integer pomodoroTotalTime = (Integer) data.getOrDefault("pomodoroTotalTime", 0);
 
-        String recordUrl = (String) data.getOrDefault("recordUrl", "https://justsaying.co.kr");
+        String recordUrl = (String) data.getOrDefault("recordUrl", "https://sdui-delta.vercel.app");
         log.info("KAKAOCONTROLLER- stopwatchTime: {}초, pomodoroCount: {}회, pomodoroTotalTime: {}분",
                 stopwatchTime, pomodoroCount, pomodoroTotalTime);
         log.info("KAKAOCONTROLLER- recordUrl: {}", recordUrl);
@@ -306,23 +305,24 @@ public class KakaoController {
         log.info("KAKAOCONTROLLER- 최종 메시지: {}", messageText);
 
         // 카카오톡 메시지 전송 준비
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + kakaoAccessToken);
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("template_object", templateObject);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-        log.info("KAKAOCONTROLLER- 카카오 API 요청: {}", request);
+        log.info("KAKAOCONTROLLER- 카카오 API 요청 전송 중...");
 
         // 카카오 API 요청 전송
         try {
-            ResponseEntity<String> response = new RestTemplate().postForEntity(KAKAO_URL, request, String.class);
-            log.info("KAKAOCONTROLLER- 카카오톡 메시지 전송 성공! 응답: {}", response);
+            webClient.post()
+                    .uri(KAKAO_URL)
+                    .header("Authorization", "Bearer " + kakaoAccessToken)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(params)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+            log.info("KAKAOCONTROLLER- 카카오톡 메시지 전송 성공!");
             return ResponseEntity.ok("카톡 전송 성공!");
-        } catch (HttpClientErrorException e) {
+        } catch (WebClientResponseException e) {
             log.error(" 카톡 전송 실패! 오류: {}", e.getResponseBodyAsString());
             return ResponseEntity.status(e.getStatusCode()).body("카톡 전송 실패! 오류: " + e.getResponseBodyAsString());
         }

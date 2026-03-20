@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.*;
 import java.net.URI;
@@ -38,7 +38,7 @@ public class OpenAiClientV2 {
     @Value("${openai.whisper-model:whisper-1}")
     private String whisperModel;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final WebClient webClient = WebClient.create();
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(30))
             .build();
@@ -49,10 +49,6 @@ public class OpenAiClientV2 {
      */
     @SuppressWarnings("unchecked")
     public String transcribe(MultipartFile audio, String language) throws IOException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.set("Authorization", "Bearer " + apiKey);
-
         byte[] audioBytes = audio.getBytes();
         String originalFilename = audio.getOriginalFilename() != null
                 ? audio.getOriginalFilename() : "audio.webm";
@@ -62,27 +58,30 @@ public class OpenAiClientV2 {
             public String getFilename() { return originalFilename; }
         };
 
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", audioResource);
-        body.add("model", whisperModel);
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("file", audioResource).filename(originalFilename);
+        builder.part("model", whisperModel);
         // ✅ V2 핵심 수정: null이면 language 파라미터 자체를 전송 안 함
         if (language != null && !language.isBlank()) {
-            body.add("language", language);
+            builder.part("language", language);
             log.debug("[V2] STT language 강제 설정: {}", language);
         } else {
             log.debug("[V2] STT language 미설정 → Whisper 자동 감지");
         }
 
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+        Map<String, Object> response = webClient.post()
+                .uri(OPENAI_BASE_URL + "/audio/transcriptions")
+                .header("Authorization", "Bearer " + apiKey)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-                OPENAI_BASE_URL + "/audio/transcriptions", request, Map.class
-        );
-
-        if (response.getBody() == null || response.getBody().get("text") == null) {
+        if (response == null || response.get("text") == null) {
             throw new IllegalStateException("Whisper API 응답이 비어 있습니다.");
         }
-        return response.getBody().get("text").toString();
+        return response.get("text").toString();
     }
 
     /**

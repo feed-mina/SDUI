@@ -3,16 +3,19 @@
 //   Streaming: java.net.http.HttpClient (Java 17 내장, 추가 의존성 없음)
 package com.domain.demo_backend.domain.ai.client;
 
+import com.domain.demo_backend.domain.kakao.service.OperationAlertService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.*;
 import java.net.URI;
@@ -22,6 +25,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -39,21 +43,48 @@ public class OpenAiClient {
     @Value("${openai.whisper-model:whisper-1}")
     private String whisperModel;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Value("${openai.cost.threshold:5.0}")
+    private double costThreshold;
+
+    @Autowired
+    private OperationAlertService operationAlertService;
+
+    // 일일 누적 비용 추적 (단위: 마이크로달러, $0.000001)
+    private final AtomicLong dailyMicroDollars = new AtomicLong(0);
+
+    private final WebClient webClient = WebClient.create();
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(30))
             .build();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
+    public void resetDailyCost() {
+        dailyMicroDollars.set(0);
+        log.debug("OpenAI 일일 비용 카운터 초기화");
+    }
+
+    /**
+     * 추정 비용을 누적하고 임계 초과 시 Slack 알림을 발송한다.
+     * GPT-4o 기준: 입력 $2.5/1M tokens, 출력 $10/1M tokens 으로 추정.
+     * (4자 ≈ 1 token)
+     */
+    private void trackCost(int inputChars, int outputChars) {
+        long inputMicro  = (long)((inputChars  / 4.0) * 2.5);   // $2.5/1M tokens → μ$
+        long outputMicro = (long)((outputChars / 4.0) * 10.0);  // $10/1M tokens  → μ$
+        long total = dailyMicroDollars.addAndGet(inputMicro + outputMicro);
+        double totalDollars = total / 1_000_000.0;
+        if (totalDollars >= costThreshold) {
+            operationAlertService.sendCostAlert(totalDollars, costThreshold);
+            dailyMicroDollars.set(0);  // 알림 후 초기화 (반복 알림 방지)
+        }
+    }
+
     /**
      * STT: Whisper API (multipart/form-data)
-     * Spring RestTemplate의 기본 multipart 지원 활용
      */
+    @SuppressWarnings("unchecked")
     public String transcribe(MultipartFile audio, String language) throws IOException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.set("Authorization", "Bearer " + apiKey);
-
         byte[] audioBytes = audio.getBytes();
         String originalFilename = audio.getOriginalFilename() != null
                 ? audio.getOriginalFilename() : "audio.webm";
@@ -63,23 +94,26 @@ public class OpenAiClient {
             public String getFilename() { return originalFilename; }
         };
 
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("file", audioResource);
-        body.add("model", whisperModel);
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("file", audioResource).filename(originalFilename);
+        builder.part("model", whisperModel);
         if (language != null && !language.isBlank()) {
-            body.add("language", language); // 명시적 언어만 전달, null이면 Whisper 자동 감지
+            builder.part("language", language);
         }
 
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
+        Map<String, Object> response = webClient.post()
+                .uri(OPENAI_BASE_URL + "/audio/transcriptions")
+                .header("Authorization", "Bearer " + apiKey)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-                OPENAI_BASE_URL + "/audio/transcriptions", request, Map.class
-        );
-
-        if (response.getBody() == null || response.getBody().get("text") == null) {
+        if (response == null || response.get("text") == null) {
             throw new IllegalStateException("Whisper API 응답이 비어 있습니다.");
         }
-        return response.getBody().get("text").toString();
+        return response.get("text").toString();
     }
 
     /**
@@ -91,6 +125,13 @@ public class OpenAiClient {
             Consumer<String> onChunk,
             Runnable onComplete) throws Exception {
 
+        int inputChars = messages.stream()
+                .mapToInt(m -> {
+                    Object c = m.get("content");
+                    return c instanceof String s ? s.length() : c != null ? c.toString().length() : 0;
+                }).sum();
+        AtomicLong outputChars = new AtomicLong(0);
+
         String jsonBody = objectMapper.writeValueAsString(Map.of(
                 "model", model,
                 "messages", messages,
@@ -121,6 +162,7 @@ public class OpenAiClient {
                     try {
                         String chunk = extractChunkContent(json);
                         if (chunk != null && !chunk.isEmpty()) {
+                            outputChars.addAndGet(chunk.length());
                             onChunk.accept(chunk);
                         }
                     } catch (Exception e) {
@@ -130,6 +172,7 @@ public class OpenAiClient {
             }
         }
         onComplete.run();
+        trackCost(inputChars, (int) outputChars.get());
     }
 
     /**
@@ -141,6 +184,11 @@ public class OpenAiClient {
             Consumer<String> onChunk,
             Runnable onComplete) throws Exception {
 
+        int inputChars = messages.stream()
+                .mapToInt(m -> m.getOrDefault("content", "").length())
+                .sum();
+        AtomicLong outputChars = new AtomicLong(0);
+
         String jsonBody = objectMapper.writeValueAsString(Map.of(
                 "model", model,
                 "messages", messages,
@@ -171,6 +219,7 @@ public class OpenAiClient {
                     try {
                         String chunk = extractChunkContent(json);
                         if (chunk != null && !chunk.isEmpty()) {
+                            outputChars.addAndGet(chunk.length());
                             onChunk.accept(chunk);
                         }
                     } catch (Exception e) {
@@ -180,6 +229,7 @@ public class OpenAiClient {
             }
         }
         onComplete.run();
+        trackCost(inputChars, (int) outputChars.get());
     }
 
     /**

@@ -1,11 +1,11 @@
-**📘 프로젝트 오류 일지: justsaying.co.kr (S3 + CloudFront 정적 웹사이트 배포)**
+**📘 프로젝트 오류 일지: sdui-delta.vercel.app (S3 + CloudFront 정적 웹사이트 배포)**
 
 ---
 
 ### 🗂️ 프로젝트 개요
 - 프론트엔드: Vue + Vite 프로젝트
 - 호스팅: AWS S3 + CloudFront
-- 도메인: justsaying.co.kr (가비아에서 구매)
+- 도메인: sdui-delta.vercel.app (가비아에서 구매)
 - 인증서: AWS ACM을 이용한 HTTPS 적용
 
 ---
@@ -13,7 +13,7 @@
 ### ❌ 주요 오류 및 해결 과정 요약
 
 #### 1. **DNS 오류 (ERR_NAME_NOT_RESOLVED)**
-- 🔍 증상: `https://justsaying.co.kr` 접속 시 DNS 이름을 찾을 수 없음
+- 🔍 증상: `https://sdui-delta.vercel.app` 접속 시 DNS 이름을 찾을 수 없음
 - 🛠 원인:
   - Route 53에서 A 레코드 alias 설정이 잘못됨
   - CloudFront와 연결된 도메인이 없거나 ACM 인증서 미적용 상태
@@ -83,7 +83,7 @@
 ---
 
 ###  최종 확인
-- https://justsaying.co.kr 정상 접속 완료
+- https://sdui-delta.vercel.app 정상 접속 완료
 - CloudFront 캐시 무효화 수행함
 - S3에 `index.html`은 루트에 위치
 - HTTPS 인증서 정상 적용 (ACM)
