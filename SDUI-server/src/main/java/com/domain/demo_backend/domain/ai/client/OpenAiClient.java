@@ -248,4 +248,38 @@ public class OpenAiClient {
         Object content = delta.get("content");
         return content != null ? content.toString() : null;
     }
+
+    @SuppressWarnings("unchecked")
+    public String chat(List<Map<String, String>> messages) throws Exception {
+        int inputChars = messages.stream()
+                .mapToInt(m -> m.getOrDefault("content", "").length())
+                .sum();
+
+        String jsonBody = objectMapper.writeValueAsString(Map.of(
+                "model", model,
+                "messages", messages,
+                "stream", false
+        ));
+
+        Map response = webClient.post()
+                .uri(OPENAI_BASE_URL + "/chat/completions")
+                .header("Authorization", "Bearer " + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(jsonBody)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+        if (response == null || !response.containsKey("choices")) {
+            throw new IllegalStateException("OpenAI API 응답이 비어 있습니다.");
+        }
+
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+        Map<String, Object> choice = choices.get(0);
+        Map<String, Object> assistantMessage = (Map<String, Object>) choice.get("message");
+        String reply = (String) assistantMessage.get("content");
+
+        trackCost(inputChars, reply != null ? reply.length() : 0);
+        return reply;
+    }
 }

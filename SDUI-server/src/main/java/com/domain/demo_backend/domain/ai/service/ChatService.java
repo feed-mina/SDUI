@@ -55,5 +55,20 @@ public class ChatService {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    public String createGuestReply(String message, String lang) {
+        try {
+            String systemPrompt = "You are a helpful BTS Gwanghwamun Event Guide. Answer user questions about the event, locations, and safety. " +
+                    "Current language: " + lang + ". Please respond in " + lang + ".";
+            
+            List<Map<String, String>> messages = List.of(
+                    Map.of("role", "system", "content", systemPrompt),
+                    Map.of("role", "user", "content", message)
+            );
+
+            return openAiClient.chat(messages);
+        } catch (Exception e) {
+            log.error("게스트 채팅 답변 생성 실패", e);
+            return "죄송합니다. 서비스 연결 중 오류가 발생했습니다. (Sorry, an error occurred.)";
+        }
     }
 }

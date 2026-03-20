@@ -42,4 +42,18 @@ public class AiChatController {
         sseExecutor.execute(() -> chatService.stream(req, userId, emitter));
         return emitter;
     }
+
+    /**
+     * POST /api/ai/guest/chat
+     * 게스트용 단일 응답 채팅 (BTS 이벤트 페이지 등에서 사용)
+     */
+    @PostMapping("/guest/chat")
+    public Map<String, String> guestChat(@RequestBody Map<String, String> body) {
+        String message = body.get("message");
+        String lang = body.get("lang");
+        log.info("게스트 채팅 요청 - lang={}", lang);
+
+        String reply = chatService.createGuestReply(message, lang);
+        return Map.of("reply", reply);
+    }
 }
