@@ -27,7 +27,7 @@ const createCustomIcon = (emoji: string) => {
 };
 
 interface Props {
-  activeLayers: Set<MapLayer>;
+  activeLayer: MapLayer | null;
   lang: "ko" | "en" | "ja";
 }
 
@@ -38,7 +38,7 @@ const LAYER_EMOJI: Record<MapLayer, string> = {
   subway:    "🚇",
 };
 
-export default function LeafletMap({ activeLayers, lang }: Props) {
+export default function LeafletMap({ activeLayer, lang }: Props) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function LeafletMap({ activeLayers, lang }: Props) {
         <ZoomControl position="bottomright" />
 
         {/* 24h Cafes */}
-        {activeLayers.has("cafe") && locationsData.cafes?.map((item: any) => (
+        {activeLayer === "cafe" && locationsData.cafes?.map((item: any) => (
           <Marker 
             key={item.id} 
             position={[item.lat, item.lng]} 
@@ -79,7 +79,7 @@ export default function LeafletMap({ activeLayers, lang }: Props) {
         ))}
 
         {/* Charging Stations */}
-        {activeLayers.has("charging") && locationsData.charging?.map((item: any) => (
+        {activeLayer === "charging" && locationsData.charging?.map((item: any) => (
           <Marker 
             key={item.id} 
             position={[item.lat, item.lng]} 
@@ -93,7 +93,7 @@ export default function LeafletMap({ activeLayers, lang }: Props) {
         ))}
 
         {/* Emergency Tents */}
-        {activeLayers.has("emergency") && locationsData.emergency_tents?.map((item: any) => (
+        {activeLayer === "emergency" && locationsData.emergency_tents?.map((item: any) => (
           <Marker 
             key={item.id} 
             position={[item.lat, item.lng]} 
@@ -107,7 +107,7 @@ export default function LeafletMap({ activeLayers, lang }: Props) {
         ))}
 
         {/* Subway Routes */}
-        {activeLayers.has("subway") && locationsData.subway_routes?.map((item: any) => (
+        {activeLayer === "subway" && locationsData.subway_routes?.map((item: any) => (
           <Marker 
             key={item.id} 
             position={[item.lat, item.lng]} 
