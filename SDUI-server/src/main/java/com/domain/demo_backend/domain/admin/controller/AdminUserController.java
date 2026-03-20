@@ -3,6 +3,7 @@ package com.domain.demo_backend.domain.admin.controller;
 import com.domain.demo_backend.domain.admin.dto.AdminUserResponse;
 import com.domain.demo_backend.domain.admin.dto.UpdateUserRoleRequest;
 import com.domain.demo_backend.domain.admin.service.AdminUserService;
+import com.domain.demo_backend.domain.kakao.service.SlackNotificationService;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +19,11 @@ public class AdminUserController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminUserController.class);
     private final AdminUserService adminUserService;
+    private final SlackNotificationService slackNotificationService;
 
-    public AdminUserController(AdminUserService adminUserService) {
+    public AdminUserController(AdminUserService adminUserService, SlackNotificationService slackNotificationService) {
         this.adminUserService = adminUserService;
+        this.slackNotificationService = slackNotificationService;
     }
 
     // 사용자 목록 조회 (keyword: userId/email 검색, role: 권한 필터)
@@ -39,6 +42,15 @@ public class AdminUserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "사용자 목록 조회 중 오류가 발생했습니다."));
         }
+    }
+
+    // Slack 웹훅 연결 테스트 (ROLE_ADMIN 전용)
+    @PostMapping("/slack/test")
+    public ResponseEntity<?> testSlack(@RequestBody(required = false) Map<String, String> body) {
+        String msg = (body != null && body.containsKey("message"))
+                ? body.get("message") : "✅ Slack 웹훅 테스트 메시지 (AWS 배포 검증)";
+        slackNotificationService.sendAlert(msg);
+        return ResponseEntity.ok(Map.of("sent", true, "message", msg));
     }
 
     // 사용자 권한 변경 (최소 1명, 최대 5명)
