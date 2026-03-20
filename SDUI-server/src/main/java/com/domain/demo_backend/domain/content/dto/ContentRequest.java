@@ -52,4 +52,7 @@ public class ContentRequest {
 
     private String searchType;
     private String searchText;
+
+    @JsonProperty("is_private")
+    private Boolean isPrivate;
 }

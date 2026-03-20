@@ -950,4 +950,45 @@ AI_INTERVIEW: AIInterviewComponent,
 |------|-----------|------|
 | 2026-03-11 | SSE 소비 방식 결정 | fetch + ReadableStream 채택 (POST + JWT 지원) |
 | 2026-03-11 | AI 응답 방식 결정 | TTS 없음, 텍스트 채팅창만 표시 |
+
+---
+
+## CheckboxField 신규 컴포넌트 (2026-03-20)
+
+### 개요
+
+"나만 보기" 기능을 위해 SDUI 엔진에 CHECKBOX 컴포넌트 타입 추가.
+
+### 파일
+
+- `components/fields/CheckboxField.tsx` — 신규
+- `components/constants/componentMap.tsx` — `CHECKBOX` 타입 등록
+
+### 컴포넌트 패턴
+
+`EmotionSelectField`와 동일한 패턴:
+- `targetKey = meta?.ref_data_id || meta?.refDataId || id` — formData 키 결정
+- `onChange?.(targetKey, e.target.checked)` — boolean 값 업데이트
+- `data?.[targetKey] === true || data?.[targetKey] === 'true'` — checked 상태 (boolean/string 모두 처리)
+- `accent-color: #FDBFBC` — 프로젝트 컬러 적용
+
+### componentMap 등록
+
+```typescript
+CHECKBOX: withRenderTrack(CheckboxField, "CheckboxField"),
+```
+
+### ui_metadata 패턴
+
+```sql
+component_type = 'CHECKBOX'
+component_id   = 'is_private'   -- formData key로 사용
+parent_group_id = 'DIARYWRITE_SECTION'
+sort_order = 65  -- save_btn(70) 직전
+is_readonly = false  -- 인터랙티브 컴포넌트
+```
+
+### CSS
+
+`DIARY_WRITE.css` 끝에 `.checkbox-field-container`, `.checkbox-label`, `.checkbox-input`, `.checkbox-text` 추가.
 | 2026-03-11 | 언어 모드 결정 | 영어/한국어 별도 screenId로 분리 |
