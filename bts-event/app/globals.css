@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+:root {
+  --bts-purple-dark:  #4A0E8F;
+  --bts-purple:       #7B2D8B;
+  --bts-purple-light: #E1C9FF;
+  --bg-dark:          #0D0D1A;
+  --bg-card:          #1A1A2E;
+  --text-primary:     #F0E6FF;
+  --text-secondary:   #9B8DBD;
+  --accent:           #C084FC;
+  --border:           #2D2D4E;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: "Noto Sans KR", Arial, Helvetica, sans-serif;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Tab button */
+.tab-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab-btn.active {
+  background: var(--bts-purple);
+  color: var(--text-primary);
+  border-color: var(--bts-purple-light);
+}
+
+/* Layer filter button */
+.layer-btn {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.layer-btn.active {
+  background: var(--bts-purple);
+  color: #fff;
+  border-color: var(--bts-purple-light);
+}
+
+/* Info panel */
+.info-panel {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.info-btn {
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.info-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.info-btn.kakao {
+  background: #FEE500;
+  color: #3C1E1E;
+  border-color: #FEE500;
+}
+
+.info-btn.line {
+  background: #06C755;
+  color: #fff;
+  border-color: #06C755;
+}
+
+.info-btn.openchat {
+  background: var(--bts-purple);
+  color: #fff;
+  border-color: var(--bts-purple-light);
+}
+
+.info-btn.support {
+  background: linear-gradient(135deg, var(--bts-purple-dark), var(--bts-purple));
+  color: #fff;
+  border-color: var(--bts-purple-light);
+}
+
+/* Kakao map custom marker */
+.map-marker {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  border: 2px solid white;
+  cursor: pointer;
+}
+
+/* Map info window */
+.map-info {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 200px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.map-info .title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.map-info .memo {
+  color: var(--text-secondary);
+}
+
+/* Kakao map container */
+#kakao-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* App shell */
+.app-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.app-header h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.layer-bar {
+  padding: 8px 12px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+
+.layer-bar::-webkit-scrollbar {
+  display: none;
+}
