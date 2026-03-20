@@ -96,6 +96,24 @@ export const useBusinessActions = (screenId: string, metadata: any[] = [], initi
                 } else {
                     // console.warn("이동할 경로 또는 ID가 데이터에 없습니다.", { baseActionUrl, contentId });
                 } break;
+            case "GOOGLE_CALENDAR_CONNECT": {
+                try {
+                    const statusRes = await axios.get('/api/google/status');
+                    if (statusRes.data.connected) {
+                        const confirm = window.confirm("구글 캘린더 연결을 해제하시겠습니까?");
+                        if (confirm) {
+                            await axios.delete('/api/google/disconnect');
+                            alert("구글 캘린더 연결이 해제되었습니다.");
+                        }
+                    } else {
+                        const authRes = await axios.get('/api/google/auth-url');
+                        window.location.href = authRes.data.authUrl;
+                    }
+                } catch (error: any) {
+                    handleError(error, 'GOOGLE_CALENDAR_CONNECT', '구글 캘린더 연결 중 오류가 발생했습니다.');
+                }
+                break;
+            }
             default:
                 break;
         }
