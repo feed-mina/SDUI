@@ -128,6 +128,7 @@ jobs:
               -e GCP_PROJECT_ID=kdeliver \
               -e GCP_PROCESSOR_ID=6ed87cfefab39a91 \
               -e GCP_CREDENTIALS_PATH=/app/gcp-credentials.json \
+              -e SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }} \
               -v /home/ubuntu/gcp-credentials.json:/app/gcp-credentials.json:ro \
               ${{ secrets.DOCKER_USERNAME }}/sdui-app:${{ env.BRANCH_TAG }}
 
