@@ -9,10 +9,11 @@
 ## 1. 프로젝트 개요
 
 BTS 광화문 이벤트 현장 팬들을 위한 실시간 정보 지도 페이지.
-- 현장에서 필요한 위치 정보(카페, 충전, 구급, 지하철)를 지도로 제공
-- AI 영어/일본어 채팅으로 외국인 팬과의 소통 연습
-- 팬 소통 게시판 (익명, 다국어)
-- 카카오페이 후원 버튼으로 수익화
+- 현장에서 필요한 위치 정보(카페, 충전, 구급, 지하철)를 지도로 제공 (완료 ✅)
+- AI 영어/일본어 채팅으로 외국인 팬과의 소통 연습 (완료 ✅ - 5회 제한 및 리다이렉트 포함)
+- 팬 소통 게시판 (익명, 다국어) (진행 중 🏗️ - V35 대기)
+- 카카오페이 후원 버튼으로 수익화 (완료 ✅)
+- SNS 공유 최적화 및 OG 이미지 적용 (완료 ✅)
 
 ---
 
@@ -99,9 +100,8 @@ SDUI/
 │                                          │
 ├──────────────────────────────────────────┤
 │  [📹CCTV] [🗺️TOPIS] [📍위치공유]               │
-│  [🐦X공유] [📋링크복사]  [☕후원 💜]            │
+│  [𝕏 X공유] [📋링크복사]  [☕후원 💜]            │
 │  [💬카카오톡 공유] [🟢LINE 공유]                │
-│  [💬오픈채팅방 입장 →]                         │
 └──────────────────────────────────────────┘
 ```
 
@@ -135,9 +135,9 @@ SDUI/
 └──────────────────────────────────────────┘
 ```
 
-- localStorage 키: `bts_guest_chat_count` (최대 5)
-- 5회 소진 시 SDUI 회원가입 유도 모달
-- 언어별 시스템 프롬프트 분기 (en/ja)
+- localStorage 키: `bts_guest_chat_count` (최대 5) (완료 ✅)
+- 5회 소진 시 `sdui-delta.vercel.app` 로그인 페이지로 리다이렉트 (완료 ✅)
+- 언어별 시스템 프롬프트 분기 (en/ja) (완료 ✅)
 
 **BTS 이벤트 특화 프롬프트 (영어):**
 > "You are a friendly AI chat partner helping international BTS fans at the Gwanghwamun event. Have a casual, warm conversation about BTS. Help them communicate with Korean fans. Keep responses short (2-3 sentences). Use BTS references naturally."
@@ -448,19 +448,19 @@ NEXT_PUBLIC_KAKAO_OPENCHAT_URL = https://open.kakao.com/o/[오픈채팅방ID]
 
 ## 10. 개발 타임라인
 
-| 순서 | 작업 | 예상 시간 | 담당 |
+| 순서 | 작업 | 예상 시간 | 상태 |
 |------|------|---------|------|
-| 1 | `bts-event/` Next.js 프로젝트 생성 | 15분 | FE |
-| 2 | 카카오맵 + 4개 마커 레이어 | 2시간 | FE |
-| 3 | InfoPanel (CCTV, SNS 공유, 후원 버튼) + 카카오톡 공유/오픈채팅/LINE | 1.5시간 | FE |
-| 4 | Vercel 배포 + 환경변수 설정 | 30분 | FE |
-| 5 | BE: 게스트 채팅 API (`/api/ai/guest/chat`) | 1.5시간 | BE |
-| 6 | FE: GuestChat 컴포넌트 + localStorage 5회 제한 | 1시간 | FE |
-| 7 | V35 마이그레이션 실행 (확인 후) | 30분 | BE |
-| 8 | BE: 팬 게시판 API (FanPost 도메인) | 2시간 | BE |
-| 9 | FE: 게시판 UI (목록, 작성, 리액션, 댓글) | 2시간 | FE |
+| 1 | `bts-event/` Next.js 프로젝트 생성 | 15분 | 완료 ✅ |
+| 2 | 카카오맵 + 4개 마커 레이어 | 2시간 | 완료 ✅ |
+| 3 | InfoPanel (CCTV, SNS 공유, 후원 버튼) + 카카오톡/LINE/X | 1.5시간 | 완료 ✅ |
+| 4 | Vercel 배포 + 도메인 연결 + 환경변수 설정 | 30분 | 완료 ✅ |
+| 5 | BE: 게스트 채팅 API (`/api/ai/guest/chat`) | 1.5시간 | 확인 필요 🔍 |
+| 6 | FE: GuestChat 컴포넌트 + 5회 제한 + 리다이렉트 | 1 hour | 완료 ✅ |
+| 7 | V35 마이그레이션 실행 (확인 후) | 30분 | 대기 중 ⏳ |
+| 8 | BE: 팬 게시판 API (FanPost 도메인) | 2시간 | 대기 중 ⏳ |
+| 9 | FE: 게시판 UI (목록, 작성, 리액션, 댓글) | 2시간 | 대기 중 ⏳ |
 
-**우선순위:** 지도 → AI 채팅 → 게시판
+**진행 상황:** 지도 및 AI 채팅(게스트용) 구현 완료. 게시판 연동 준비 중.
 
 ---
 
