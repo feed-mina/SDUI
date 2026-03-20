@@ -13,8 +13,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 /**
- * 매일 09:00 KST에 미발송 LeetCode 문제 1개를 Slack으로 발송한다.
- * 전체 57문제 발송 완료 후에는 로그만 출력하고 종료.
+ * 매일 07:00 / 12:00 / 17:00 KST에 미발송 LeetCode 문제 1개씩 Slack으로 발송한다.
+ * 전체 문제 발송 완료 후에는 로그만 출력하고 종료.
  */
 @Component
 @RequiredArgsConstructor
@@ -24,19 +24,33 @@ public class DailyLeetcodeScheduler {
     private final SlackNotificationService slackService;
     private final Logger log = LoggerFactory.getLogger(DailyLeetcodeScheduler.class);
 
-    @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Seoul")
-    public void sendDailyProblem() {
+    @Scheduled(cron = "0 0 7 * * *", zone = "Asia/Seoul")
+    public void sendMorningProblem() {
+        sendNextProblem();
+    }
+
+    @Scheduled(cron = "0 0 12 * * *", zone = "Asia/Seoul")
+    public void sendNoonProblem() {
+        sendNextProblem();
+    }
+
+    @Scheduled(cron = "0 0 17 * * *", zone = "Asia/Seoul")
+    public void sendEveningProblem() {
+        sendNextProblem();
+    }
+
+    public void sendNextProblem() {
         try {
             problemRepo.findFirstBySentDateIsNullOrderByDisplayOrderAsc()
                     .ifPresentOrElse(problem -> {
                         slackService.sendDailyLeetcode(problem);
                         problem.setSentDate(LocalDate.now(ZoneId.of("Asia/Seoul")));
                         problemRepo.save(problem);
-                        log.info("LeetCode 일일 문제 발송 완료. problemId={}, title={}",
+                        log.info("LeetCode 문제 발송 완료. problemId={}, title={}",
                                 problem.getId(), problem.getTitle());
-                    }, () -> log.info("LeetCode 전체 문제 발송 완료 (57/57)"));
+                    }, () -> log.info("LeetCode 전체 문제 발송 완료"));
         } catch (Exception e) {
-            log.error("LeetCode 일일 문제 발송 실패", e);
+            log.error("LeetCode 문제 발송 실패", e);
         }
     }
 }
