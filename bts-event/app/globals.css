@@ -376,3 +376,47 @@ body {
 
 .leaflet-bar a:first-child { border-top-left-radius: 8px !important; border-top-right-radius: 8px !important; }
 .leaflet-bar a:last-child { border-bottom-left-radius: 8px !important; border-bottom-right-radius: 8px !important; }
+
+/* Premium BTS Board Styles */
+.bts-gradient {
+  background: linear-gradient(135deg, #7B2D8B 0%, #E1C9FF 50%, #C084FC 100%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.glass-morphism {
+  background: rgba(26, 26, 46, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bg-bts-gradient {
+  background: linear-gradient(45deg, var(--bts-purple), var(--accent));
+}
+
+.text-bts-purple-light {
+  color: var(--bts-purple-light);
+}
+
+.bg-bts-purple {
+  background-color: var(--bts-purple);
+}
+
+.border-bts-purple {
+  border-color: var(--bts-purple);
+}
