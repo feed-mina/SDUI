@@ -131,6 +131,9 @@ jobs:
               -e SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }} \
               -e SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }} \
               -e SLACK_CHANNEL_ID=${{ secrets.SLACK_CHANNEL_ID }} \
+              -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+              -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+              -e GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }} \
               -v /home/ubuntu/gcp-credentials.json:/app/gcp-credentials.json:ro \
               -v /home/ubuntu/study-materials:/app/assets/study:ro \
               ${{ secrets.DOCKER_USERNAME }}/sdui-app:${{ env.BRANCH_TAG }}
