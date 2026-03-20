@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import { type Lang } from "@/components/LangToggle";
 import { getGuestChatCount, incrementGuestChatCount, hasGuestChatRemaining } from "@/lib/guestLimit";
