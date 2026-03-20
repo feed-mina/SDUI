@@ -4,6 +4,7 @@ import com.domain.demo_backend.domain.admin.dto.AdminUserResponse;
 import com.domain.demo_backend.domain.admin.dto.UpdateUserRoleRequest;
 import com.domain.demo_backend.domain.admin.service.AdminUserService;
 import com.domain.demo_backend.domain.kakao.service.SlackNotificationService;
+import com.domain.demo_backend.domain.leetcode.scheduler.DailyLeetcodeScheduler;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +21,12 @@ public class AdminUserController {
     private static final Logger log = LoggerFactory.getLogger(AdminUserController.class);
     private final AdminUserService adminUserService;
     private final SlackNotificationService slackNotificationService;
+    private final DailyLeetcodeScheduler dailyLeetcodeScheduler;
 
-    public AdminUserController(AdminUserService adminUserService, SlackNotificationService slackNotificationService) {
+    public AdminUserController(AdminUserService adminUserService, SlackNotificationService slackNotificationService, DailyLeetcodeScheduler dailyLeetcodeScheduler) {
         this.adminUserService = adminUserService;
         this.slackNotificationService = slackNotificationService;
+        this.dailyLeetcodeScheduler = dailyLeetcodeScheduler;
     }
 
     // 사용자 목록 조회 (keyword: userId/email 검색, role: 권한 필터)
@@ -51,6 +54,13 @@ public class AdminUserController {
                 ? body.get("message") : "✅ Slack 웹훅 테스트 메시지 (AWS 배포 검증)";
         slackNotificationService.sendAlert(msg);
         return ResponseEntity.ok(Map.of("sent", true, "message", msg));
+    }
+
+    // LeetCode 일일 문제 즉시 발송 테스트 (ROLE_ADMIN 전용)
+    @PostMapping("/slack/test/leetcode")
+    public ResponseEntity<?> testLeetcode() {
+        dailyLeetcodeScheduler.sendNextProblem();
+        return ResponseEntity.ok(Map.of("sent", true));
     }
 
     // 사용자 권한 변경 (최소 1명, 최대 5명)
