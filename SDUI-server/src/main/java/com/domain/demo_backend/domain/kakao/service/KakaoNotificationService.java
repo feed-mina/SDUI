@@ -6,11 +6,11 @@ import com.domain.demo_backend.domain.user.service.KakaoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,10 +23,12 @@ public class KakaoNotificationService {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final KakaoService kakaoService;
+    private final WebClient webClient;
     private final Logger log = LoggerFactory.getLogger(KakaoNotificationService.class);
 
-    public KakaoNotificationService(KakaoService kakaoService) {
+    public KakaoNotificationService(KakaoService kakaoService, WebClient.Builder webClientBuilder) {
         this.kakaoService = kakaoService;
+        this.webClient = webClientBuilder.build();
     }
 
     /**
@@ -51,10 +53,10 @@ public class KakaoNotificationService {
 
         // 2. 메시지 텍스트 구성
         String timeLabel = switch (minutesBefore) {
-            case 30  -> "30분";
-            case 90  -> "1시간 30분";
+            case 30 -> "30분";
+            case 90 -> "1시간 30분";
             case 180 -> "3시간";
-            default  -> minutesBefore + "분";
+            default -> minutesBefore + "분";
         };
         // targetTime은 saveGoalTime()에서 이미 KST로 변환된 값이므로 바로 포맷
         String targetTimeStr = goal.getTargetTime().format(TIME_FMT);
@@ -70,24 +72,24 @@ public class KakaoNotificationService {
                     "object_type", "text",
                     "text", text,
                     "link", Map.of(
-                            "web_url", "https://justsaying.co.kr",
-                            "mobile_web_url", "https://justsaying.co.kr"
-                    )
-            );
+                            "web_url", "https://sdui-delta.vercel.app",
+                            "mobile_web_url", "https://sdui-delta.vercel.app"));
             String templateObject = mapper.writeValueAsString(messageMap);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("template_object", templateObject);
 
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-            ResponseEntity<String> response = new RestTemplate().postForEntity(KAKAO_SEND_URL, request, String.class);
+            webClient.post()
+                    .uri(KAKAO_SEND_URL)
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(params)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-            log.info("KakaoNotification-발송 성공. userId={}, minutesBefore={}, status={}",
-                    user.getUserId(), minutesBefore, response.getStatusCode());
+            log.info("KakaoNotification-발송 성공. userId={}, minutesBefore={}",
+                    user.getUserId(), minutesBefore);
         } catch (Exception e) {
             log.error("KakaoNotification-발송 실패. userId={}, minutesBefore={}", user.getUserId(), minutesBefore, e);
             throw new RuntimeException("카카오 알림 발송 실패", e);
