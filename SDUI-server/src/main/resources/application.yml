@@ -74,6 +74,8 @@ kakao:
 
 slack:
   webhook-url: ${SLACK_WEBHOOK_URL:}
+  bot-token: ${SLACK_BOT_TOKEN:}
+  channel-id: ${SLACK_CHANNEL_ID:}
 
 openai:
   api-key: ${OPENAI_API_KEY:dummy-local}

@@ -129,7 +129,10 @@ jobs:
               -e GCP_PROCESSOR_ID=6ed87cfefab39a91 \
               -e GCP_CREDENTIALS_PATH=/app/gcp-credentials.json \
               -e SLACK_WEBHOOK_URL=${{ secrets.SLACK_WEBHOOK_URL }} \
+              -e SLACK_BOT_TOKEN=${{ secrets.SLACK_BOT_TOKEN }} \
+              -e SLACK_CHANNEL_ID=${{ secrets.SLACK_CHANNEL_ID }} \
               -v /home/ubuntu/gcp-credentials.json:/app/gcp-credentials.json:ro \
+              -v /home/ubuntu/study-materials:/app/assets/study:ro \
               ${{ secrets.DOCKER_USERNAME }}/sdui-app:${{ env.BRANCH_TAG }}
 
             # 헬스 체크 (30초 대기)
