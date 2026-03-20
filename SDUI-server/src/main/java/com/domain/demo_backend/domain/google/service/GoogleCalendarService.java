@@ -1,6 +1,5 @@
 package com.domain.demo_backend.domain.google.service;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class GoogleCalendarService {
 
     private static final Logger log = LoggerFactory.getLogger(GoogleCalendarService.class);
@@ -24,6 +22,12 @@ public class GoogleCalendarService {
 
     private final GoogleOAuthService googleOAuthService;
     private final WebClient webClient;
+
+    public GoogleCalendarService(GoogleOAuthService googleOAuthService,
+                                 WebClient.Builder webClientBuilder) {
+        this.googleOAuthService = googleOAuthService;
+        this.webClient = webClientBuilder.build();
+    }
 
     /**
      * goal_setting 저장 직후 호출 — 비동기, best-effort

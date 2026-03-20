@@ -65,7 +65,7 @@
 
 ---
 
-## 구현 완료 현황 (2026-03-20)
+## 구현 완료 현황 (2026-03-20) — 전체 완료 + 테스트 통과
 
 | Phase | 상태 | 주요 파일 |
 |-------|------|-----------|
@@ -73,6 +73,13 @@
 | 1 — OAuth 흐름 | ✅ 완료 | `domain/google/` 전체 패키지 신설 |
 | 2 — Calendar API | ✅ 완료 | `GoogleCalendarService.java`, `GoalTimeQueryService.java` 수정 |
 | 3 — Frontend | ✅ 완료 | `useBusinessActions.tsx`, `screenMap.ts`, `page.tsx` |
+| 버그 수정 | ✅ 완료 | `GoogleOAuthService`, `GoogleCalendarService` WebClient.Builder 패턴 수정 |
+
+### 버그 수정 이력 (2026-03-20)
+- **원인**: `@RequiredArgsConstructor` + `private final WebClient webClient` → Spring이 `WebClient` 빈을 찾지 못함 (`NoSuchBeanDefinitionException`) → 전체 테스트 13개 실패
+- **수정**: 기존 `KakaoService`, `SlackFileService`와 동일한 패턴으로 명시적 생성자에서 `WebClient.Builder`를 받아 `.build()` 호출
+- **추가**: `@Value` 필드에 `:` 기본값 추가 (`${google.oauth.client-id:}`) → 테스트 환경에서 환경변수 없어도 안전
+- **결과**: `./gradlew test` BUILD SUCCESSFUL (57 tests, 0 failed)
 
 ---
 
@@ -214,8 +221,8 @@ private String googleCalendarEventId;
 
 ### Phase 3 — Frontend
 
-#### V35 Flyway 마이그레이션 (ui_metadata)
-SET_TIME_PAGE에 구글 캘린더 연결 버튼 추가:
+#### V34 Flyway 마이그레이션에 통합 (ui_metadata)
+SET_TIME_PAGE에 구글 캘린더 연결 버튼 추가 (V35 별도 파일 대신 V34에 병합):
 ```sql
 -- 구글 캘린더 연결/해제 토글 버튼
 INSERT INTO ui_metadata (screen_id, component_type, label_text, action_type, css_class, ...)

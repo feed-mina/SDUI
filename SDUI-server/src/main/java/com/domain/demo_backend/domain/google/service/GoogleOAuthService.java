@@ -2,7 +2,6 @@ package com.domain.demo_backend.domain.google.service;
 
 import com.domain.demo_backend.domain.google.domain.GoogleOAuthToken;
 import com.domain.demo_backend.domain.google.domain.GoogleOAuthTokenRepository;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +17,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class GoogleOAuthService {
 
     private static final Logger log = LoggerFactory.getLogger(GoogleOAuthService.class);
@@ -26,18 +24,26 @@ public class GoogleOAuthService {
     private static final String AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
     private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
 
-    @Value("${google.oauth.client-id}")
+    @Value("${google.oauth.client-id:}")
     private String clientId;
 
-    @Value("${google.oauth.client-secret}")
+    @Value("${google.oauth.client-secret:}")
     private String clientSecret;
 
-    @Value("${google.oauth.redirect-uri}")
+    @Value("${google.oauth.redirect-uri:}")
     private String redirectUri;
 
     private final GoogleOAuthTokenRepository tokenRepository;
     private final StringRedisTemplate redisTemplate;
     private final WebClient webClient;
+
+    public GoogleOAuthService(GoogleOAuthTokenRepository tokenRepository,
+                              StringRedisTemplate redisTemplate,
+                              WebClient.Builder webClientBuilder) {
+        this.tokenRepository = tokenRepository;
+        this.redisTemplate = redisTemplate;
+        this.webClient = webClientBuilder.build();
+    }
 
     public String buildAuthorizationUrl(Long userSqno) {
         return UriComponentsBuilder.fromHttpUrl(AUTH_URL)
