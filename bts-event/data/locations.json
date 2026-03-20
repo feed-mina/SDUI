@@ -97,5 +97,34 @@
       "memo_en": "Good for east-side departure. Usually less crowded.",
       "kakaomap_url": "https://map.kakao.com/?q=안국역"
     }
+  ],
+  "cafes": [
+    {
+      "id": "cafe1",
+      "name": "할리스 세종로점 (24시간)",
+      "name_en": "Hollys Coffee Sejong-ro (24h)",
+      "lat": 37.5714,
+      "lng": 126.9760,
+      "memo_ko": "24시간 운영, 넓은 좌석, 콘센트 많음",
+      "memo_en": "24/7, spacious seating, many outlets"
+    },
+    {
+      "id": "cafe2",
+      "name": "커피빈 광화문점 (24시간)",
+      "name_en": "Coffee Bean Gwanghwamun (24h)",
+      "lat": 37.5702,
+      "lng": 126.9778,
+      "memo_ko": "24시간 운영되는 조용한 카페",
+      "memo_en": "24/7 quiet cafe near the square"
+    },
+    {
+      "id": "cafe3",
+      "name": "엔제리너스 세종로점 (24시간)",
+      "name_en": "Angel-in-us Sejong-ro (24h)",
+      "lat": 37.5721,
+      "lng": 126.9762,
+      "memo_ko": "주요 거리에 위치한 24시 카페",
+      "memo_en": "24h cafe on the main street"
+    }
   ]
 }
