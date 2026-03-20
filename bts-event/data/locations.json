@@ -1,0 +1,101 @@
+{
+  "charging": [
+    {
+      "id": "c1",
+      "name": "광화문 스타벅스 교보빌딩점",
+      "name_en": "Starbucks Kyobo Bldg",
+      "lat": 37.5701,
+      "lng": 126.9769,
+      "memo_ko": "콘센트 다수, 자유 이용",
+      "memo_en": "Many outlets, free to use"
+    },
+    {
+      "id": "c2",
+      "name": "CU 광화문점 (핸드폰 보조배터리 대여)",
+      "name_en": "CU Gwanghwamun (Power Bank Rental)",
+      "lat": 37.5740,
+      "lng": 126.9766,
+      "memo_ko": "편의점 보조배터리 대여 서비스",
+      "memo_en": "Convenience store power bank rental"
+    },
+    {
+      "id": "c3",
+      "name": "세종문화회관 지하 카페",
+      "name_en": "Sejong Center Underground Cafe",
+      "lat": 37.5726,
+      "lng": 126.9754,
+      "memo_ko": "좌석 있음, 콘센트 일부",
+      "memo_en": "Seating available, some outlets"
+    },
+    {
+      "id": "c4",
+      "name": "GS25 청와대로점",
+      "name_en": "GS25 Cheongwadae-ro",
+      "lat": 37.5768,
+      "lng": 126.9762,
+      "memo_ko": "보조배터리 대여 가능",
+      "memo_en": "Power bank rental available"
+    }
+  ],
+  "emergency_tents": [
+    {
+      "id": "e1",
+      "name": "구급 텐트 A — 이순신 동상 앞",
+      "name_en": "First Aid Tent A — Yi Sun-sin Statue",
+      "lat": 37.5709,
+      "lng": 126.9769,
+      "memo_ko": "의무대 상시 운영, AED 보유",
+      "memo_en": "Medical team on standby, AED available"
+    },
+    {
+      "id": "e2",
+      "name": "구급 텐트 B — 광화문 광장 북측",
+      "name_en": "First Aid Tent B — Gwanghwamun Plaza North",
+      "lat": 37.5755,
+      "lng": 126.9769,
+      "memo_ko": "응급 처치 가능, 간호사 상주",
+      "memo_en": "Emergency care available, nurse on duty"
+    },
+    {
+      "id": "e3",
+      "name": "구급 텐트 C — 세종대로 서측",
+      "name_en": "First Aid Tent C — Sejong-daero West",
+      "lat": 37.5718,
+      "lng": 126.9748,
+      "memo_ko": "더위/저체온 케어 전용",
+      "memo_en": "Heat/cold care specialist tent"
+    }
+  ],
+  "subway_routes": [
+    {
+      "id": "s1",
+      "name": "3호선 경복궁역 3번 출구 → 추천",
+      "name_en": "Line 3 Gyeongbokgung Exit 3 → Recommended",
+      "lat": 37.5796,
+      "lng": 126.9743,
+      "memo_ko": "광화문역 대비 혼잡도 낮음. 광화문 광장까지 도보 10분.",
+      "memo_en": "Less crowded than Gwanghwamun. 10 min walk to plaza.",
+      "kakaomap_url": "https://map.kakao.com/?q=경복궁역"
+    },
+    {
+      "id": "s2",
+      "name": "5호선 광화문역 2번 출구 (우회)",
+      "name_en": "Line 5 Gwanghwamun Exit 2 (Alternative)",
+      "lat": 37.5714,
+      "lng": 126.9770,
+      "memo_ko": "5번 출구 메인 혼잡 예상. 2번 출구로 우회 권장.",
+      "memo_en": "Exit 5 will be crowded. Use exit 2 instead.",
+      "kakaomap_url": "https://map.kakao.com/?q=광화문역"
+    },
+    {
+      "id": "s3",
+      "name": "3호선 안국역 1번 출구",
+      "name_en": "Line 3 Anguk Exit 1",
+      "lat": 37.5762,
+      "lng": 126.9850,
+      "memo_ko": "동쪽 귀가 시 추천. 비교적 한산함.",
+      "memo_en": "Good for east-side departure. Usually less crowded.",
+      "kakaomap_url": "https://map.kakao.com/?q=안국역"
+    }
+  ]
+}
