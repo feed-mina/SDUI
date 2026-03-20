@@ -7,6 +7,7 @@ import com.domain.demo_backend.domain.user.domain.User;
 import com.domain.demo_backend.domain.user.domain.UserRepository;
 import com.domain.demo_backend.domain.user.dto.AdditionalInfoRequest;
 import com.domain.demo_backend.domain.user.dto.RegisterRequest;
+import com.domain.demo_backend.domain.kakao.service.OperationAlertService;
 import com.domain.demo_backend.domain.membership.service.UserMembershipService;
 import com.domain.demo_backend.domain.user.service.AuthService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
@@ -40,6 +41,7 @@ public class AuthController {
     private final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
     private final UserMembershipService userMembershipService;
+    private final OperationAlertService operationAlertService;
     private Map<String, String> emailVerificationMap = new HashMap<>();
     private JwtUtil jwtUtil;
     private User user;
@@ -53,13 +55,15 @@ public class AuthController {
         JwtUtil jwtUtil,
         RefreshTokenRepository refreshTokenRepository,
         UserRepository userRepository,
-        UserMembershipService userMembershipService
+        UserMembershipService userMembershipService,
+        OperationAlertService operationAlertService
     ) {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
         this.userMembershipService = userMembershipService;
+        this.operationAlertService = operationAlertService;
     }
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -432,6 +436,9 @@ public class AuthController {
 
         // 신규 가입자 프리미엄 멤버십 자동 부여
         userMembershipService.grantByMembershipName(user.getUserSqno(), "프리미엄", "register");
+
+        // 운영 알림: 신규 가입
+        operationAlertService.sendNewUser(email, userRepository.count());
 
         log.info("추가 정보 입력 완료: email={}, role=ROLE_USER", email);
 
