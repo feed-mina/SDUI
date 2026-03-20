@@ -1,6 +1,7 @@
 package com.domain.demo_backend.domain.kakao.scheduler;
 
 import com.domain.demo_backend.domain.kakao.service.KakaoNotificationService;
+import com.domain.demo_backend.domain.kakao.service.SlackNotificationService;
 import com.domain.demo_backend.domain.time.domain.GoalSetting;
 import com.domain.demo_backend.domain.time.domain.GoalSettingRepository;
 import com.domain.demo_backend.domain.user.domain.User;
@@ -37,6 +38,9 @@ class AppointmentNotificationSchedulerTest {
 
     @Mock
     private KakaoNotificationService notifService;
+
+    @Mock
+    private SlackNotificationService slackNotifService;
 
     @InjectMocks
     private AppointmentNotificationScheduler scheduler;

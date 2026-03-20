@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -211,6 +212,59 @@ class GoalSettingRepositoryTest {
                         1L, startOfToday);
 
         assertThat(result).isNull();
+    }
+
+    // ── countWeeklyTotal / countWeeklySuccess ────────────────────────────────────
+
+    @Test
+    @DisplayName("이번 주 완료된 goal 수 (status IS NOT NULL) 를 올바르게 계산해야 함")
+    void countWeeklyTotal_shouldCountNonNullStatus() {
+        LocalDateTime weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY).atStartOfDay();
+        LocalDateTime thisWeek = weekStart.plusDays(1);
+
+        save(1L, thisWeek, "success", false, false, false);
+        save(1L, thisWeek, "safe",    false, false, false);
+        save(1L, thisWeek, "fail",    false, false, false);
+        save(1L, thisWeek, null,      false, false, false); // 제외 대상
+
+        long total = goalSettingRepository.countWeeklyTotal(1L, weekStart);
+
+        assertThat(total).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("이번 주 도착 성공 goal 수 (success/safe) 를 올바르게 계산해야 함")
+    void countWeeklySuccess_shouldCountOnlySuccessAndSafe() {
+        LocalDateTime weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY).atStartOfDay();
+        LocalDateTime thisWeek = weekStart.plusDays(1);
+
+        save(1L, thisWeek, "success", false, false, false);
+        save(1L, thisWeek, "safe",    false, false, false);
+        save(1L, thisWeek, "fail",    false, false, false); // 제외 대상
+        save(1L, thisWeek, null,      false, false, false); // 제외 대상
+
+        long success = goalSettingRepository.countWeeklySuccess(1L, weekStart);
+
+        assertThat(success).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("weekStart 이전 goal 은 집계에서 제외되어야 함")
+    void countWeekly_goalBeforeWeekStart_shouldBeExcluded() {
+        LocalDateTime weekStart = LocalDate.now(ZoneId.of("Asia/Seoul"))
+                .with(DayOfWeek.MONDAY).atStartOfDay();
+        LocalDateTime lastWeek = weekStart.minusDays(1);
+
+        save(1L, lastWeek, "success", false, false, false);
+        save(1L, lastWeek, "safe",    false, false, false);
+
+        long total   = goalSettingRepository.countWeeklyTotal(1L, weekStart);
+        long success = goalSettingRepository.countWeeklySuccess(1L, weekStart);
+
+        assertThat(total).isZero();
+        assertThat(success).isZero();
     }
 
     // ── 헬퍼 ────────────────────────────────────────────────────────────────────

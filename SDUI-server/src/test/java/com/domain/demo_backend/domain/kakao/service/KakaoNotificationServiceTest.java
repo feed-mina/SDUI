@@ -7,42 +7,45 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 @ExtendWith(MockitoExtension.class)
 @DisplayName("KakaoNotificationService 단위 테스트")
 class KakaoNotificationServiceTest {
 
-    @Mock
-    private KakaoService kakaoService;
+    @Mock private KakaoService kakaoService;
+    @Mock private WebClient webClient;
+    @Mock private WebClient.RequestBodyUriSpec requestBodyUriSpec;
+    @Mock private WebClient.RequestBodySpec requestBodySpec;
+    @Mock private WebClient.RequestHeadersSpec requestHeadersSpec;
+    @Mock private WebClient.ResponseSpec responseSpec;
 
-    @InjectMocks
     private KakaoNotificationService kakaoNotificationService;
-
     private User user;
     private GoalSetting goal;
 
     @BeforeEach
     void setUp() {
+        WebClient.Builder builder = mock(WebClient.Builder.class);
+        when(builder.build()).thenReturn(webClient);
+        kakaoNotificationService = new KakaoNotificationService(kakaoService, builder);
+
         user = User.builder()
                 .userSqno(1L)
                 .userId("testUser")
                 .kakaoAccessToken("valid-access-token")
-                .kakaoTokenExpiresAt(LocalDateTime.now().plusHours(1)) // 유효 토큰
+                .kakaoTokenExpiresAt(LocalDateTime.now().plusHours(1))
                 .build();
 
         goal = new GoalSetting();
@@ -52,91 +55,79 @@ class KakaoNotificationServiceTest {
         goal.setTargetTime(LocalDateTime.of(2026, 3, 18, 5, 0));
     }
 
+    // ── 헬퍼 ──────────────────────────────────────────────────────────────────
+
+    private void mockWebClientPostOk() {
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.contentType(any())).thenReturn(requestBodySpec);
+        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(String.class)).thenReturn(Mono.just("success"));
+    }
+
+    private void mockWebClientPostThrow(RuntimeException ex) {
+        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(anyString(), anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.contentType(any())).thenReturn(requestBodySpec);
+        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.bodyToMono(String.class)).thenReturn(Mono.error(ex));
+    }
+
     // ── 정상 발송 케이스 ─────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("30분 전 알림: RestTemplate.postForEntity 가 1회 호출되어야 함")
-    void sendReminder_30min_shouldCallPostForEntity() {
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenReturn(ResponseEntity.ok("success")))) {
-
-            kakaoNotificationService.sendReminder(user, goal, 30);
-
-            assertThat(mocked.constructed()).hasSize(1);
-            verify(mocked.constructed().get(0)).postForEntity(anyString(), any(), eq(String.class));
-        }
+    @DisplayName("30분 전 알림: webClient.post() 가 1회 호출되어야 함")
+    void sendReminder_30min_shouldCallPost() {
+        mockWebClientPostOk();
+        kakaoNotificationService.sendReminder(user, goal, 30);
+        verify(webClient, times(1)).post();
     }
 
     @Test
-    @DisplayName("90분 전 알림: RestTemplate.postForEntity 가 1회 호출되어야 함")
-    void sendReminder_90min_shouldCallPostForEntity() {
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenReturn(ResponseEntity.ok("success")))) {
-
-            kakaoNotificationService.sendReminder(user, goal, 90);
-
-            assertThat(mocked.constructed()).hasSize(1);
-        }
+    @DisplayName("90분 전 알림: webClient.post() 가 1회 호출되어야 함")
+    void sendReminder_90min_shouldCallPost() {
+        mockWebClientPostOk();
+        kakaoNotificationService.sendReminder(user, goal, 90);
+        verify(webClient, times(1)).post();
     }
 
     @Test
-    @DisplayName("180분 전 알림: RestTemplate.postForEntity 가 1회 호출되어야 함")
-    void sendReminder_180min_shouldCallPostForEntity() {
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenReturn(ResponseEntity.ok("success")))) {
-
-            kakaoNotificationService.sendReminder(user, goal, 180);
-
-            assertThat(mocked.constructed()).hasSize(1);
-        }
+    @DisplayName("180분 전 알림: webClient.post() 가 1회 호출되어야 함")
+    void sendReminder_180min_shouldCallPost() {
+        mockWebClientPostOk();
+        kakaoNotificationService.sendReminder(user, goal, 180);
+        verify(webClient, times(1)).post();
     }
 
     @Test
     @DisplayName("메모(todaysMessage)가 있으면 HTTP 요청이 실행되어야 함")
     void sendReminder_withMemo_shouldSendMessage() {
         goal.setTodaysMessage("오늘도 화이팅!");
-
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenReturn(ResponseEntity.ok("success")))) {
-
-            kakaoNotificationService.sendReminder(user, goal, 30);
-
-            assertThat(mocked.constructed()).hasSize(1);
-        }
+        mockWebClientPostOk();
+        kakaoNotificationService.sendReminder(user, goal, 30);
+        verify(webClient, times(1)).post();
     }
 
     @Test
     @DisplayName("메모가 null 이면 HTTP 요청이 실행되어야 함 (메모 없이 발송)")
     void sendReminder_nullMemo_shouldSendWithoutMemo() {
         goal.setTodaysMessage(null);
-
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenReturn(ResponseEntity.ok("success")))) {
-
-            kakaoNotificationService.sendReminder(user, goal, 30);
-
-            assertThat(mocked.constructed()).hasSize(1);
-        }
+        mockWebClientPostOk();
+        kakaoNotificationService.sendReminder(user, goal, 30);
+        verify(webClient, times(1)).post();
     }
 
     @Test
     @DisplayName("메모가 빈 문자열이면 HTTP 요청이 실행되어야 함 (메모 없이 발송)")
     void sendReminder_blankMemo_shouldSendWithoutMemo() {
         goal.setTodaysMessage("   ");
-
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenReturn(ResponseEntity.ok("success")))) {
-
-            kakaoNotificationService.sendReminder(user, goal, 30);
-
-            assertThat(mocked.constructed()).hasSize(1);
-        }
+        mockWebClientPostOk();
+        kakaoNotificationService.sendReminder(user, goal, 30);
+        verify(webClient, times(1)).post();
     }
 
     // ── 토큰 관련 케이스 ────────────────────────────────────────────────────────
@@ -145,29 +136,21 @@ class KakaoNotificationServiceTest {
     @DisplayName("카카오 토큰이 null 이면 HTTP 호출 없이 즉시 반환해야 함")
     void sendReminder_nullToken_shouldSkipHttpCall() {
         user.setKakaoAccessToken(null);
-
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class)) {
-            kakaoNotificationService.sendReminder(user, goal, 30);
-
-            assertThat(mocked.constructed()).isEmpty();
-        }
+        kakaoNotificationService.sendReminder(user, goal, 30);
+        verify(webClient, never()).post();
     }
 
     @Test
     @DisplayName("토큰 만료 5분 이내이면 refreshKakaoToken 을 호출해야 함")
     void sendReminder_tokenExpiringWithin5min_shouldRefresh() {
-        user.setKakaoTokenExpiresAt(LocalDateTime.now().plusMinutes(3)); // 3분 후 만료
+        user.setKakaoTokenExpiresAt(LocalDateTime.now().plusMinutes(3));
         when(kakaoService.refreshKakaoToken(user)).thenReturn("new-access-token");
+        mockWebClientPostOk();
 
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenReturn(ResponseEntity.ok("success")))) {
+        kakaoNotificationService.sendReminder(user, goal, 30);
 
-            kakaoNotificationService.sendReminder(user, goal, 30);
-
-            verify(kakaoService, times(1)).refreshKakaoToken(user);
-            assertThat(mocked.constructed()).hasSize(1);
-        }
+        verify(kakaoService, times(1)).refreshKakaoToken(user);
+        verify(webClient, times(1)).post();
     }
 
     @Test
@@ -176,28 +159,21 @@ class KakaoNotificationServiceTest {
         user.setKakaoTokenExpiresAt(LocalDateTime.now().plusMinutes(3));
         when(kakaoService.refreshKakaoToken(user)).thenReturn(null);
 
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class)) {
-            kakaoNotificationService.sendReminder(user, goal, 30);
+        kakaoNotificationService.sendReminder(user, goal, 30);
 
-            verify(kakaoService, times(1)).refreshKakaoToken(user);
-            assertThat(mocked.constructed()).isEmpty();
-        }
+        verify(kakaoService, times(1)).refreshKakaoToken(user);
+        verify(webClient, never()).post();
     }
 
     @Test
     @DisplayName("토큰이 충분히 유효하면 refreshKakaoToken 을 호출하지 않아야 함")
     void sendReminder_validToken_shouldNotRefresh() {
-        // 1시간 후 만료 → 갱신 불필요
         user.setKakaoTokenExpiresAt(LocalDateTime.now().plusHours(1));
+        mockWebClientPostOk();
 
-        try (MockedConstruction<RestTemplate> mocked = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenReturn(ResponseEntity.ok("success")))) {
+        kakaoNotificationService.sendReminder(user, goal, 30);
 
-            kakaoNotificationService.sendReminder(user, goal, 30);
-
-            verify(kakaoService, never()).refreshKakaoToken(any());
-        }
+        verify(kakaoService, never()).refreshKakaoToken(any());
     }
 
     // ── 예외 케이스 ─────────────────────────────────────────────────────────────
@@ -205,13 +181,10 @@ class KakaoNotificationServiceTest {
     @Test
     @DisplayName("REST 호출 실패 시 RuntimeException('카카오 알림 발송 실패')을 던져야 함")
     void sendReminder_httpError_shouldThrowRuntimeException() {
-        try (MockedConstruction<RestTemplate> ignored = mockConstruction(RestTemplate.class,
-                (mock, context) -> when(mock.postForEntity(anyString(), any(), eq(String.class)))
-                        .thenThrow(new RuntimeException("Connection refused")))) {
+        mockWebClientPostThrow(new RuntimeException("Connection refused"));
 
-            assertThatThrownBy(() -> kakaoNotificationService.sendReminder(user, goal, 30))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("카카오 알림 발송 실패");
-        }
+        assertThatThrownBy(() -> kakaoNotificationService.sendReminder(user, goal, 30))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("카카오 알림 발송 실패");
     }
 }
