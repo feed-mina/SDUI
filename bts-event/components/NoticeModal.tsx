@@ -1,17 +1,7 @@
 "use client";
 
-import { X, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-
-interface AlertItem {
-  id: number;
-  title_ko: string;
-  title_en: string;
-  desc_ko: string;
-  desc_en: string;
-  type: "CRITICAL" | "WARNING";
-  time?: string;
-}
+import { X, ExternalLink, RefreshCcw } from "lucide-react";
+import { useState } from "react";
 
 interface Props {
   onClose: () => void;
@@ -19,66 +9,66 @@ interface Props {
 }
 
 export default function NoticeModal({ onClose, lang }: Props) {
-  const [alerts, setAlerts] = useState<AlertItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/notices")
-      .then(res => res.json())
-      .then(data => {
-        setAlerts(Array.isArray(data) ? data : []);
-      })
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
-  }, []);
+  const [key, setKey] = useState(0); // For iframe refresh
+  const topisUrl = "https://m.topis.seoul.go.kr/";
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            🚨 {lang === "ko" ? "실시간 행사 공지" : "Live Event Notice"}
-          </h2>
+      <div className="modal-content !max-w-[450px] !p-0 overflow-hidden flex flex-col h-[80vh]" onClick={(e) => e.stopPropagation()}>
+        {/* Modal Header */}
+        <div className="modal-header !mb-0 p-4 border-b border-border bg-bg-card flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              🚨 {lang === "ko" ? "실시간 교통 상황 (TOPIS)" : "Live Traffic Info"}
+            </h2>
+            <button 
+              onClick={() => setKey(prev => prev + 1)}
+              className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
+              title="새로고침"
+            >
+              <RefreshCcw size={16} className="text-gray-400" />
+            </button>
+          </div>
           <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full">
             <X size={24} />
           </button>
         </div>
         
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-              <Loader2 className="animate-spin mb-2" size={32} />
-              <p>{lang === "ko" ? "정보를 불러오는 중..." : "Fetching latest info..."}</p>
+        {/* Iframe Area */}
+        <div className="flex-1 bg-white relative">
+          <iframe 
+            key={key}
+            src={topisUrl}
+            className="w-full h-full border-none"
+            title="Seoul TOPIS Mobile"
+          />
+          
+          {/* Overlay to catch initial block if needed */}
+          <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
+            <div className="bg-black/80 backdrop-blur p-4 rounded-xl pointer-events-auto border border-white/20 shadow-2xl">
+              <p className="text-xs text-white/70 mb-2 leading-relaxed">
+                {lang === "ko" 
+                  ? "⚠️ 공식 사이트 규정상 화면이 보이지 않을 수 있습니다. 이 경우 아래 버튼을 사용해 주세요." 
+                  : "⚠️ If the window is blank, it's due to security policies. Please use the button below."}
+              </p>
+              <a 
+                href={topisUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg flex items-center justify-center gap-2 transition-all"
+              >
+                <ExternalLink size={14} />
+                {lang === "ko" ? "공식 사이트 새창열기" : "Open in New Tab"}
+              </a>
             </div>
-          ) : alerts.length > 0 ? (
-            alerts.map((alert, i) => (
-              <div key={i} className={`p-4 rounded-xl border-l-4 ${
-                alert.type === "CRITICAL" ? "bg-red-500/10 border-red-500" : "bg-yellow-500/10 border-yellow-500"
-              }`}>
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className={`font-bold ${
-                    alert.type === "CRITICAL" ? "text-red-400" : "text-yellow-400"
-                  }`}>
-                    {lang === "ko" ? alert.title_ko : alert.title_en}
-                  </h3>
-                  {alert.time && <span className="text-[10px] text-gray-500">{alert.time}</span>}
-                </div>
-                <p className="text-sm text-gray-300">
-                  {lang === "ko" ? alert.desc_ko : alert.desc_en}
-                </p>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-10 text-gray-500">
-              {lang === "ko" ? "등록된 공지사항이 없습니다." : "No current notices."}
-            </div>
-          )}
+          </div>
         </div>
         
-        <div className="mt-8">
-          <button 
+        {/* Simple Footer */}
+        <div className="p-3 bg-bg-card border-t border-border flex justify-end shrink-0">
+           <button 
             onClick={onClose}
-            className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200"
+            className="px-4 py-2 bg-gray-700 text-white text-sm font-semibold rounded-lg hover:bg-gray-600"
           >
             {lang === "ko" ? "닫기" : "Close"}
           </button>

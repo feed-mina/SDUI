@@ -100,7 +100,7 @@ export default function HomePage() {
                 onClick={() => setShowNotice(true)}
               >
                 <Bell size={14} fill="white" />
-                {lang === "ko" ? "실시간 공지" : "Live Notice"}
+                {lang === "ko" ? "실시간 교통상황" : "Live Traffic Info"}
               </button>
               
               <LivePip />
