@@ -30,7 +30,13 @@ function copyLink() {
   alert("링크가 복사되었습니다! 💜");
 }
 
-export default function InfoPanel() {
+import { Heart } from "lucide-react";
+
+interface Props {
+  onCheer?: () => void;
+}
+
+export default function InfoPanel({ onCheer }: Props) {
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(TWEET_TEXT)}&url=${encodeURIComponent(PAGE_URL)}`;
 
   return (
@@ -52,14 +58,16 @@ export default function InfoPanel() {
       >
         🗺️ TOPIS
       </a>
-      <a
-        href="https://map.seoul.go.kr/smgis2/short/5Wa1h"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="info-btn"
+      
+      {/* Cheer Mode */}
+      <button 
+        className="info-btn support" 
+        onClick={onCheer}
+        title="응원봉 모드 활성화"
       >
-        🏙️ 스마트맵
-      </a>
+        <Heart size={14} fill="currentColor" />
+        치어 모드
+      </button>
 
       {/* Share */}
       <KakaoShare />

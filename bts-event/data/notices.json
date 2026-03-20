@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "title_ko": "청계천로 전면통제 🚨",
+    "title_en": "Cheonggyecheon-ro Closed 🚨",
+    "desc_ko": "모전교 → 청계광장 방향, BTS 관련 행사로 인해 전면 통제 중입니다.",
+    "desc_en": "Mojeongyo → Cheonggye Plaza, fully closed due to BTS event.",
+    "type": "CRITICAL",
+    "time": "2026-03-20 21:23"
+  },
+  {
+    "id": 2,
+    "title_ko": "버스 임시 우회 안내",
+    "title_en": "Bus Temporary Detour",
+    "desc_ko": "BTS 공연 행사로 인해 광화문 인근 버스 노선이 임시 우회 운행됩니다.",
+    "desc_en": "Bus routes near Gwanghwamun are detoured due to the BTS concert.",
+    "type": "WARNING",
+    "time": "2026-03-20 21:00"
+  },
+  {
+    "id": 3,
+    "title_ko": "세종대로 양방향 통제 [필독]",
+    "title_en": "Sejong-daero Closed [Notice]",
+    "desc_ko": "서울광장 ↔ 광화문교차로 구간이 통제되니 지하철 이용을 권장합니다.",
+    "desc_en": "Between Seoul Plaza and Gwanghwamun intersection closed. Use subway.",
+    "type": "CRITICAL",
+    "time": "2026-03-20 20:54"
+  }
+]
