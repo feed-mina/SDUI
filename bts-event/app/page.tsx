@@ -12,36 +12,26 @@ import StatusCard from "@/components/StatusCard";
 import LivePip from "@/components/LivePip";
 import CheerMode from "@/components/CheerMode";
 import { Bell } from "lucide-react";
+import { translations } from "@/data/translations";
 
-// KakaoMap must be loaded client-side only (no SSR)
-const KakaoMap = dynamic(() => import("@/components/Map/KakaoMap"), {
+// LeafletMap must be loaded client-side only (no SSR)
+const LeafletMap = dynamic(() => import("@/components/Map/LeafletMap"), {
   ssr: false,
   loading: () => (
-    <div
-      className="flex items-center justify-center h-full"
-      style={{ color: "var(--text-secondary)" }}
-    >
-      지도 로딩 중...
+    <div className="flex items-center justify-center h-full bg-[#1a1a2e] text-white/50">
+      🗺️ 지도 로딩 중...
     </div>
   ),
 });
 
 type Tab = "map" | "chat" | "board";
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: "map",   label: "🗺️ 지도" },
-  { key: "chat",  label: "🤖 채팅" },
-  { key: "board", label: "✍️ 게시판" },
-];
-
 export default function HomePage() {
-  const [tab, setTab]       = useState<Tab>("map");
-  const [lang, setLang]     = useState<Lang>("ko");
-  const [layers, setLayers] = useState<Set<Layer>>(
-    new Set<Layer>(["cafe", "charging", "emergency", "subway"])
-  );
+  const [tab, setTab] = useState<Tab>("map");
+  const [lang, setLang] = useState<Lang>("ko");
+  const [activeLayer, setActiveLayer] = useState<Layer | null>("subway");
   const [showNotice, setShowNotice] = useState(false);
-  const [showCheer, setShowCheer]   = useState(false);
+  const [showCheer, setShowCheer] = useState(false);
 
   // Auto-show notice on first load
   useEffect(() => {
@@ -49,24 +39,22 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const toggleLayer = (layer: Layer) => {
-    setLayers((prev) => {
-      const next = new Set(prev);
-      next.has(layer) ? next.delete(layer) : next.add(layer);
-      return next;
-    });
-  };
+  const t = translations[lang];
+
+  const TABS: { key: Tab; label: string }[] = [
+    { key: "map",   label: t.map },
+    { key: "chat",  label: t.chat },
+    { key: "board", label: t.board },
+  ];
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full relative font-sans">
       {/* Cheer Mode Overlay */}
-      {showCheer && (
-        <CheerMode lang={lang} onClose={() => setShowCheer(false)} />
-      )}
+      {showCheer && <CheerMode lang={lang} onClose={() => setShowCheer(false)} />}
 
       {/* Header */}
       <header className="app-header">
-        <h1>💜 BTS 광화문</h1>
+        <h1>{t.title}</h1>
         <div className="flex items-center gap-2">
           <div className="tab-bar">
             {TABS.map(({ key, label }) => (
@@ -83,9 +71,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Layer filter — map tab only */}
+      {/* Layer Filter (Sticky below Header on Map Tab) */}
       {tab === "map" && (
-        <LayerFilter active={layers} onToggle={toggleLayer} />
+        <LayerFilter active={activeLayer} onSelect={setActiveLayer} lang={lang} />
       )}
 
       {/* Main content */}
@@ -93,7 +81,7 @@ export default function HomePage() {
         {tab === "map" && (
           <div className="flex flex-col h-full">
             <div className="flex-1 overflow-hidden relative">
-              <KakaoMap activeLayers={layers} lang={lang} />
+              <LeafletMap activeLayer={activeLayer} lang={lang} />
               
               {/* Floating UI on Map */}
               <StatusCard lang={lang} />
@@ -102,21 +90,26 @@ export default function HomePage() {
                 onClick={() => setShowNotice(true)}
               >
                 <Bell size={14} fill="white" />
-                {lang === "ko" ? "실시간 교통상황" : "Live Traffic Info"}
+                {t.traffic}
               </button>
               
               <LivePip />
             </div>
-            <InfoPanel onCheer={() => setShowCheer(true)} />
+            <InfoPanel onCheer={() => setShowCheer(true)} lang={lang} />
           </div>
         )}
-        {tab === "chat"  && <GuestChat lang={lang} />}
-        {tab === "board" && <FanBoard />}
+
+        {tab === "chat" && <GuestChat lang={lang} />}
+        {tab === "board" && <FanBoard lang={lang} />}
       </main>
 
       {/* Modals */}
       {showNotice && (
-        <NoticeModal lang={lang} onClose={() => setShowNotice(false)} />
+        <NoticeModal 
+          lang={lang} 
+          onClose={() => setShowNotice(false)} 
+          title={t.traffic}
+        />
       )}
     </div>
   );

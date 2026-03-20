@@ -50,14 +50,15 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
+        <link 
+          rel="stylesheet" 
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossOrigin=""
+        />
       </head>
       <body className="h-full flex flex-col overflow-hidden">
         {children}
-        {/* Kakao Maps SDK (window.kakao) */}
-        <Script
-          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_APP_KEY}&libraries=services&autoload=false`}
-          strategy="afterInteractive"
-        />
         {/* Kakao JS SDK (window.Kakao) — for Share API */}
         <Script
           src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
