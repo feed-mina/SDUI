@@ -7,7 +7,6 @@ const PAGE_URL  = "https://bts-gwanghwamun.vercel.app";
 const TWEET_TEXT = "💜 BTS 광화문 현장 지도 — 24h 카페·충전·구급·지하철 루트";
 
 const KAKAOPAY_URL   = process.env.NEXT_PUBLIC_KAKAOPAY_URL;
-const OPENCHAT_URL   = process.env.NEXT_PUBLIC_KAKAO_OPENCHAT_URL;
 
 async function shareLocation() {
   if (!navigator.geolocation) {
@@ -71,7 +70,7 @@ export default function InfoPanel() {
         rel="noopener noreferrer"
         className="info-btn"
       >
-        🐦 X 공유
+        𝕏 X 공유
       </a>
       <button className="info-btn" onClick={copyLink}>
         📋 링크 복사
@@ -81,16 +80,6 @@ export default function InfoPanel() {
       </button>
 
       {/* Community / Support */}
-      {OPENCHAT_URL && (
-        <a
-          href={OPENCHAT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="info-btn openchat"
-        >
-          💬 오픈채팅방
-        </a>
-      )}
       {KAKAOPAY_URL && (
         <a
           href={KAKAOPAY_URL}

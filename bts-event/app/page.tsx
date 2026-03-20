@@ -80,7 +80,7 @@ export default function HomePage() {
             <InfoPanel />
           </div>
         )}
-        {tab === "chat"  && <GuestChat />}
+        {tab === "chat"  && <GuestChat lang={lang} />}
         {tab === "board" && <FanBoard />}
       </main>
     </div>
