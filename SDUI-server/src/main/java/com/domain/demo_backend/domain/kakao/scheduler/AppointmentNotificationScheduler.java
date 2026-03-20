@@ -1,6 +1,7 @@
 package com.domain.demo_backend.domain.kakao.scheduler;
 
 import com.domain.demo_backend.domain.kakao.service.KakaoNotificationService;
+import com.domain.demo_backend.domain.kakao.service.SlackNotificationService;
 import com.domain.demo_backend.domain.time.domain.GoalSetting;
 import com.domain.demo_backend.domain.time.domain.GoalSettingRepository;
 import com.domain.demo_backend.domain.user.domain.User;
@@ -26,6 +27,7 @@ public class AppointmentNotificationScheduler {
     private final GoalSettingRepository goalRepo;
     private final UserRepository userRepo;
     private final KakaoNotificationService notifService;
+    private final SlackNotificationService slackNotifService;
     private final Logger log = LoggerFactory.getLogger(AppointmentNotificationScheduler.class);
 
     @Scheduled(fixedDelay = 60000)
@@ -63,6 +65,7 @@ public class AppointmentNotificationScheduler {
     private void sendAndMark(User user, GoalSetting goal, int minutesBefore) {
         try {
             notifService.sendReminder(user, goal, minutesBefore);
+            slackNotifService.sendReminder(goal, minutesBefore); // Slack은 내부 예외 처리, 실패해도 mark 진행
             switch (minutesBefore) {
                 case 30  -> goal.setNotifSent30min(true);
                 case 90  -> goal.setNotifSent90min(true);
