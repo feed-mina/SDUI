@@ -86,6 +86,12 @@ fastapi:
   url: http://localhost:8001
   internal-api-key: sdui-internal-dev-key
 
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:https://sdui-delta.vercel.app/view/GOOGLE_CALLBACK}
+
 cloud:
   aws:
     s3:

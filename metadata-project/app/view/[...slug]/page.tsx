@@ -9,10 +9,11 @@ import {usePageMetadata} from "@/components/DynamicEngine/hook/usePageMetadata";
 // import {usePageActions} from "@/components/DynamicEngine/hook/usePageActions";
 import Skeleton from "@/components/utils/Skeleton";
 import { useAuth } from "@/context/AuthContext";
-import {useRouter} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import {componentMap} from "@/components/constants/componentMap";
 import {usePageHook} from "@/components/DynamicEngine/hook/usePageHook";
 import {useMetadata} from "@/components/providers/MetadataProvider";
+import axios from "@/services/axios";
 
 
 
@@ -27,6 +28,7 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
     const { screenId, refId } = useMetadata();
 
     const router = useRouter();
+    const searchParams = useSearchParams();
     // 인증 상태 가져오기
     const { isLoggedIn, isLoading } = useAuth();
     // * 상태 선언(useState)를 훅 호출보다 위로 올림
@@ -39,7 +41,29 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
         isOnlyMine,
         refId
     );
-    const {formData, setFormData, handleChange, handleAction, showPassword, pwType, activeModal, closeModal} = usePageHook(screenId, metadata, pageData);    //   접근 권한 체크 로직 (로그인 여부 확인)
+    const {formData, setFormData, handleChange, handleAction, showPassword, pwType, activeModal, closeModal} = usePageHook(screenId, metadata, pageData);
+
+    // 구글 캘린더 OAuth 콜백 처리
+    useEffect(() => {
+        if (screenId !== "GOOGLE_CALLBACK") return;
+        const code = searchParams.get("code");
+        const state = searchParams.get("state");
+        if (!code || !state) {
+            router.replace("/view/SET_TIME_PAGE");
+            return;
+        }
+        axios.get(`/api/google/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`)
+            .then(() => {
+                alert("구글 캘린더가 연결되었습니다.");
+                router.replace("/view/SET_TIME_PAGE");
+            })
+            .catch(() => {
+                alert("구글 캘린더 연결에 실패했습니다. 다시 시도해주세요.");
+                router.replace("/view/SET_TIME_PAGE");
+            });
+    }, [screenId, searchParams, router]);
+
+    //   접근 권한 체크 로직 (로그인 여부 확인)
     useEffect(() => {
         // 로딩 중이 아닐 때만 판단
         if (!isLoading) {
@@ -65,6 +89,11 @@ export default function CommonPage({params: paramsPromise}: { params: Promise<{ 
     };
 
 
+
+    // 구글 콜백 처리 중 로딩 표시
+    if (screenId === "GOOGLE_CALLBACK") {
+        return <Skeleton/>;
+    }
 
     // @@@@ 2026-02-04 스켈레톤 UI로 바꿈
     if (isLoading || (PROTECTED_SCREENS.includes(screenId) && !isLoggedIn) ) {

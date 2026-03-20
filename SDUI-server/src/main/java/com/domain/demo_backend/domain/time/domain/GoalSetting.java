@@ -45,4 +45,7 @@ public class GoalSetting {
 
     @Column(name = "notif_sent_180min")
     private boolean notifSent180min = false;
+
+    @Column(name = "google_calendar_event_id", length = 200)
+    private String googleCalendarEventId;
 }

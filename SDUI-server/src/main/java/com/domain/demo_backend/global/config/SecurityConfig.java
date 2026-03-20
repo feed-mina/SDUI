@@ -81,6 +81,8 @@ public class SecurityConfig {
                                 "/api/auth/confirm-email", "/api/auth/check-verification")
                         .permitAll()
                         .requestMatchers("/api/kakao/**").permitAll()
+                        .requestMatchers("/api/google/callback").permitAll()
+                        .requestMatchers("/api/google/**").authenticated()
                         .requestMatchers("/api/ui/**").permitAll()
                         .requestMatchers("/api/timer/**").permitAll()
                         .requestMatchers("/api/goalTime/**").permitAll() // 컨트롤러 레벨에서 인증 처리

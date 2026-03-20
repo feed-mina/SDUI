@@ -1,5 +1,7 @@
 package com.domain.demo_backend.domain.time.service;
 
+import com.domain.demo_backend.domain.google.service.GoogleCalendarService;
+import com.domain.demo_backend.domain.google.service.GoogleOAuthService;
 import com.domain.demo_backend.domain.query.service.QueryMasterService;
 import com.domain.demo_backend.domain.time.domain.GoalSetting;
 import com.domain.demo_backend.domain.time.domain.GoalSettingRepository;
@@ -33,6 +35,8 @@ public class GoalTimeQueryService {
     private final StringRedisTemplate stringRedisTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GoalSettingRepository goalSettingRepository;
+    private final GoogleOAuthService googleOAuthService;
+    private final GoogleCalendarService googleCalendarService;
 
 //    @PostConstruct
 //    public void init() {
@@ -94,6 +98,20 @@ public class GoalTimeQueryService {
 
         String cacheKey = "USER_GOAL:" + userSqno;
         stringRedisTemplate.delete(cacheKey);
+
+        // 구글 캘린더 이벤트 생성 (best-effort)
+        try {
+            if (googleOAuthService.isConnected(userSqno)) {
+                String eventId = googleCalendarService.createEvent(userSqno, targetTime, message);
+                if (eventId != null) {
+                    savedGoal.setGoogleCalendarEventId(eventId);
+                    goalSettingRepository.save(savedGoal);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Google Calendar 이벤트 생성 실패 (user {}): {}", userSqno, e.getMessage());
+        }
+
         return savedGoal;
     }
 
@@ -113,6 +131,12 @@ public class GoalTimeQueryService {
 
     // [도착처리] 결과 업데이트 및 캐시 초기화
     public void updateGoalResult(Long userSqno, String status, LocalDateTime recordedTime) {
+        // 구글 캘린더 업데이트를 위해 이벤트 ID를 먼저 조회
+        LocalDateTime startOfToday = LocalDate.now(ZoneId.of("Asia/Seoul")).atStartOfDay();
+        GoalSetting current = goalSettingRepository
+                .findFirstByUserSqnoAndStatusIsNullAndTargetTimeGreaterThanEqualOrderByTargetTimeAsc(userSqno, startOfToday);
+        String calendarEventId = (current != null) ? current.getGoogleCalendarEventId() : null;
+
         // DB 업데이트 실행
         String sql = queryMasterService.getQuery("UPDATE_GOAL_RESULT");
         Map<String, Object> params = new HashMap<>();
@@ -121,12 +145,16 @@ public class GoalTimeQueryService {
         params.put("recordedTime", recordedTime);
 
         int updatedCount = namedParameterJdbcTemplate.update(sql, params);
-        // 중요 : 업데이트가 성공했다면 Redis 캐시를 삭제 해야함
 
         if (updatedCount > 0) {
             String cacheKey = "USER_GOAL:" + userSqno;
             stringRedisTemplate.delete(cacheKey);
             log.debug("캐시 삭제 완료 - {}", cacheKey);
+
+            // 구글 캘린더 이벤트 업데이트 (best-effort, 비동기)
+            if (calendarEventId != null && googleOAuthService.isConnected(userSqno)) {
+                googleCalendarService.updateEventResult(userSqno, calendarEventId, status);
+            }
         } else {
             log.debug("업데이트 대상이 없습니다. 이미 처리되었거나 목표가 없음");
         }

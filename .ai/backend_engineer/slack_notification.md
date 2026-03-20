@@ -226,7 +226,7 @@ ALTER TABLE interview_resume
 ---
 
 ### Phase 2.5 — 일일 LeetCode 문제 Slack 발송
-> 상태: **구현 예정** | 기간: 1주 | FastAPI 불필요
+> 상태: **✅ 완료 (2026-03-20, 배포 검증 완료)** | FastAPI 불필요
 
 #### 선택 이유
 
@@ -275,38 +275,110 @@ https://leetcode.com/problems/two-sum/
 |------|------|
 | `domain/leetcode/domain/LeetcodeProblem.java` | JPA 엔티티 |
 | `domain/leetcode/domain/LeetcodeProblemRepository.java` | `findFirstBySentDateIsNullOrderByDisplayOrderAsc()` |
-| `domain/leetcode/scheduler/DailyLeetcodeScheduler.java` | 매일 09:00 KST 발송, sent_date 마킹 |
+| `domain/leetcode/scheduler/DailyLeetcodeScheduler.java` | 매일 07:00 / 12:00 / 17:00 KST 발송 (3회), sent_date 마킹 |
 | `domain/kakao/service/SlackNotificationService.java` | `sendDailyLeetcode()` 메서드 추가 |
 | `resources/db/migration/V28__add_leetcode_problems.sql` | 테이블 생성 + 57문제 시드 |
 
 ---
 
-### Phase 3 — 주간 학습 리포트 (FastAPI 집계)
-> 상태: **기획 완료** | 기간: 2-3주 | FastAPI 필요
+### Phase 2.7 — 정보처리기사 PDF 일일 Slack 발송
+> 상태: **✅ 완료 (2026-03-20, 배포 검증 완료)** | FastAPI 불필요
 
-// [메모]
+#### 발송 흐름
 
-매주 월요일 09:00
-    └→ Spring Boot 스케줄러
-           └→ FastAPI /weekly-report?week=2026-W12
-                  • DB 집계: DAU, AI 사용량, 면접 완료 수, 도착 성공률
-                  • 차트 이미지 생성 (matplotlib)
-           └→ Slack: 이미지 + 텍스트 리포트 업로드
+```
+매일 19:00 KST (DailyStudyScheduler)
+    │
+    ├─ DB: study_materials WHERE sent_date IS NULL ORDER BY display_order LIMIT 1
+    ├─ Slack Files API v2: getUploadURLExternal → PUT binary → completeUploadExternal
+    └─ sent_date 마킹
+```
+
+#### DB 스키마 (V33)
+
+```sql
+CREATE TABLE study_materials (
+    id            BIGSERIAL    PRIMARY KEY,
+    filename      VARCHAR(300) NOT NULL,
+    display_name  VARCHAR(300) NOT NULL,
+    display_order INT          NOT NULL,
+    sent_date     DATE
+);
+CREATE INDEX idx_study_unsent ON study_materials (display_order) WHERE sent_date IS NULL;
+-- 33개 시드: 기출해설특강 10개, 실기특강 3개, 끝짱 모의고사 20개
+```
+
+#### 주요 파일
+
+| 파일 | 역할 |
+|------|------|
+| `domain/study/domain/StudyMaterial.java` | JPA 엔티티 |
+| `domain/study/domain/StudyMaterialRepository.java` | `findFirstBySentDateIsNullOrderByDisplayOrderAsc()` |
+| `domain/study/service/SlackFileService.java` | Slack Files API v2 3단계 업로드 |
+| `domain/study/scheduler/DailyStudyScheduler.java` | 매일 19:00 KST 발송 |
+| `resources/db/migration/V33__add_study_materials.sql` | 테이블 생성 + 33개 시드 |
+
+#### 설정
+
+- `SLACK_BOT_TOKEN` (GitHub Secret) — `files:write` 스코프 필요
+- `SLACK_CHANNEL_ID` (GitHub Secret) — 봇이 해당 채널에 `/invite @SDUINotiBot` 완료
+- EC2 볼륨 마운트: `/home/ubuntu/study-materials:/app/assets/study:ro`
+- PDF 파일 업로드: `scp -i "SDUI.pem" -r assets/정보처리기사/. ubuntu@{IP}:/home/ubuntu/study-materials/`
+
+#### 테스트 엔드포인트
+
+```bash
+curl -X POST http://{EC2_IP}:8080/api/admin/slack/test/study \
+  -H "Authorization: Bearer $TOKEN"
+```
 
 ---
 
-#### 리포트 생성 흐름
+### Phase 3 — 주간 학습 리포트 (Spring Boot 텍스트 리포트)
+> 상태: **구현 예정** | FastAPI 없이 Spring Boot만으로 텍스트 리포트 구현 (차트 이미지는 나중에)
+
+#### 리포트 발송 흐름
 
 ```
-매주 월요일 09:00 (KST)
+매주 월요일 09:00 KST
     │
-    ├─ Spring Boot → POST /api/fastapi/weekly-report
-    │    { "weekStart": "2026-03-16", "userSqno": null }  // null = 전체 집계
-    │    → 반환: { "dau": 42, "interviewCount": 18, "chatMinutes": 320,
-    │              "arrivalSuccessRate": 0.72, "chartImageBase64": "..." }
-    │
-    └─ Slack File Upload API (이미지 첨부) + 텍스트 요약
+    └─ WeeklyReportScheduler
+           ├─ UserRepository.countNewUsersThisWeek(weekStart)
+           ├─ UserRepository.countActiveUsers()
+           ├─ GoalSettingRepository.countAllWeeklyTotal(weekStart)
+           ├─ GoalSettingRepository.countAllWeeklySuccess(weekStart)
+           ├─ ContentRepository.countNewContentsThisWeek(weekStart)
+           └─ SlackNotificationService.sendWeeklyReport(...)
 ```
+
+#### 리포트 포맷 (Block Kit)
+```
+📊 SDUI 주간 리포트 (2026-W12)
+---
+👥 신규 가입: 3명 (전체 활성: 47명)
+⏰ 약속 도착: 12회 성공 / 15회 시도 (80%)
+📝 일기: 8편 작성
+🧩 LeetCode: 7문제 발송
+```
+
+#### 신규 추가 쿼리
+
+| Repository | 메서드 | JPQL |
+|-----------|--------|------|
+| `UserRepository` | `countNewUsersThisWeek(weekStart)` | `COUNT u WHERE u.delYn='N' AND u.createdAt >= :weekStart` |
+| `UserRepository` | `countActiveUsers()` | `COUNT u WHERE u.delYn='N'` |
+| `GoalSettingRepository` | `countAllWeeklyTotal(weekStart)` | `COUNT g WHERE g.status IS NOT NULL AND g.targetTime >= :weekStart` |
+| `GoalSettingRepository` | `countAllWeeklySuccess(weekStart)` | `COUNT g WHERE g.status IN ('success','safe') AND g.targetTime >= :weekStart` |
+| `ContentRepository` | `countNewContentsThisWeek(weekStart)` | `COUNT d WHERE d.delYn='N' AND d.regDt >= :weekStart` |
+| `LeetcodeProblemRepository` | `countBySentDateGreaterThanEqual(weekStart)` | Spring Data 명명 규칙 |
+
+#### 신규 파일
+- `domain/kakao/scheduler/WeeklyReportScheduler.java` — `@Scheduled(cron = "0 0 9 * * MON", zone = "Asia/Seoul")`
+- `SlackNotificationService.sendWeeklyReport()` 메서드 추가
+
+> **V32 마이그레이션 불필요** — 스키마 변경 없음, JPQL 쿼리만 추가
+
+---
 
 #### AI 채팅 세션 종료 후 즉시 피드백 (자기 계발 직장인용)
 
@@ -368,6 +440,37 @@ FastAPI×Slack: AI 면접 채점 + 주간 학습 리포트 + 자연어 알림 �
 
 
 
+## AWS 배포 및 검증 이력 (2026-03-20)
+
+### 배포 문제 해결 과정
+
+| 문제 | 원인 | 해결 |
+|------|------|------|
+| `sdui-backend` 기동 실패 | V28/V29/V30의 `SERIAL(int4)` vs JPA `Long(bigint)` Hibernate schema-validation 불일치 | V32 마이그레이션으로 `ALTER COLUMN id TYPE BIGINT` 적용 |
+| SLACK_WEBHOOK_URL 미주입 | `deploy.yml` docker run 명령에 `-e SLACK_WEBHOOK_URL` 누락 | `deploy.yml` 수정 후 재배포 |
+| `docker-compose` 없음 | EC2에 compose 파일 없음 — deploy.yml이 SSH + `docker run` 직접 사용 | 정상 동작 확인 (compose 불필요) |
+
+### 검증 완료 항목 (2026-03-20)
+
+| 항목 | 방법 | 결과 |
+|------|------|------|
+| Flyway V28~V33 전체 적용 | `docker exec sdui-db psql -U mina -d SDUI_TD -c "SELECT count(*) FROM study_materials;"` | ✅ 33개 확인 |
+| Slack 웹훅 연결 | `POST /api/admin/slack/test` (ROLE_ADMIN JWT) | ✅ `{"sent":true}` |
+| 약속 알림 (Slack+카카오) | SET_TIME_PAGE에서 목표시간 설정 후 스케줄러 대기 | ✅ 정상 발송 확인 |
+| LeetCode 일일 발송 | `POST /api/admin/slack/test/leetcode` | ✅ Slack 채널에 문제 발송 확인 |
+| 정보처리기사 PDF 발송 | `POST /api/admin/slack/test/study` | ✅ PDF 파일 첨부 발송 확인 (not_in_channel 오류 → `/invite @SDUINotiBot` 후 해결) |
+
+### 로그인 API 참고 (EC2 테스트용)
+```bash
+# LoginRequest 필드명: @JsonProperty("user_email"), @JsonProperty("user_pw")
+TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"user_email":"admin@test.com","user_pw":"Test1234!"}' \
+  | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4)
+```
+
+---
+
 ## 기술 결정 이력
 
 | 날짜 | 결정 | 이유 |
@@ -378,3 +481,7 @@ FastAPI×Slack: AI 면접 채점 + 주간 학습 리포트 + 자연어 알림 �
 | 2026-03-19 | 단계별 고도화 결정 | 텍스트 → Block Kit → 차트 순서로 포맷 고도화 |
 | 2026-03-19 | Slackbot 보류 | 현재는 발송 전용으로 충분, 추후 필요 시 추가 |
 | 2026-03-19 | LeetCode → Spring Boot 직접 관리 | AI 불필요, 스케줄러 책임 단일화 (FastAPI는 AI 채점 전용) |
+| 2026-03-20 | V32 긴급 패치 | SERIAL→BIGINT 타입 불일치로 서버 기동 불가, ALTER COLUMN으로 수정 |
+| 2026-03-20 | LeetCode 발송 시각 07/12/17시 3회로 변경 | 하루 1회 09:00 → 학습 습관 강화 목적으로 3회 분산 |
+| 2026-03-20 | 정보처리기사 PDF → Slack Files API v2 직접 첨부 | 웹훅 텍스트 대신 파일 첨부, 3단계 업로드 (getUploadURL→PUT→complete) |
+| 2026-03-20 | PDF EC2 볼륨 마운트 방식 채택 | 파일이 Docker 이미지에 포함되지 않으므로 EC2 SCP + volume mount로 분리 |
