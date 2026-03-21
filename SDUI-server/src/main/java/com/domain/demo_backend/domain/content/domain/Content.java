@@ -60,6 +60,9 @@ public class Content {
     @Column(name = "last_updt_dt")
     private String lastUpdtDt;
 
+    @Column(name = "img_url")
+    private String imgUrl; // Added for V35/V23 compatibility
+
     private LocalDateTime regDt;
     private String contentStatus;
 
