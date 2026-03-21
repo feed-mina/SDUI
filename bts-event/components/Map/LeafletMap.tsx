@@ -36,6 +36,7 @@ const LAYER_EMOJI: Record<MapLayer, string> = {
   charging:  "🔋",
   emergency: "🏥",
   subway:    "🚇",
+  restroom:  "🚻",
 };
 
 export default function LeafletMap({ activeLayer, lang }: Props) {
@@ -115,6 +116,20 @@ export default function LeafletMap({ activeLayer, lang }: Props) {
           >
             <Popup className="custom-popup">
               <div className="font-bold text-blue-800">{lang === "en" ? item.name_en : item.name}</div>
+              <div className="text-xs text-gray-600 mt-1">{lang === "en" ? item.memo_en : item.memo_ko}</div>
+            </Popup>
+          </Marker>
+        ))}
+
+        {/* Public Restrooms */}
+        {activeLayer === "restroom" && (locationsData as any).restrooms?.map((item: any) => (
+          <Marker 
+            key={item.id} 
+            position={[item.lat, item.lng]} 
+            icon={createCustomIcon(LAYER_EMOJI.restroom)}
+          >
+            <Popup className="custom-popup">
+              <div className="font-bold text-amber-700">{lang === "en" ? item.name_en : item.name}</div>
               <div className="text-xs text-gray-600 mt-1">{lang === "en" ? item.memo_en : item.memo_ko}</div>
             </Popup>
           </Marker>
