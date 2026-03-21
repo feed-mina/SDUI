@@ -11,7 +11,7 @@ const PAGE_URL = "https://bts-gwanghwamun.vercel.app";
 const TEXTS = {
   ko: {
     cctv: "📹 CCTV",
-    topis: "🗺️ TOPIS",
+    topis: "🗺️ 서울시 교통정보 시스템",
     cheer: "치어 모드",
     share: "X 공유",
     copy: "📋 링크 복사",
@@ -26,7 +26,7 @@ const TEXTS = {
   },
   en: {
     cctv: "📹 CCTV",
-    topis: "🗺️ TOPIS",
+    topis: "🗺️ Seoul Traffic Info System",
     cheer: "Cheer Mode",
     share: "𝕏 Share",
     copy: "📋 Copy Link",
@@ -41,7 +41,7 @@ const TEXTS = {
   },
   ja: {
     cctv: "📹 CCTV",
-    topis: "🗺️ TOPIS",
+    topis: "🗺️ ソウル市交通情報システム",
     cheer: "応援モード",
     share: "𝕏 共有",
     copy: "📋 リンクコピー",
