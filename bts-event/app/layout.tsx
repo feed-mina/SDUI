@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
+const SITE_URL = "https://bts-gwanghwamun.vercel.app";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bts-gwanghwamun.vercel.app"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "💜 BTS 광화문 현장 지도 | ARMY LIVE MAP",
     template: "%s | BTS 광화문 현장 지도"
@@ -26,13 +28,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "💜 BTS 광화문 현장 지도 | ARMY LIVE MAP",
     description: "24시간 카페 · 핸드폰 충전 · 구급 텐트 · 지하철 귀가 루트 · 실시간 CCTV",
-    url: "https://bts-gwanghwamun.vercel.app",
+    url: SITE_URL,
     siteName: "BTS 광화문 현장 지도",
     locale: "ko_KR",
     type: "website",
     images: [
       {
-        url: "/og-image.png",
+        url: `${SITE_URL}/og-image.png`,
         width: 1200,
         height: 630,
         alt: "BTS 광화문 현장 지도 미리보기",
@@ -43,8 +45,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "💜 BTS 광화문 현장 지도 | ARMY LIVE MAP",
     description: "실시간 정보: 24h 카페, 충전, 구급, 지하철 루트",
-    creator: "@bts_bighit",
-    images: ["/og-image.png"],
+    creator: "@yerinmin257722",
+    images: [`${SITE_URL}/og-image.png`],
   },
   viewport: {
     width: "device-width",
@@ -85,6 +87,7 @@ export default function RootLayout({
       </head>
       <body className="h-full flex flex-col overflow-hidden">
         {children}
+        <Analytics />
         {/* Kakao JS SDK (window.Kakao) — for Share API */}
         <Script
           src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
