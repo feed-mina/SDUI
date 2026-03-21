@@ -61,16 +61,17 @@ export default function GuestChat({ lang }: { lang: Lang }) {
     }
   }, [messages, loading]);
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
+  const handleSend = async (manualText?: string) => {
+    const textToSend = manualText || input;
+    if (!textToSend.trim() || loading) return;
     
     if (!canChat) {
       setIsRedirecting(true);
       return;
     }
 
-    const userText = input;
-    setInput("");
+    const userText = textToSend;
+    if (!manualText) setInput("");
     const userMsg: Message = { id: Date.now().toString(), role: "user", text: userText };
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
@@ -150,7 +151,8 @@ export default function GuestChat({ lang }: { lang: Lang }) {
       });
       const data = await res.json();
       if (data.status === "success" && data.data?.text) {
-        setInput(data.data.text);
+        // Automatically send the transcribed text
+        handleSend(data.data.text);
       }
     } catch (err) {
       console.error("STT error:", err);
@@ -324,7 +326,7 @@ export default function GuestChat({ lang }: { lang: Lang }) {
               disabled={!canChat || loading}
             />
             <button 
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={!input.trim() || loading || !canChat}
               className={`absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full transition-all ${
                 input.trim() && !loading && canChat 
