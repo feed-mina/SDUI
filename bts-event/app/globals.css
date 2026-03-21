@@ -70,10 +70,10 @@ body {
 }
 
 .info-btn {
-  padding: 7px 12px;
-  border-radius: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   background: var(--bg-dark);
   color: var(--text-primary);
   border: 1px solid var(--border);
@@ -81,13 +81,21 @@ body {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .info-btn:hover {
+  transform: translateY(-2px);
   border-color: var(--accent);
   color: var(--accent);
+  box-shadow: 0 4px 12px rgba(192, 132, 252, 0.2);
+}
+
+.info-btn:active {
+  transform: translateY(0);
 }
 
 .info-btn.kakao {
@@ -96,10 +104,18 @@ body {
   border-color: #FEE500;
 }
 
+.info-btn.kakao:hover {
+  box-shadow: 0 4px 12px rgba(254, 229, 0, 0.3);
+}
+
 .info-btn.line {
   background: #06C755;
   color: #fff;
   border-color: #06C755;
+}
+
+.info-btn.line:hover {
+  box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
 }
 
 .info-btn.openchat {
@@ -111,7 +127,7 @@ body {
 .info-btn.support {
   background: linear-gradient(135deg, var(--bts-purple-dark), var(--bts-purple));
   color: #fff;
-  border-color: var(--bts-purple-light);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Kakao map custom marker */

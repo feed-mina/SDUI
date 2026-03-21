@@ -12,6 +12,8 @@ import StatusCard from "@/components/StatusCard";
 import LivePip from "@/components/LivePip";
 import CheerMode from "@/components/CheerMode";
 import { Bell, Heart } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import SupportModal from "@/components/SupportModal";
 import { translations } from "@/data/translations";
 
@@ -27,7 +29,8 @@ const LeafletMap = dynamic(() => import("@/components/Map/LeafletMap"), {
 
 type Tab = "map" | "chat" | "board";
 
-export default function HomePage() {
+function HomePageContent() {
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>("map");
   const [lang, setLang] = useState<Lang>("ko");
   const [activeLayer, setActiveLayer] = useState<Layer | null>("subway");
@@ -35,11 +38,21 @@ export default function HomePage() {
   const [showCheer, setShowCheer] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
 
-  // Auto-show notice on first load
+  // Handle Query Params for Deep Linking
   useEffect(() => {
-    const timer = setTimeout(() => setShowNotice(true), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    const t = searchParams.get("tab") as Tab;
+    if (t && ["map", "chat", "board"].includes(t)) {
+      setTab(t);
+    }
+  }, [searchParams]);
+
+  // Auto-show notice on first load (only if no specific tab is requested)
+  useEffect(() => {
+    if (!searchParams.get("tab")) {
+      const timer = setTimeout(() => setShowNotice(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   const t = translations[lang];
 
@@ -109,7 +122,7 @@ export default function HomePage() {
         )}
 
         {tab === "chat" && <GuestChat lang={lang} />}
-        {tab === "board" && <FanBoard lang={lang} />}
+        {tab === "board" && <FanBoard lang={lang} initialPostId={searchParams.get("id")} />}
       </main>
 
       {/* Modals */}
@@ -129,4 +142,16 @@ export default function HomePage() {
       )}
     </div>
   );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-[#1a1a2e] text-white">
+        💜 로딩 중...
+      </div>
+    }>
+      <HomePageContent />
+    </Suspense>
+  )
 }

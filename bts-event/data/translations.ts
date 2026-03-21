@@ -43,7 +43,8 @@ export const translations = {
       tags: "태그 (#뷔 #화장실 등)",
       image: "이미지 첨부"
     },
-    boardSuccess: "게시글이 성공적으로 등록되었습니다! 💜"
+    boardSuccess: "게시글이 성공적으로 등록되었습니다! 💜",
+    copySuccess: "링크가 클립보드에 복사되었습니다! 💜"
   },
   en: {
     title: "💜 BTS Gwanghwamun",
@@ -86,7 +87,8 @@ export const translations = {
       tags: "Tags (e.g., #V #BTS)",
       image: "Attach Image"
     },
-    boardSuccess: "Post registered successfully! 💜"
+    boardSuccess: "Post registered successfully! 💜",
+    copySuccess: "Link copied to clipboard! 💜"
   },
   ja: {
     title: "💜 BTS 光化門",
@@ -129,6 +131,7 @@ export const translations = {
       tags: "タグ (例: #V #トイレ)",
       image: "画像添付"
     },
-    boardSuccess: "投稿が完了しました！ 💜"
+    boardSuccess: "投稿が完了しました！ 💜",
+    copySuccess: "リンクがクリップボードにコピーされました！ 💜"
   }
 };
