@@ -44,11 +44,11 @@ export default function LastTrainModal({ lang, onClose }: Props) {
           <div className="bg-red-500/20 border border-red-500/30 p-4 rounded-2xl flex gap-3">
              <AlertTriangle className="text-red-500 shrink-0" size={20} />
              <div>
-                <p className="text-red-400 font-bold text-sm mb-1">📢 {lang === 'ko' ? '초비상! 광화문역 이용 불가능' : 'CRITICAL: Gwanghwamun Stn Closed'}</p>
+                <p className="text-red-400 font-bold text-sm mb-1">📢 {lang === 'ko' ? '공연 종료! 광화문역 이용 안내' : 'Show Over! Gwanghwamun Stn Info'}</p>
                 <p className="text-[11px] text-gray-300 leading-relaxed">
                    {lang === 'ko' 
-                    ? '오늘(3/21) 밤 10시까지 광화문역은 기차가 서지 않습니다. 종각역이나 경복궁역을 이용해 주세요! 10시 이후부터 운행이 재개되며 증편됩니다.' 
-                    : 'Gwanghwamun Station is CLOSED till 22:00 today. Please use Jonggak or Gyeongbokgung Stn instead!'}
+                    ? '공연이 끝났습니다! 밤 10시까지 광화문역은 무정차 통과하며 출입구가 폐쇄되어 있습니다. 10시 이후 순차적으로 개방될 예정이니, 그전까지는 종각역(1호선)이나 경복궁역(3호선)을 이용해 주세요!' 
+                    : 'The show is over! Gwanghwamun Stn is CLOSED till 22:00. It will open sequentially after 22:00. Use Jonggak (L1) or Gyeongbokgung (L3) till then.'}
                 </p>
              </div>
           </div>
