@@ -17,7 +17,7 @@ const TEXTS = {
     copySuccess: "링크가 복사되었습니다! 💜",
     geoNotSupported: "위치 공유가 지원되지 않는 브라우저입니다.",
     locationCopied: "위치 링크가 복사되었습니다.",
-    tweet: "💜 BTS 광화문 현장 지도 — 24h 카페·충전·구급·지하철 루트"
+    tweet: "💜 BTS 광화문 현장 실시간 지도\n24h 카페·충전·구급·지하철 루트\n#BTS #방탄소년단 #BTS광화문 #ARMY #아미"
   },
   en: {
     cctv: "📹 CCTV",
@@ -30,7 +30,7 @@ const TEXTS = {
     copySuccess: "Link copied to clipboard! 💜",
     geoNotSupported: "Geolocation is not supported by your browser.",
     locationCopied: "Location link copied to clipboard.",
-    tweet: "💜 BTS Gwanghwamun Live Map — 24h Cafe, Charging, First Aid, Subway"
+    tweet: "💜 BTS Gwanghwamun Live Map\n24h Cafe, Charging, First Aid, Subway\n#BTS #ARMY #BTSGwanghwamun"
   },
   ja: {
     cctv: "📹 CCTV",
@@ -43,7 +43,7 @@ const TEXTS = {
     copySuccess: "リンクをコピーしました！ 💜",
     geoNotSupported: "お使いのブラウザは位置情報に対応していません。",
     locationCopied: "位置情報をコピーしました。",
-    tweet: "💜 BTS 光化門ライブマップ — 24h カフェ・充電・救急・地下鉄ルート"
+    tweet: "💜 BTS 光化門ライブマップ\n24h カフェ・充電・救急・地下鉄ルート\n#BTS #ARMY #BTS光化門"
   }
 };
 
@@ -81,20 +81,20 @@ export default function InfoPanel({ onCheer, lang }: Props) {
 
   return (
     <div className="info-panel !flex-wrap gap-2">
-      <a href="http://cctv.seoul.go.kr" target="_blank" rel="noopener noreferrer" className="info-btn">
+      {/* <a href="http://cctv.seoul.go.kr" target="_blank" rel="noopener noreferrer" className="info-btn">
         {t.cctv}
-      </a>
+      </a> */}
       <a href="http://topis.seoul.go.kr" target="_blank" rel="noopener noreferrer" className="info-btn">
         {t.topis}
       </a>
-      
+
       <button className="info-btn support !bg-bts-purple-light" onClick={onCheer}>
         <Heart size={14} fill="currentColor" /> {t.cheer}
       </button>
 
       <KakaoShare lang={lang} />
       <LineShare lang={lang} />
-      
+
       <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="info-btn">
         {t.share}
       </a>
