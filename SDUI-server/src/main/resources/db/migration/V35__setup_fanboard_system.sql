@@ -7,7 +7,14 @@ SELECT 'GUEST', 'GUEST_PW_DUMMY', 'GUEST_HASH_DUMMY', 'guest@sdui.com', '방탄�
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE user_id = 'GUEST');
 
 -- (2) 팬 게시글 전용 테이블 fan_board 생성 (기존 content 테이블 구조 복사)
-CREATE TABLE IF NOT EXISTS fan_board (LIKE content INCLUDING ALL);
+-- INCLUDING DEFAULTS만 사용: content_pkey / idx_content_* 인덱스 이름 충돌 방지
+CREATE TABLE IF NOT EXISTS fan_board (LIKE content INCLUDING DEFAULTS);
+-- 별도 primary key 지정 (content_id를 PK로)
+ALTER TABLE fan_board ADD PRIMARY KEY (content_id);
+-- fan_board 전용 인덱스 생성
+CREATE INDEX IF NOT EXISTS idx_fan_board_user_sqno ON fan_board(user_sqno);
+CREATE INDEX IF NOT EXISTS idx_fan_board_day_tag1 ON fan_board(day_tag1);
+CREATE INDEX IF NOT EXISTS idx_fan_board_reg_dt ON fan_board(reg_dt DESC);
 
 -- (3) 기존 content 테이블에서 팬 게시판 관련 데이터 이전
 INSERT INTO fan_board
@@ -16,23 +23,11 @@ SELECT * FROM content
    AND del_yn = 'N'
    AND NOT EXISTS (SELECT 1 FROM fan_board fb WHERE fb.content_id = content.content_id);
 
--- (4) query_master 통합 업데이트 및 신규 추가
+-- (4) query_master 신규 추가 (기존 SDUI 쿼리 수정 안 함)
+-- NOTE: GET_CONTENT_LIST_PAGE는 V31에서 올바르게 정의됨 (filterId=userId 필터).
+--       FanBoard는 GET_FANBOARD_LIST를 사용하므로 SDUI 쿼리 변경 불필요.
 
--- 4-1. 기존 GET_CONTENT_LIST_PAGE 쿼리 수정 (탭 필터링 오류 및 이미지 포함)
-UPDATE query_master
-   SET query_text = 'SELECT d.content_id, d.user_id, d.title, d.content, d.date, d.emotion, 
-                              d.day_tag1, d.day_tag2, d.day_tag3, d.content_status, 
-                              d.selected_times, d.reg_dt
-                         FROM content d
-                        WHERE d.del_yn = ''N''
-                          AND d.is_private = FALSE
-                          AND (:filterId IS NULL OR :filterId = '''' OR d.day_tag1 = :filterId)
-                        ORDER BY d.reg_dt DESC
-                        LIMIT :pageSize OFFSET :offset',
-       use_redis_yn = 'N'
- WHERE sql_key = 'GET_CONTENT_LIST_PAGE';
-
--- 4-2. 팬 게시판 전용 리스트 조회 (GET_FANBOARD_LIST)
+-- 4-1. 팬 게시판 전용 리스트 조회 (GET_FANBOARD_LIST)
 INSERT INTO query_master (sql_key, query_text, return_type, description, use_redis_yn, redis_ttl_sec, required_role)
 SELECT 'GET_FANBOARD_LIST',
        'SELECT d.content_id, d.user_id, d.title, d.content, d.date, d.emotion, 
@@ -41,7 +36,8 @@ SELECT 'GET_FANBOARD_LIST',
          WHERE d.del_yn = ''N''
            AND (:filterId IS NULL OR :filterId = '''' OR d.day_tag1 = :filterId)
          ORDER BY d.reg_dt DESC
-         LIMIT :pageSize OFFSET :offset',
+         LIMIT  CAST(COALESCE(NULLIF(CAST(:pageSize AS VARCHAR), ''''), ''50'') AS INTEGER)
+         OFFSET CAST(COALESCE(NULLIF(CAST(:offset  AS VARCHAR), ''''), ''0'')  AS INTEGER)',
        'LIST', '팬 게시판 전용 리스트 조회 (fan_board 테이블)', 'N', 0, NULL
  WHERE NOT EXISTS (SELECT 1 FROM query_master WHERE sql_key = 'GET_FANBOARD_LIST');
 
@@ -52,7 +48,7 @@ SELECT 'GET_FANBOARD_DETAIL',
                d.day_tag1, d.day_tag2, d.day_tag3, d.content_status, d.selected_times, d.reg_dt
           FROM fan_board d
          WHERE d.content_id = :contentId',
-       'MAP', '팬 게시판 전용 상세 조회 (fan_board 테이블)', 'N', 0, NULL
+       'SINGLE', '팬 게시판 전용 상세 조회 (fan_board 테이블)', 'N', 0, NULL
  WHERE NOT EXISTS (SELECT 1 FROM query_master WHERE sql_key = 'GET_FANBOARD_DETAIL');
 
 -- 4-4. 익명 글쓰기 전용 쿼리 (INSERT_FANBOARD)

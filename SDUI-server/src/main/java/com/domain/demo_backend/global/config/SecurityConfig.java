@@ -79,7 +79,8 @@ public class SecurityConfig {
                                 "/api/auth/me", "/api/auth/refresh", "/api/auth/logout",
                                 "/api/auth/verify-code", "/api/auth/resend-code",
                                 "/api/auth/confirm-email", "/api/auth/check-verification",
-                                "/api/ai/stt", "/api/ai/guest/**", "/api/ai/interview/resume/upload")
+                                "/api/ai/stt", "/api/ai/guest/**", "/api/ai/interview/resume/upload",
+                                "/api/ai/interview/resume/view")
                         .permitAll()
 
 

@@ -63,7 +63,7 @@ export default function GuestChat({ lang }: { lang: Lang }) {
 
   const handleSend = async (manualText?: string) => {
     const textToSend = manualText || input;
-    if (!textToSend.trim() || loading) return;
+    if (!textToSend.trim() || (loading && !manualText)) return;
     
     if (!canChat) {
       setIsRedirecting(true);
@@ -152,7 +152,7 @@ export default function GuestChat({ lang }: { lang: Lang }) {
       const data = await res.json();
       if (data.status === "success" && data.data?.text) {
         // Automatically send the transcribed text
-        handleSend(data.data.text);
+        await handleSend(data.data.text);
       }
     } catch (err) {
       console.error("STT error:", err);
