@@ -42,7 +42,6 @@ export default function GuestChat({ lang }: { lang: Lang }) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [sttLang, setSttLang] = useState<Lang | 'auto'>(lang);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   
@@ -51,8 +50,8 @@ export default function GuestChat({ lang }: { lang: Lang }) {
   const canChat = hasGuestChatRemaining();
 
   const t = {
-    ko: { title: "AI 광화문 가이드", welcome: "안녕하세요! 방탄소년단 광화문 현장 안내 AI입니다. 궁금한 점을 물어보세요! 💜", placeholder: "메시지를 입력하세요...", limit: "게스트 채팅 5회 제한이 적용됩니다", remaining: "잔여 횟수", end: "채팅 종료하기", mic: "General Mic", kr: "KR mode", translate: "번역 보기", listen: "Listen AI", loginReq: "무료 채팅 횟수(5회)를 모두 사용하셨습니다. 정식 서비스에서 더 고도화된 AI를 만나보세요!" },
-    en: { title: "AI Gwanghwamun Guide", welcome: "Hello! I'm here to help you at the BTS Gwanghwamun site. Ask me anything! 💜", placeholder: "Type a message...", limit: "5 free guest chats allowed", remaining: "Remaining", end: "End Chat", mic: "General Mic", kr: "KR mode", translate: "Translate", listen: "Listen AI", loginReq: "You've used all 5 free chats. Please log in to the full version for advanced features!" },
+    ko: { title: "AI 광화문 가이드", welcome: "안녕하세요! 방탄소년단 광화문 현장 안내 AI입니다. 궁금한 점을 물어보세요! 💜", placeholder: "메시지를 입력하세요...", limit: "게스트 채팅 5회 제한이 적용됩니다", remaining: "잔여 횟수", end: "채팅 종료하기", mic: "General Mic", translate: "번역 보기", listen: "Listen AI", loginReq: "무료 채팅 횟수(5회)를 모두 사용하셨습니다. 정식 서비스에서 더 고도화된 AI를 만나보세요!" },
+    en: { title: "AI Gwanghwamun Guide", welcome: "Hello! I'm here to help you at the BTS Gwanghwamun site. Ask me anything! 💜", placeholder: "Type a message...", limit: "5 free guest chats allowed", remaining: "Remaining", end: "End Chat", mic: "General Mic", translate: "Translate", listen: "Listen AI", loginReq: "You've used all 5 free chats. Please log in to the full version for advanced features!" },
     ja: { title: "AI 光化門ガイド", welcome: "こんにちは！BTS光化門イベントの案内AIです。気になることを聞いてください！ 💜", placeholder: "メッセージを入力...", limit: "ゲストチャットは5回まで可能です", remaining: "残り", end: "チャット終了", mic: "General Mic", kr: "KR mode", translate: "翻訳を表示", listen: "Listen AI", loginReq: "無料チャット5回をすべて使用しました。完全版でより高度なAIをご利用ください！" }
   }[lang];
 
@@ -143,7 +142,7 @@ export default function GuestChat({ lang }: { lang: Lang }) {
     setLoading(true);
     const formData = new FormData();
     formData.append("audio", blob, "audio.webm");
-    formData.append("language", sttLang === 'auto' ? lang : sttLang);
+    formData.append("language", lang);
 
     try {
       const res = await fetch("/api/ai/stt", {
@@ -272,7 +271,7 @@ export default function GuestChat({ lang }: { lang: Lang }) {
       {/* Premium Footer Area (Matching Screenshot) */}
       <div className="p-6 bg-white border-t border-pink-50 shadow-[0_-4px_20px_rgba(255,182,193,0.1)]">
          {/* Top buttons in footer */}
-         <div className="flex justify-center gap-6 mb-8">
+         <div className="flex justify-center mb-8">
             <div className="flex flex-col items-center gap-2">
               <button 
                 onClick={toggleRecording}
@@ -284,25 +283,6 @@ export default function GuestChat({ lang }: { lang: Lang }) {
               </button>
               <span className={`text-[11px] font-bold uppercase tracking-tighter ${isRecording ? 'text-red-500' : 'text-gray-400'}`}>
                 {isRecording ? (lang === 'ko' ? "녹음 중..." : "Recording...") : t.mic}
-              </span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <button 
-                onClick={() => {
-                  if (sttLang === 'ko') {
-                    setSttLang(lang); // Toggle off KR mode, back to UI lang
-                  } else {
-                    setSttLang('ko'); // Force KR mode
-                  }
-                }}
-                className={`w-16 h-16 rounded-full border-2 flex items-center justify-center font-black shadow-sm transition-all active:scale-95 ${
-                  sttLang === 'ko' ? 'bg-pink-600 border-pink-600 text-white animate-pulse' : 'bg-white border-pink-100 text-pink-500 hover:border-pink-300'
-                }`}
-              >
-                KR
-              </button>
-              <span className={`text-[11px] font-bold uppercase tracking-tighter ${sttLang === 'ko' ? 'text-pink-600 font-black' : 'text-gray-400'}`}>
-                {sttLang === 'ko' ? "Active" : t.kr}
               </span>
             </div>
          </div>
