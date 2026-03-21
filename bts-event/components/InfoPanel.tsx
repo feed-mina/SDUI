@@ -2,6 +2,9 @@ import { Heart, Map, Share2, Link as LinkIcon, MapPin, Coffee } from "lucide-rea
 import KakaoShare from "./Share/KakaoShare";
 import LineShare from "./Share/LineShare";
 import { type Lang } from "./LangToggle";
+import LastTrainModal from "./LastTrainModal";
+import { useState } from "react";
+import { Train } from "lucide-react";
 
 const PAGE_URL = "https://bts-gwanghwamun.vercel.app";
 
@@ -17,7 +20,9 @@ const TEXTS = {
     copySuccess: "링크가 복사되었습니다! 💜",
     geoNotSupported: "위치 공유가 지원되지 않는 브라우저입니다.",
     locationCopied: "위치 링크가 복사되었습니다.",
-    tweet: "💜 BTS 광화문 현장 실시간 지도\n24h 카페·충전·구급·지하철 루트\n#BTS #방탄소년단 #BTS광화문 #ARMY #아미"
+    tweet: "💜 BTS 광화문 현장 실시간 지도\n24h 카페·충전·구급·지하철 루트\n#BTS #방탄소년단 #BTS광화문 #ARMY #아미",
+    lastHome: "🏠 귀가 안내",
+    restroom: "🚻 화장실"
   },
   en: {
     cctv: "📹 CCTV",
@@ -30,7 +35,9 @@ const TEXTS = {
     copySuccess: "Link copied to clipboard! 💜",
     geoNotSupported: "Geolocation is not supported by your browser.",
     locationCopied: "Location link copied to clipboard.",
-    tweet: "💜 BTS Gwanghwamun Live Map\n24h Cafe, Charging, First Aid, Subway\n#BTS #ARMY #BTSGwanghwamun"
+    tweet: "💜 BTS Gwanghwamun Live Map\n24h Cafe, Charging, First Aid, Subway\n#BTS #ARMY #BTSGwanghwamun",
+    lastHome: "🏠 Safe Home",
+    restroom: "🚻 Restroom"
   },
   ja: {
     cctv: "📹 CCTV",
@@ -43,7 +50,9 @@ const TEXTS = {
     copySuccess: "リンクをコピーしました！ 💜",
     geoNotSupported: "お使いのブラウザは位置情報に対応していません。",
     locationCopied: "位置情報をコピーしました。",
-    tweet: "💜 BTS 光化門ライブマップ\n24h カフェ・充電・救急・地下鉄ルート\n#BTS #ARMY #BTS光化門"
+    tweet: "💜 BTS 光化門ライブマップ\n24h カフェ・充電・救急・地下철ルート\n#BTS #ARMY #BTS光化門",
+    lastHome: "🏠 帰り道案内",
+    restroom: "🚻 お手洗い"
   }
 };
 
@@ -53,6 +62,7 @@ interface Props {
 }
 
 export default function InfoPanel({ onCheer, lang }: Props) {
+  const [showLastTrain, setShowLastTrain] = useState(false);
   const t = TEXTS[lang];
   const KAKAOPAY_URL = process.env.NEXT_PUBLIC_KAKAOPAY_URL;
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(t.tweet)}&url=${encodeURIComponent(PAGE_URL)}`;
@@ -88,6 +98,10 @@ export default function InfoPanel({ onCheer, lang }: Props) {
         {t.topis}
       </a>
 
+      <button className="info-btn !bg-indigo-600/90 text-white" onClick={() => setShowLastTrain(true)}>
+        <Train size={14} className="text-white" /> {t.lastHome}
+      </button>
+
       <button className="info-btn support !bg-bts-purple-light" onClick={onCheer}>
         <Heart size={14} fill="currentColor" /> {t.cheer}
       </button>
@@ -110,6 +124,8 @@ export default function InfoPanel({ onCheer, lang }: Props) {
           {t.support}
         </a>
       )}
+
+      {showLastTrain && <LastTrainModal lang={lang} onClose={() => setShowLastTrain(false)} />}
     </div>
   );
 }

@@ -20,6 +20,7 @@ const LAYER_EMOJI: Record<Layer, string> = {
   charging:  "🔋",
   emergency: "🏥",
   subway:    "🚇",
+  restroom:  "🚻",
 };
 
 function markerContent(emoji: string): string {
@@ -34,7 +35,7 @@ export default function KakaoMap({ activeLayers, lang }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef       = useRef<any>(null);
   const markersRef   = useRef<Record<Layer, any[]>>({
-    cafe: [], charging: [], emergency: [], subway: [],
+    cafe: [], charging: [], emergency: [], subway: [], restroom: [],
   });
   const infoWindowRef = useRef<any>(null);
 
@@ -65,6 +66,7 @@ export default function KakaoMap({ activeLayers, lang }: Props) {
         addStaticMarkers(map, "charging",  locationsData.charging);
         addStaticMarkers(map, "emergency", locationsData.emergency_tents);
         addStaticMarkers(map, "subway",    locationsData.subway_routes);
+        addStaticMarkers(map, "restroom",  (locationsData as any).restrooms);
 
         // Cafe keyword search
         const ps = new window.kakao.maps.services.Places();

@@ -255,5 +255,61 @@
       "memo_ko": "종로2가 사거리 근처 24시간 운영",
       "memo_en": "24h cafe near Jongno 2-ga"
     }
+  ],
+  "restrooms": [
+    {
+      "id": "r1",
+      "name": "광화문광장 지하 화장실 (해치마당)",
+      "name_en": "Gwanghwamun Plaza Underground (Haechi)",
+      "lat": 37.5720,
+      "lng": 126.9769,
+      "memo_ko": "지하철 연결 통로 인근, 칸수 많음",
+      "memo_en": "Near subway path, many stalls"
+    },
+    {
+      "id": "r2",
+      "name": "세종문화회관 공공화장실",
+      "name_en": "Sejong Center Public Restroom",
+      "lat": 37.5726,
+      "lng": 126.9754,
+      "memo_ko": "세종문화회관 1층/지하 가용",
+      "memo_en": "Located on 1F/B1 of Sejong Center"
+    },
+    {
+      "id": "r3",
+      "name": "대한민국역사박물관 화장실",
+      "name_en": "National Museum of Korean Contemporary History",
+      "lat": 37.5738,
+      "lng": 126.9784,
+      "memo_ko": "박물관 개방 시간 내 이용 가능",
+      "memo_en": "Available during museum hours"
+    },
+    {
+      "id": "r4",
+      "name": "교보문고 광화문점 화장실",
+      "name_en": "Kyobo Book Centre Restroom",
+      "lat": 37.5710,
+      "lng": 126.9769,
+      "memo_ko": "지하 1층/2층 이용 가능",
+      "memo_en": "B1/B2 levels available"
+    },
+    {
+      "id": "r5",
+      "name": "광화문역사 내 화장실",
+      "name_en": "Gwanghwamun Station Restroom",
+      "lat": 37.5716,
+      "lng": 126.9766,
+      "memo_ko": "지하철 개찰구 외부 위치",
+      "memo_en": "Located outside the turnstiles"
+    },
+    {
+      "id": "r6",
+      "name": "종로구청 열린마당 화장실",
+      "name_en": "Jongno-gu Office Public Restroom",
+      "lat": 37.5730,
+      "lng": 126.9790,
+      "memo_ko": "구청 입구 근처 공공 개방",
+      "memo_en": "Publicly open near office entry"
+    }
   ]
-}
+}

@@ -17,7 +17,8 @@ export const translations = {
       cafe: "24h 카페",
       charging: "🔋 충전",
       emergency: "🏥 구급",
-      subway: "🚇 지하철"
+      subway: "🚇 지하철",
+      restroom: "🚻 화장실"
     },
     boardReady: "팬 게시판 준비 중",
     boardDesc: "전 세계 ARMY가 함께하는 게시판이 곧 오픈됩니다.",
@@ -44,7 +45,10 @@ export const translations = {
       image: "이미지 첨부"
     },
     boardSuccess: "게시글이 성공적으로 등록되었습니다! 💜",
-    copySuccess: "링크가 클립보드에 복사되었습니다! 💜"
+    copySuccess: "링크가 클립보드에 복사되었습니다! 💜",
+    lastTrain: "📢 막차 정보",
+    lastTrainTitle: "💜 귀가 길 안내 (Safe Home)",
+    restroomStatus: "현재 화장실 대기 현황"
   },
   en: {
     title: "💜 BTS Gwanghwamun",
@@ -61,7 +65,8 @@ export const translations = {
       cafe: "24h Cafe",
       charging: "🔋 Charge",
       emergency: "🏥 First Aid",
-      subway: "🚇 Subway"
+      subway: "🚇 Subway",
+      restroom: "🚻 Restroom"
     },
     boardReady: "Fan Board Coming Soon",
     boardDesc: "A board for ARMYs worldwide will be open soon.",
@@ -88,14 +93,17 @@ export const translations = {
       image: "Attach Image"
     },
     boardSuccess: "Post registered successfully! 💜",
-    copySuccess: "Link copied to clipboard! 💜"
+    copySuccess: "Link copied to clipboard! 💜",
+    lastTrain: "📢 Last Trains",
+    lastTrainTitle: "💜 Safe Home Guide",
+    restroomStatus: "Restroom Wait Status"
   },
   ja: {
     title: "💜 BTS 光化門",
     map: "🗺️ 地図",
     chat: "🤖 チャット",
     board: "✍️ 掲示板",
-    traffic: "リアルタイム交通情報",
+    traffic: "リアルタイム交通정보",
     weatherTitle: "リアルタイム天気 (気象庁)",
     congestion: "混雑 (余裕) 💜",
     moderate: "混雑 (普通) 💜",
@@ -105,10 +113,11 @@ export const translations = {
       cafe: "24h カフェ",
       charging: "🔋 充電",
       emergency: "🏥 救急",
-      subway: "🚇 地下鉄"
+      subway: "🚇 地下鉄",
+      restroom: "🚻 お手洗い"
     },
     boardReady: "ファン掲示板準備中",
-    boardDesc: "世界中のARMYが参加できる掲示板がまもなくオープンします。",
+    boardDesc: "世界中のARMY가 참가할 수 있는 掲示판이 곧 오픈됩니다.",
     notice: "お知らせ",
     close: "閉じる",
     write: "書く",
@@ -132,6 +141,9 @@ export const translations = {
       image: "画像添付"
     },
     boardSuccess: "投稿が完了しました！ 💜",
-    copySuccess: "リンクがクリップボードにコピーされました！ 💜"
+    copySuccess: "リンクがクリップボードにコピーされました！ 💜",
+    lastTrain: "📢 終電情報",
+    lastTrainTitle: "💜 安全な帰り道案内 (Safe Home)",
+    restroomStatus: "お手洗い待ち状況"
   }
 };

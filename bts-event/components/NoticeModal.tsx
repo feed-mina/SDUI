@@ -1,82 +1,71 @@
-"use client";
-
-import { X, ExternalLink, RefreshCcw } from "lucide-react";
-import { useState } from "react";
+import { translations } from "@/data/translations";
+import { type Lang } from "./LangToggle";
+import { Bell, Info, AlertTriangle, ExternalLink } from "lucide-react";
 
 interface Props {
+  lang: Lang;
   onClose: () => void;
-  lang: string;
-  title?: string;
+  title: string;
 }
 
-export default function NoticeModal({ onClose, lang, title }: Props) {
-  const [key, setKey] = useState(0); // For iframe refresh
-  const topisUrl = "https://m.topis.seoul.go.kr/";
-
-  const labels = {
-    ko: { close: "닫기", refresh: "새로고침", fallback: "⚠️ 공식 사이트 규정상 화면이 보이지 않을 수 있습니다. 이 경우 아래 버튼을 사용해 주세요.", openNew: "공식 사이트 새창열기" },
-    en: { close: "Close", refresh: "Refresh", fallback: "⚠️ Due to security policies, it may be blank. Please use the button below.", openNew: "Open in New Tab" },
-    ja: { close: "閉じる", refresh: "更新", fallback: "⚠️ セキュリティポリシーにより表示されない場合があります。下のボタンをご利用ください。", openNew: "公式サイトを新しいタブで開く" }
-  };
-
-  const l = labels[lang as keyof typeof labels] || labels.ko;
+export default function NoticeModal({ lang, onClose, title }: Props) {
+  const t = (translations as any)[lang] || translations.ko;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content !max-w-[500px] !p-0 overflow-hidden flex flex-col h-[80vh]" onClick={(e) => e.stopPropagation()}>
-        {/* Modal Header */}
-        <div className="modal-header !mb-0 p-4 border-b border-border bg-bg-card flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              🚨 {title || (lang === "ko" ? "실시간 교통 상황" : "Live Traffic Info")}
-            </h2>
-            <button 
-              onClick={() => setKey(prev => prev + 1)}
-              className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
-              title={l.refresh}
-            >
-              <RefreshCcw size={16} className="text-gray-400" />
-            </button>
-          </div>
-          <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full">
-            <X size={24} />
-          </button>
+      <div 
+        className="modal-content bg-[#1a1a2e] border-2 border-red-500/50 p-0 overflow-hidden max-w-md w-[90%] shadow-2xl animate-in fade-in zoom-in duration-300"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bg-red-600 p-4 flex items-center justify-between">
+           <h2 className="text-white font-bold flex items-center gap-2">
+             <AlertTriangle size={18} /> {lang === 'ko' ? '📢 긴급 교통 통제 공지' : 'Emergency Notice'}
+           </h2>
+           <button onClick={onClose} className="text-white/80 hover:text-white">✕</button>
         </div>
-        
-        {/* Iframe Area */}
-        <div className="flex-1 bg-white relative">
-          <iframe 
-            key={key}
-            src={topisUrl}
-            className="w-full h-full border-none"
-            title="Seoul TOPIS Mobile"
-          />
-          
-          <div className="absolute inset-x-0 bottom-4 px-6 pointer-events-none">
-            <div className="bg-black/80 backdrop-blur p-4 rounded-xl pointer-events-auto border border-white/20 shadow-2xl text-center">
-              <p className="text-[11px] text-white/70 mb-3 leading-relaxed">
-                {l.fallback}
-              </p>
-              <a 
-                href={topisUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-all"
-              >
-                <ExternalLink size={14} />
-                {l.openNew}
-              </a>
-            </div>
+
+        <div className="p-6 space-y-4">
+          <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
+             <p className="text-red-400 font-bold text-lg mb-2">
+               🚨 {lang === 'ko' ? '광화문역 무정차 통과 안내' : 'Gwanghwamun Stn Non-stop'}
+             </p>
+             <div className="space-y-2 text-sm text-gray-200">
+                <p>• ⏱️ **{lang === 'ko' ? '시간: 14:00 ~ 22:00' : 'Time: 14:00 - 22:00'}**</p>
+                <p>• 🚫 **{lang === 'ko' ? '내용: 5호선 광화문역 열차 무정차 통과 및 전체 출입구 폐쇄' : 'Details: Line 5 Gwanghwamun Stn Closed & Non-stop'}**</p>
+             </div>
           </div>
+
+          <div className="space-y-3">
+             <h3 className="font-bold text-white flex items-center gap-2 text-sm italic">
+               <Info size={14} className="text-bts-purple-light" /> {lang === 'ko' ? '대체 이용 가능한 역 (도보 이동)' : 'Alternative Stations'}
+             </h3>
+             <div className="grid grid-cols-1 gap-2">
+                <div className="p-3 bg-white/5 rounded-lg border border-white/10 flex justify-between items-center">
+                   <span className="text-xs text-white">1호선 **종각역** (0.5km)</span>
+                   <span className="text-[10px] text-gray-500">도보 8분</span>
+                </div>
+                <div className="p-3 bg-white/5 rounded-lg border border-white/10 flex justify-between items-center">
+                   <span className="text-xs text-white">3호선 **경복궁역** (0.6km)</span>
+                   <span className="text-[10px] text-gray-500">도보 10분</span>
+                </div>
+                <div className="p-3 bg-white/5 rounded-lg border border-white/10 flex justify-between items-center">
+                   <span className="text-xs text-white">2호선 **을지로입구역** (0.8km)</span>
+                   <span className="text-[10px] text-gray-500">도보 12분</span>
+                </div>
+             </div>
+          </div>
+
+          <p className="text-[11px] text-gray-500 leading-relaxed">
+             ※ 공연 종료 후(22:00~)에는 열차가 정상 운행되며 귀가 인파를 위해 임시 열차가 증편될 예정입니다.
+          </p>
         </div>
-        
-        {/* Simple Footer */}
-        <div className="p-3 bg-bg-card border-t border-border flex justify-end shrink-0">
-           <button 
+
+        <div className="p-4 bg-white/5 border-t border-white/10 flex justify-center">
+          <button 
             onClick={onClose}
-            className="px-6 py-2 bg-gray-700 text-white text-sm font-bold rounded-lg hover:bg-gray-600 transition-colors"
+            className="w-full py-3 bg-bts-purple text-white font-bold rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            {l.close}
+            {t.close}
           </button>
         </div>
       </div>
