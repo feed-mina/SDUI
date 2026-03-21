@@ -13,8 +13,10 @@ import {
   Bot, 
   XCircle,
   MessageCircle,
-  AlertCircle
+  AlertCircle,
+  Heart
 } from "lucide-react";
+import SupportModal from "@/components/SupportModal";
 import { getGuestChatCount, incrementGuestChatCount, hasGuestChatRemaining } from "@/lib/guestLimit";
 import { guestChat } from "@/lib/api";
 
@@ -38,6 +40,10 @@ export default function GuestChat({ lang }: { lang: Lang }) {
   const [loading, setLoading] = useState(false);
   const [sessionId] = useState(() => Math.random().toString(36).substring(7));
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const currentCount = getGuestChatCount();
@@ -100,9 +106,62 @@ export default function GuestChat({ lang }: { lang: Lang }) {
     setMessages(prev => prev.map(m => m.id === id ? { ...m, showTranslation: !m.showTranslation } : m));
   };
 
+  const toggleRecording = async () => {
+    if (isRecording) {
+      mediaRecorder.current?.stop();
+      setIsRecording(false);
+    } else {
+      if (!canChat) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        mediaRecorder.current = recorder;
+        audioChunks.current = [];
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunks.current.push(e.data);
+        };
+
+        recorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
+          await handleVoiceToText(audioBlob);
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        recorder.start();
+        setIsRecording(true);
+      } catch (err) {
+        console.error("Recording error:", err);
+        alert(lang === 'ko' ? "마이크 접근에 실패했습니다. 설정을 확인해 주세요." : "Microphone access failed. Please check settings.");
+      }
+    }
+  };
+
+  const handleVoiceToText = async (blob: Blob) => {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("audio", blob, "audio.webm");
+    formData.append("language", lang);
+
+    try {
+      const res = await fetch("/api/ai/stt", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.status === "success" && data.data?.text) {
+        setInput(data.data.text);
+      }
+    } catch (err) {
+      console.error("STT error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEndChat = () => {
     if (confirm("채팅을 종료하시겠습니까? (End chat?)")) {
-       window.location.href = SDUI_URLS[lang] || SDUI_URLS.en;
+       setShowSupport(true);
     }
   };
 
@@ -212,13 +271,30 @@ export default function GuestChat({ lang }: { lang: Lang }) {
          {/* Top buttons in footer */}
          <div className="flex justify-center gap-6 mb-8">
             <div className="flex flex-col items-center gap-2">
-              <button className="w-16 h-16 rounded-full bg-pink-500 flex items-center justify-center text-white shadow-[0_4px_15px_rgba(236,72,153,0.4)] hover:scale-110 active:scale-95 transition-all">
-                <Mic size={28} />
+              <button 
+                onClick={toggleRecording}
+                className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-all active:scale-95 ${
+                  isRecording ? 'bg-red-500 animate-pulse ring-4 ring-red-100' : 'bg-pink-500 hover:scale-110'
+                }`}
+              >
+                {isRecording ? <div className="w-4 h-4 bg-white rounded-sm" /> : <Mic size={28} />}
               </button>
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{t.mic}</span>
+              <span className={`text-[11px] font-bold uppercase tracking-tighter ${isRecording ? 'text-red-500' : 'text-gray-400'}`}>
+                {isRecording ? (lang === 'ko' ? "녹음 중..." : "Recording...") : t.mic}
+              </span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <button className="w-16 h-16 rounded-full bg-white border-2 border-pink-100 flex items-center justify-center text-pink-500 font-black shadow-sm hover:border-pink-300 transition-all">
+              <button 
+                onClick={() => {
+                  if (lang !== 'ko') {
+                    // Force refresh or just UI logic
+                    alert("Language mode set to Korean.");
+                  }
+                }}
+                className={`w-16 h-16 rounded-full border-2 flex items-center justify-center font-black shadow-sm transition-all ${
+                  lang === 'ko' ? 'bg-pink-500 border-pink-500 text-white' : 'bg-white border-pink-100 text-pink-500 hover:border-pink-300'
+                }`}
+              >
                 KR
               </button>
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{t.kr}</span>
@@ -295,6 +371,16 @@ export default function GuestChat({ lang }: { lang: Lang }) {
               <span className="text-[9px] font-bold text-gray-400 uppercase">Left</span>
            </div>
         </div>
+      )}
+
+      {showSupport && (
+        <SupportModal 
+          lang={lang} 
+          onClose={() => {
+            setShowSupport(false);
+            window.location.href = SDUI_URLS[lang] || SDUI_URLS.en;
+          }} 
+        />
       )}
     </div>
   );

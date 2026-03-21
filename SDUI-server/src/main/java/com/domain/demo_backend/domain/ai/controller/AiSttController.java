@@ -30,7 +30,9 @@ public class AiSttController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         log.info("STT 요청 - userId={}, language={}, size={}bytes",
-                userDetails.getUserSqno(), language, audio.getSize());
+                userDetails != null ? userDetails.getUserSqno() : "GUEST", 
+                language, audio.getSize());
+
 
         SttResponse result = sttService.transcribe(audio, language);
         return ResponseEntity.ok(ApiResponse.success(result));
