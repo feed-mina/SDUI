@@ -32,6 +32,8 @@ public class User {
     private String role;                // role
     private String phone;               // phone
     private String email;               // email
+    private String nickname;            // nickname (added for V35)
+    private String username;            // username (added for V35)
 
     @Transient // DB에는 저장하지 않은 필드
     private String repassword;          // repassword

@@ -1,6 +1,11 @@
 -- V35: 팬 게시판(FanBoard) 시스템 구축 및 고도화 (통합 마이그레이션)
 -- 2026-03-21
 
+-- (0) missing columns in users & content table (fix Flyway error)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS nickname VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(255);
+ALTER TABLE content ADD COLUMN IF NOT EXISTS img_url TEXT;
+
 -- (1) 익명 작성을 위한 GUEST 시스템 계정 추가
 INSERT INTO users (user_id, password, hashed_password, email, nickname, role, username, created_at, updated_at, social_type)
 SELECT 'GUEST', 'GUEST_PW_DUMMY', 'GUEST_HASH_DUMMY', 'guest@sdui.com', '방탄팬(ARMY)', 'ROLE_USER', 'GUEST_USER', NOW(), NOW(), 'system'
