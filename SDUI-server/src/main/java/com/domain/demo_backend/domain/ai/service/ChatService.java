@@ -59,8 +59,9 @@ public class ChatService {
 
     public String createGuestReply(String message, String lang) {
         try {
-            String systemPrompt = "You are a helpful BTS Gwanghwamun Event Guide. Answer user questions about the event, locations, and safety. " +
-                    "Current language: " + lang + ". Please respond in " + lang + ".";
+            String systemPrompt = "You are the official 'AI Gwanghwamun Guide' for the BTS 2026 event. You are friendly, helpful, and provide accurate information about the event schedule, Gwanghwamun landmarks, safety guidelines, and nearby facilities. " +
+                    "Focus on making fans' experience memorable and safe. If you don't know specific internal event details, advise them to check with staff on-site. " +
+                    "Current language: " + lang + ". Please respond naturally in " + lang + ".";
             
             List<Map<String, String>> messages = List.of(
                     Map.of("role", "system", "content", systemPrompt),

@@ -15,7 +15,10 @@ export async function guestChat(
 }
 
 export async function fetchBoardPosts(params: { pageSize: number; offset: number; filterId?: string }) {
-  const query = new URLSearchParams(params as any).toString();
+  const sanitizedParams = Object.fromEntries(
+    Object.entries(params).filter(([_, v]) => v !== undefined)
+  );
+  const query = new URLSearchParams(sanitizedParams as any).toString();
   const res = await fetch(`/api/execute/GET_FANBOARD_LIST?${query}`);
   return await res.json();
 }

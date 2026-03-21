@@ -42,6 +42,7 @@ export default function GuestChat({ lang }: { lang: Lang }) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [sttLang, setSttLang] = useState<Lang | 'auto'>(lang);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   
@@ -142,7 +143,7 @@ export default function GuestChat({ lang }: { lang: Lang }) {
     setLoading(true);
     const formData = new FormData();
     formData.append("audio", blob, "audio.webm");
-    formData.append("language", lang);
+    formData.append("language", sttLang === 'auto' ? lang : sttLang);
 
     try {
       const res = await fetch("/api/ai/stt", {
@@ -217,7 +218,7 @@ export default function GuestChat({ lang }: { lang: Lang }) {
               {/* Bubble */}
               <div className={`p-4 rounded-3xl shadow-sm text-sm leading-relaxed ${
                 m.role === "user" 
-                  ? "bg-bts-purple-light text-white rounded-tr-sm" 
+                  ? "bg-bts-purple text-white rounded-tr-sm" 
                   : "bg-white text-gray-800 rounded-tl-sm border border-pink-50"
               }`}>
                 {m.text}
@@ -288,18 +289,21 @@ export default function GuestChat({ lang }: { lang: Lang }) {
             <div className="flex flex-col items-center gap-2">
               <button 
                 onClick={() => {
-                  if (lang !== 'ko') {
-                    // Force refresh or just UI logic
-                    alert("Language mode set to Korean.");
+                  if (sttLang === 'ko') {
+                    setSttLang(lang); // Toggle off KR mode, back to UI lang
+                  } else {
+                    setSttLang('ko'); // Force KR mode
                   }
                 }}
-                className={`w-16 h-16 rounded-full border-2 flex items-center justify-center font-black shadow-sm transition-all ${
-                  lang === 'ko' ? 'bg-pink-500 border-pink-500 text-white' : 'bg-white border-pink-100 text-pink-500 hover:border-pink-300'
+                className={`w-16 h-16 rounded-full border-2 flex items-center justify-center font-black shadow-sm transition-all active:scale-95 ${
+                  sttLang === 'ko' ? 'bg-pink-600 border-pink-600 text-white animate-pulse' : 'bg-white border-pink-100 text-pink-500 hover:border-pink-300'
                 }`}
               >
                 KR
               </button>
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{t.kr}</span>
+              <span className={`text-[11px] font-bold uppercase tracking-tighter ${sttLang === 'ko' ? 'text-pink-600 font-black' : 'text-gray-400'}`}>
+                {sttLang === 'ko' ? "Active" : t.kr}
+              </span>
             </div>
          </div>
 

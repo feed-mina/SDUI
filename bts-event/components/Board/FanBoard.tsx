@@ -349,8 +349,8 @@ export default function FanBoard({ lang }: { lang: Lang }) {
                 value={locationTag}
                 onChange={(e) => setLocationTag(e.target.value)}
                >
-                 <option value="" className="bg-bg-dark">선택 안 함</option>
-                 {LOCATIONS.map(loc => <option key={loc} value={loc} className="bg-bg-dark">{loc}</option>)}
+                 <option value="" className="bg-white text-gray-900">선택 안 함</option>
+                 {LOCATIONS.map(loc => <option key={loc} value={loc} className="bg-white text-gray-900">{loc}</option>)}
                </select>
             </div>
             <div className="space-y-2">
