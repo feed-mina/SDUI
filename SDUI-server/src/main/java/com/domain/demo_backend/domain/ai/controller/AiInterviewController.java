@@ -8,7 +8,9 @@ import com.domain.demo_backend.global.common.response.ApiResponse;
 import com.domain.demo_backend.global.security.CustomUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,10 +46,13 @@ public class AiInterviewController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal CustomUserDetails userDetails) throws Exception {
 
-        log.info("이력서 파일 업로드 요청 - userId={}, fileName={}, size={}B",
-                userDetails.getUserSqno(), file.getOriginalFilename(), file.getSize());
+        Long userSqnoForPath = (userDetails != null) ? userDetails.getUserSqno() : 0L;
+        String userIdStr = (userDetails != null) ? String.valueOf(userDetails.getUserSqno()) : "GUEST";
 
-        String fileKey = s3Service.uploadResumeFile(file, userDetails.getUserSqno());
+        log.info("게시판 파일 업로드 요청 - userId={}, fileName={}, size={}B",
+                userIdStr, file.getOriginalFilename(), file.getSize());
+
+        String fileKey = s3Service.uploadResumeFile(file, userSqnoForPath);
         String fileType = s3Service.detectFileType(fileKey);
 
         return ResponseEntity.ok(ApiResponse.success(Map.of(
@@ -55,6 +60,25 @@ public class AiInterviewController {
                 "fileType", fileType
         )));
     }
+
+
+    /**
+     * GET /api/ai/interview/resume/view
+     * fileKey에 해당하는 S3 Presigned URL로 리다이렉트 (1시간 유효)
+     */
+    @GetMapping("/resume/view")
+    public ResponseEntity<?> viewResumeFile(@RequestParam("fileKey") String fileKey) {
+        try {
+            String presignedUrl = s3Service.generatePresignedUrl(fileKey, 60);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header("Location", presignedUrl)
+                    .build();
+        } catch (Exception e) {
+            log.error("파일 조회 실패: key={}", fileKey, e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("파일을 조회할 수 없습니다.");
+        }
+    }
+
 
     /**
      * POST /api/ai/interview/start
