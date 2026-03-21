@@ -11,7 +11,8 @@ import NoticeModal from "@/components/NoticeModal";
 import StatusCard from "@/components/StatusCard";
 import LivePip from "@/components/LivePip";
 import CheerMode from "@/components/CheerMode";
-import { Bell } from "lucide-react";
+import { Bell, Heart } from "lucide-react";
+import SupportModal from "@/components/SupportModal";
 import { translations } from "@/data/translations";
 
 // LeafletMap must be loaded client-side only (no SSR)
@@ -32,6 +33,7 @@ export default function HomePage() {
   const [activeLayer, setActiveLayer] = useState<Layer | null>("subway");
   const [showNotice, setShowNotice] = useState(false);
   const [showCheer, setShowCheer] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
 
   // Auto-show notice on first load
   useEffect(() => {
@@ -68,6 +70,13 @@ export default function HomePage() {
             ))}
           </div>
           <LangToggle lang={lang} onChange={setLang} />
+          <button 
+            onClick={() => setShowSupport(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-100 text-pink-500 rounded-full text-xs font-bold hover:bg-pink-200 transition-all active:scale-95"
+          >
+            <Heart size={14} fill="currentColor" />
+            {lang === 'ko' ? '커피 후원' : lang === 'ja' ? '応援' : 'Support'}
+          </button>
         </div>
       </header>
 
@@ -109,6 +118,13 @@ export default function HomePage() {
           lang={lang} 
           onClose={() => setShowNotice(false)} 
           title={t.traffic}
+        />
+      )}
+
+      {showSupport && (
+        <SupportModal 
+          lang={lang} 
+          onClose={() => setShowSupport(false)} 
         />
       )}
     </div>

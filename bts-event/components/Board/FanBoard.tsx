@@ -106,15 +106,24 @@ export default function FanBoard({ lang }: { lang: Lang }) {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    // Check file size (e.g., 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image is too large. Max size is 5MB.");
+      return;
+    }
+
     setImageUploading(true);
     try {
       const res = await uploadFile(file);
-      if (res.code === "SUCCESS") {
-        setImageFileKey(res.data.fileKey);
+      if (res.code === "SUCCESS" || res.status === "success" || (res.data && res.data.fileKey)) {
+        const key = res.data?.fileKey || res.fileKey;
+        setImageFileKey(key);
+      } else {
+        alert("Upload failed: " + (res.message || "Unknown error"));
       }
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Image upload failed.");
+      alert("Image upload failed. Please check your connection or login status.");
     } finally {
       setImageUploading(false);
     }
@@ -175,7 +184,7 @@ export default function FanBoard({ lang }: { lang: Lang }) {
   const openDetail = async (post: Post) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/execute/GET_CONTENT_DETAIL?contentId=${post.content_id}`);
+      const res = await fetch(`/api/execute/GET_FANBOARD_DETAIL?contentId=${post.content_id}`);
       const data = await res.json();
       if (data.code === "SUCCESS") {
         setSelectedPost(data.data);
@@ -195,12 +204,41 @@ export default function FanBoard({ lang }: { lang: Lang }) {
                       post.day_tag1 === 'LOST' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 
                       'bg-purple-500/10 text-purple-400 border-purple-500/20';
 
+    const getImageUrl = (selectedTimesStr?: string) => {
+      if (!selectedTimesStr) return null;
+      try {
+        const data = typeof selectedTimesStr === 'string' ? JSON.parse(selectedTimesStr) : selectedTimesStr;
+        const key = data.imageKey || data.fileKey;
+        if (!key) return null;
+        return `/api/ai/interview/resume/view?fileKey=${encodeURIComponent(key)}`;
+      } catch (e) {
+        return null;
+      }
+    };
+
+    const imageUrl = getImageUrl(post.selected_times);
+
     return (
       <div 
         onClick={() => openDetail(post)}
         className="group relative overflow-hidden bg-white/5 border border-white/10 rounded-2xl transition-all hover:bg-white/10 active:scale-[0.98] cursor-pointer"
       >
-        <div className="absolute top-0 left-0 w-1 h-full bg-bts-gradient" />
+        <div className="absolute top-0 left-0 w-1 h-full bg-bts-gradient z-10" />
+        
+        {imageUrl && (
+          <div className="w-full h-48 overflow-hidden relative">
+            <img 
+              src={imageUrl} 
+              alt={post.title} 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-bg-dark/80 to-transparent" />
+          </div>
+        )}
+
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className={`px-2 py-0.5 rounded text-[10px] font-bold border ${typeColor}`}>
@@ -218,9 +256,9 @@ export default function FanBoard({ lang }: { lang: Lang }) {
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
               <div className="w-5 h-5 rounded-full bg-bts-gradient flex items-center justify-center text-[10px] text-white font-bold">
-                {post.user_id[0].toUpperCase()}
+                {post.user_id ? post.user_id[0].toUpperCase() : 'A'}
               </div>
-              <span>{post.user_id}</span>
+              <span>{post.user_id || 'ARMY'}</span>
             </div>
             {post.day_tag3 && (
               <div className="flex items-center gap-1 text-[11px] text-bts-purple-light font-medium">
@@ -408,6 +446,24 @@ export default function FanBoard({ lang }: { lang: Lang }) {
             </div>
             <h1 className="text-2xl font-bold leading-tight">{selectedPost.title}</h1>
             
+            {(() => {
+               const getImageUrl = (selectedTimesStr?: string) => {
+                if (!selectedTimesStr) return null;
+                try {
+                  const data = typeof selectedTimesStr === 'string' ? JSON.parse(selectedTimesStr) : selectedTimesStr;
+                  const key = data.imageKey || data.fileKey;
+                  if (!key) return null;
+                  return `/api/ai/interview/resume/view?fileKey=${encodeURIComponent(key)}`;
+                } catch (e) { return null; }
+              };
+              const url = getImageUrl(selectedPost.selected_times);
+              return url && (
+                <div className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                   <img src={url} alt="Post image" className="w-full h-auto" />
+                </div>
+              );
+            })()}
+
             <div className="text-gray-200 text-lg leading-relaxed whitespace-pre-wrap py-6">
               {selectedPost.content}
             </div>

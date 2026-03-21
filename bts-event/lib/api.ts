@@ -16,12 +16,12 @@ export async function guestChat(
 
 export async function fetchBoardPosts(params: { pageSize: number; offset: number; filterId?: string }) {
   const query = new URLSearchParams(params as any).toString();
-  const res = await fetch(`/api/execute/GET_CONTENT_LIST_PAGE?${query}`);
+  const res = await fetch(`/api/execute/GET_FANBOARD_LIST?${query}`);
   return await res.json();
 }
 
 export async function submitBoardPost(postData: any) {
-  const res = await fetch("/api/execute/INSERT_CONTENT", {
+  const res = await fetch("/api/execute/INSERT_FANBOARD", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(postData),
