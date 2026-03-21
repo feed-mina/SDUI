@@ -64,6 +64,8 @@
 ### Feature 폴더
 | 폴더/파일 | 내용 |
 |-----------|------|
+| [feature/bts-event/plan.md](feature/bts-event/plan.md) | BTS 이벤트 페이지 기획 및 아키텍처 |
+| [feature/bts-event/issues.md](feature/bts-event/issues.md) | **🔥 현재 이슈 목록 (2026-03-21)** — BTS페이지 7건 + SDUI 2건 |
 | [feature/hybridMobile_Web/](feature/hybridMobile_Web/) | 모바일/웹 하이브리드 설계 원안 (정본 2개 파일) |
 | [feature/addAdminPage/](feature/addAdminPage/) | 어드민 페이지 추가 작업 기록 |
 | [feature/ai_pronunciation_redesign/](feature/ai_pronunciation_redesign/) | AI 발음 기능 리디자인 계획 |

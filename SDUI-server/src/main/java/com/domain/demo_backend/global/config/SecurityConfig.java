@@ -125,7 +125,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("https://sdui-delta.vercel.app", "http://sdui-delta.vercel.app",
                 "http://localhost:3000", "http://localhost:8080", "http://43.201.237.68", "http://43.201.237.68:8081",
-                "https://yerin.duckdns.org"));
+                "https://yerin.duckdns.org",
+                "https://bts-gwanghwamun.vercel.app"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true); // 쿠키 허용

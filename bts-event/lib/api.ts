@@ -30,7 +30,7 @@ export async function submitBoardPost(postData: any) {
 }
 
 export async function updateBoardPost(postData: any) {
-  const res = await fetch("/api/execute/UPDATE_CONTENT_DETAIL", {
+  const res = await fetch("/api/execute/UPDATE_FANBOARD", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(postData),

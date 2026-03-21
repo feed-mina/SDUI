@@ -74,4 +74,19 @@ SELECT 'INSERT_FANBOARD',
        'COMMAND', '팬 게시판용 익명 게시글 작성 (로그인 불필요)', 'N', 0, NULL
  WHERE NOT EXISTS (SELECT 1 FROM query_master WHERE sql_key = 'INSERT_FANBOARD');
 
+-- 4-5. 팬 게시판 전용 수정 쿼리 (UPDATE_FANBOARD) - fan_board 테이블 대상
+INSERT INTO query_master (sql_key, query_text, return_type, description, use_redis_yn, redis_ttl_sec, required_role)
+SELECT 'UPDATE_FANBOARD',
+       'UPDATE fan_board
+           SET title = :title,
+               content = :content,
+               emotion = CAST(COALESCE(CAST(:emotion AS VARCHAR), ''0'') AS INTEGER),
+               selected_times = CAST(:selected_times AS jsonb),
+               day_tag1 = :day_tag1,
+               day_tag2 = :day_tag2,
+               day_tag3 = :day_tag3
+         WHERE content_id = CAST(:content_id AS BIGINT)',
+       'COMMAND', '팬 게시판 게시글 수정 (fan_board 테이블)', 'N', 0, NULL
+ WHERE NOT EXISTS (SELECT 1 FROM query_master WHERE sql_key = 'UPDATE_FANBOARD');
+
 DO $$ BEGIN RAISE NOTICE 'V35 완료 - 팬 게시판 시스템 통합 구축 성공'; END $$;
