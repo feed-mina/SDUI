@@ -6,6 +6,9 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS nickname VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(255);
 ALTER TABLE content ADD COLUMN IF NOT EXISTS img_url TEXT;
 
+-- (0.1) resync user_sqno sequence (fix duplicate key violation)
+SELECT setval('users_user_sqno_seq', COALESCE((SELECT MAX(user_sqno) FROM users), 1), true);
+
 -- (1) 익명 작성을 위한 GUEST 시스템 계정 추가
 INSERT INTO users (user_id, password, hashed_password, email, nickname, role, username, created_at, updated_at, social_type)
 SELECT 'GUEST', 'GUEST_PW_DUMMY', 'GUEST_HASH_DUMMY', 'guest@sdui.com', '방탄팬(ARMY)', 'ROLE_USER', 'GUEST_USER', NOW(), NOW(), 'system'
