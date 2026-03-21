@@ -11,19 +11,19 @@ interface SupportModalProps {
 const trans = {
   ko: {
     title: "개발자 응원하기 ☕",
-    desc: "더 나은 서비스를 위해 고생하는 개발자에게 커피 한 잔 선물해 주세요! 여러분의 작은 응원이 큰 힘이 됩니다. 💜",
+    desc: "본 서비스는 공공의 이익을 위해 개발된 무료 플랫폼입니다.\n\n원활한 서버 유지 및 더 나은 서비스 제공을 위해 여러분의 작은 후원이 큰 힘이 됩니다. 💜\n\n문의 및 제안: myelin24@naver.com 💜",
     button: "카카오페이로 후원하기",
     close: "나중에 하기"
   },
   en: {
     title: "Support Developer ☕",
-    desc: "Buy the local developer a coffee! Your small support means a lot to us. 💜",
+   desc: "This service is a free platform developed for the public good.\n\nYour small support is a great help in maintaining the server and providing better service. 💜\n\nInquiries: myelin24@naver.com  💜",
     button: "Support via KakaoPay",
     close: "Maybe later"
   },
   ja: {
     title: "開発者を応援する ☕",
-    desc: "より良いサービスのために頑張る開発者にコーヒーを一杯プレゼントしてください！皆様の応援が大きな力になります。 💜",
+    desc: "本サービスは公益のために開発された無料プラットフォームです。\n\nサーバーの維持とより良いサービスの提供のため、皆様の温かいご支援をお願いいたします。 💜\n\nお問い合わせ: myelin24@naver.com  💜",
     button: "KakaoPayで応援する",
     close: "後で"
   }
