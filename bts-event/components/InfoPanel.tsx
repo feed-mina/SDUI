@@ -1,4 +1,4 @@
-import { Heart, Video, Map, Share2, Link as LinkIcon, MapPin, Coffee } from "lucide-react";
+import { Heart, Map, Share2, Link as LinkIcon, MapPin, Coffee } from "lucide-react";
 import KakaoShare from "./Share/KakaoShare";
 import LineShare from "./Share/LineShare";
 import { type Lang } from "./LangToggle";

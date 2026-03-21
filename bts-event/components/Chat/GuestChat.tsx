@@ -10,11 +10,10 @@ import {
   Send, 
   Loader2, 
   User, 
-  Bot, 
+  Bot,
   XCircle,
   MessageCircle,
-  AlertCircle,
-  Heart
+  AlertCircle
 } from "lucide-react";
 import SupportModal from "@/components/SupportModal";
 import { getGuestChatCount, incrementGuestChatCount, hasGuestChatRemaining } from "@/lib/guestLimit";
