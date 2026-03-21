@@ -31,8 +31,7 @@ const trans = {
 
 export default function SupportModal({ lang, onClose }: SupportModalProps) {
   const t = trans[lang] || trans.ko;
-  // Use specific KakaoPay URL for the user's project
-  const payUrl = "";
+  const payUrl = process.env.NEXT_PUBLIC_KAKAOPAY_URL || "https://qr.kakaopay.com/Ej8l3SenY"; 
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
