@@ -12,7 +12,7 @@ export default function StatusCard({ lang }: Props) {
   
   const translations = {
     ko: { 
-      congestion: "혼잡 (여유로움) 💜", 
+      congestion: "매우 혼잡 🔥 (퇴장 진행 중)", 
       weatherTitle: "실시간 날씨 (기상청)", 
       viewWeather: "기상청 실시간 정보 보기",
       source: "기상청 실시간 상세정보",
@@ -21,7 +21,7 @@ export default function StatusCard({ lang }: Props) {
       close: "닫기"
     },
     en: { 
-      congestion: "Moderate 💜", 
+      congestion: "Very Crowded 🔥 (Exiting)", 
       weatherTitle: "Live Weather", 
       viewWeather: "View Live Weather Info",
       source: "Source: Weather.go.kr",
@@ -42,7 +42,7 @@ export default function StatusCard({ lang }: Props) {
 
   const text = (translations as any)[lang] || translations.ko;
 
-  const temp = 18;
+  const temp = 6;
   const rainChance = "0%";
   const weatherUrl = "https://www.weather.go.kr/w/m/index.do";
 
