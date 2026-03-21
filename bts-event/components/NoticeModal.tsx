@@ -1,8 +1,9 @@
 import { translations } from "@/data/translations";
 import { type Lang } from "./LangToggle";
-import { Info, AlertTriangle, RefreshCw } from "lucide-react";
+import { Info, AlertTriangle, RefreshCw, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { type TrafficItem } from "@/app/api/traffic/route";
+import { type NoticeItem } from "@/app/api/notices/route";
 
 interface Props {
   lang: Lang;
@@ -16,6 +17,7 @@ export default function NoticeModal({ lang, onClose, title }: Props) {
   const [traffic, setTraffic] = useState<TrafficItem[]>([]);
   const [loadingTraffic, setLoadingTraffic] = useState(true);
   const [fetchedAt, setFetchedAt] = useState<string | null>(null);
+  const [notices, setNotices] = useState<NoticeItem[]>([]);
 
   const fetchTraffic = () => {
     setLoadingTraffic(true);
@@ -31,7 +33,20 @@ export default function NoticeModal({ lang, onClose, title }: Props) {
 
   useEffect(() => {
     fetchTraffic();
+    // 공지 별도 fetch (캐시 5분, 독립적으로 호출)
+    fetch("/api/notices")
+      .then((r) => r.json())
+      .then((data) => setNotices(data.rows ?? []))
+      .catch(() => {});
   }, []);
+
+  // BTS 관련 공지만 필터
+  const btsNotices = notices.filter(
+    (n) =>
+      n.bdwrTtlNm.toUpperCase().includes("BTS") ||
+      n.bdwrTtlNm.includes("광화문") ||
+      n.bdwrTtlNm.includes("시청")
+  );
 
   const btsItems = traffic.filter((item) =>
     item.accInfo?.toUpperCase().includes("BTS")
@@ -110,7 +125,7 @@ export default function NoticeModal({ lang, onClose, title }: Props) {
           <div className="space-y-2 pt-2 border-t border-white/10">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-amber-400 text-xs flex items-center gap-2 uppercase">
-                📍 {lang === "ko" ? "실시간 사고·통제 (TOPIS)" : "Live Traffic Controls"}
+                📍 {lang === "ko" ? "실시간 사고·통제 (서울시 교통정보 시스템)" : lang === "ja" ? "リアルタイム規制 (ソウル市交通情報システム)" : "Live Traffic Controls (Seoul Traffic Info)"}
               </h3>
               <button
                 onClick={fetchTraffic}
@@ -207,6 +222,36 @@ export default function NoticeModal({ lang, onClose, title }: Props) {
               </div>
             )}
           </div>
+
+          {/* TOPIS 공식 공지 섹션 */}
+          {btsNotices.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-white/10">
+              <h3 className="font-bold text-sky-400 text-xs flex items-center gap-2 uppercase">
+                <FileText size={12} />
+                {lang === "ko" ? "서울시 교통정보 시스템 공식 공지" : lang === "ja" ? "ソウル市交通情報システム公式通知" : "Seoul Traffic Info System — Official Notices"}
+              </h3>
+              <ul className="space-y-1.5">
+                {btsNotices.map((n) => (
+                  <li
+                    key={n.bdwrSeq}
+                    className="text-[11px] bg-sky-500/10 border border-sky-500/20 rounded-lg px-2.5 py-2"
+                  >
+                    <p className="text-sky-100 leading-snug">{n.bdwrTtlNm}</p>
+                    <p className="text-[9px] text-gray-500 mt-0.5">{n.updateDate}</p>
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="https://topis.seoul.go.kr/notice/openNoticeBoard.do"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] text-sky-400/70 hover:text-sky-400 transition-colors"
+              >
+                <FileText size={9} />
+                {lang === "ko" ? "서울시 교통정보 시스템 공지 전체 보기 →" : lang === "ja" ? "全ての通知を見る →" : "View all notices (Seoul Traffic Info) →"}
+              </a>
+            </div>
+          )}
 
           <p className="text-[11px] text-gray-500 leading-relaxed italic border-l-2 border-bts-purple-light pl-2">
              ※ 광화문역은 22:00 이후 순차적으로 개방될 예정이나, 인파 밀집 시 지연될 수 있습니다. 귀가 인파를 위해 임시 열차가 증편될 예정이오니 안내에 따라 이동해 주세요.
