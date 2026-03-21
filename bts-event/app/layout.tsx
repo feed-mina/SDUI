@@ -5,28 +5,54 @@ import "./globals.css";
 const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
 
 export const metadata: Metadata = {
-  title: "💜 BTS 광화문 현장 지도",
-  description: "24시간 카페 · 핸드폰 충전 · 구급 텐트 · 지하철 귀가 루트 · CCTV 링크",
+  metadataBase: new URL("https://bts-gwanghwamun.vercel.app"),
+  title: {
+    default: "💜 BTS 광화문 현장 지도 | ARMY LIVE MAP",
+    template: "%s | BTS 광화문 현장 지도"
+  },
+  description: "BTS 광화문 현장 실시간 정보: 24시간 카페, 핸드폰 충전소, 구급 텐트, 지하철 귀가 루트, 실시간 CCTV 링크 제공",
+  keywords: ["BTS", "방탄소년단", "광화문", "BTS 광화문", "아미", "ARMY", "현장지도", "실시간정보", "24시간카페", "충전소"],
+  authors: [{ name: "ARMY for ARMY" }],
+  creator: "ARMY for ARMY",
+  publisher: "BTS Gwanghwamun Live Map",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "💜 BTS 광화문 현장 지도",
-    description: "24시간 카페 · 핸드폰 충전 · 구급 텐트 · 지하철 귀가 루트",
+    title: "💜 BTS 광화문 현장 지도 | ARMY LIVE MAP",
+    description: "24시간 카페 · 핸드폰 충전 · 구급 텐트 · 지하철 귀가 루트 · 실시간 CCTV",
     url: "https://bts-gwanghwamun.vercel.app",
-    siteName: "BTS 광화문",
+    siteName: "BTS 광화문 현장 지도",
+    locale: "ko_KR",
+    type: "website",
     images: [
       {
-        url: "https://bts-gwanghwamun.vercel.app/og-image.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
+        alt: "BTS 광화문 현장 지도 미리보기",
       },
     ],
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "💜 BTS 광화문 현장 지도",
-    description: "24시간 카페 · 충전 · 구급 · 지하철 루트",
-    images: ["https://bts-gwanghwamun.vercel.app/og-image.png"],
+    title: "💜 BTS 광화문 현장 지도 | ARMY LIVE MAP",
+    description: "실시간 정보: 24h 카페, 충전, 구급, 지하철 루트",
+    creator: "@bts_bighit",
+    images: ["/og-image.png"],
   },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
+  themeColor: "#6d28d9",
 };
 
 export default function RootLayout({

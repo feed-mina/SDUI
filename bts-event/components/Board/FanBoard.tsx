@@ -5,7 +5,7 @@ import { type Lang } from "@/components/LangToggle";
 import { 
   Loader2, Plus, ArrowLeft, MessageSquare, User, Clock, 
   MapPin, CheckCircle2, 
-  Send, Filter, Megaphone, Trash2, Camera
+  Send, Filter, Megaphone, Trash2, Camera, Share2
 } from "lucide-react";
 import { translations } from "@/data/translations";
 import { 
@@ -54,7 +54,7 @@ const LOCATIONS = [
   "교보문고 본점", "KT 광화문빌딩", "경복궁 정문", "광화문 광장 중심"
 ];
 
-export default function FanBoard({ lang }: { lang: Lang }) {
+export default function FanBoard({ lang, initialPostId }: { lang: Lang; initialPostId?: string | null }) {
   const [view, setView] = useState<View>("LIST");
   const [activeTab, setActiveTab] = useState<BoardTab>("ALL");
   const [posts, setPosts] = useState<Post[]>([]);
@@ -94,6 +94,15 @@ export default function FanBoard({ lang }: { lang: Lang }) {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
+
+  useEffect(() => {
+    if (initialPostId) {
+      const postId = parseInt(initialPostId);
+      if (!isNaN(postId)) {
+        openDetail({ content_id: postId } as Post);
+      }
+    }
+  }, [initialPostId]);
 
   const handlePostTypeChange = (type: Exclude<BoardTab, "ALL">) => {
     setPostType(type);
@@ -407,6 +416,22 @@ export default function FanBoard({ lang }: { lang: Lang }) {
             <ArrowLeft size={20} />
           </button>
           <div className="flex items-center gap-2">
+             <button 
+              onClick={() => {
+                const text = `💜 BTS 광화문 현장 소식: ${selectedPost.title}\n${selectedPost.content?.slice(0, 50)}...`;
+                const url = `https://bts-gwanghwamun.vercel.app?tab=board&id=${selectedPost.content_id}`;
+                if (navigator.share) {
+                  navigator.share({ title: selectedPost.title, text, url });
+                } else {
+                  navigator.clipboard.writeText(`${text}\n${url}`);
+                  alert(translations[lang].copySuccess || "링크가 복사되었습니다!");
+                }
+              }}
+              className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all"
+              title="공유하기"
+             >
+                <Share2 size={16} />
+             </button>
              <button 
               onClick={() => {
                 setTitle(selectedPost.title);
