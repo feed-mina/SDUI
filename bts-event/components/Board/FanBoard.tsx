@@ -81,7 +81,7 @@ export default function FanBoard({ lang }: { lang: Lang }) {
       const filterId = activeTab === "ALL" ? undefined : activeTab;
       const data = await fetchBoardPosts({ pageSize: 50, offset: 0, filterId });
       
-      if (data.code === "SUCCESS" && Array.isArray(data.data)) {
+      if ((data.code === "SUCCESS" || data.status === "success") && Array.isArray(data.data)) {
         setPosts(data.data);
       }
     } catch (err) {
@@ -186,7 +186,7 @@ export default function FanBoard({ lang }: { lang: Lang }) {
     try {
       const res = await fetch(`/api/execute/GET_FANBOARD_DETAIL?contentId=${post.content_id}`);
       const data = await res.json();
-      if (data.code === "SUCCESS") {
+      if (data.code === "SUCCESS" || data.status === "success") {
         setSelectedPost(data.data);
         setView("DETAIL");
       }
