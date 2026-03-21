@@ -81,7 +81,7 @@ export default function InfoPanel({ onCheer, lang }: Props) {
 
   return (
     <div className="info-panel !flex-wrap gap-2">
-      <a href="https://cctv.seoul.go.kr" target="_blank" rel="noopener noreferrer" className="info-btn">
+      <a href="http://cctv.seoul.go.kr" target="_blank" rel="noopener noreferrer" className="info-btn">
         {t.cctv}
       </a>
       <a href="http://topis.seoul.go.kr" target="_blank" rel="noopener noreferrer" className="info-btn">
