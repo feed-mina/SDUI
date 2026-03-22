@@ -4,6 +4,7 @@ import com.domain.demo_backend.domain.query.domain.QueryMaster;
 import com.domain.demo_backend.domain.query.repository.DynamicExecutor;
 import com.domain.demo_backend.domain.query.service.QueryMasterService;
 import com.domain.demo_backend.global.security.CustomUserDetails;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,15 +32,22 @@ public class CommonQueryController {
             @PathVariable String sqlKey,
             @RequestParam(required = false) Map<String, Object> queryParams, // GET 파라미터
             @RequestBody(required = false) Map<String, Object> bodyParams,  // POST 파라미터
-            Authentication authentication) {
+            Authentication authentication,
+            HttpServletRequest request) {
 
         //  파라미터 통합 처리 (GET과 POST 데이터 합치기)
         Map<String, Object> params = new HashMap<>();
         if (queryParams != null) params.putAll(queryParams);
         if (bodyParams != null) params.putAll(bodyParams);
 
+        boolean isGet = "GET".equalsIgnoreCase(request.getMethod());
+
         QueryMaster queryMaster = queryMasterService.getQueryInfo(sqlKey);
         if (queryMaster == null) {
+            // GET(조회) 요청은 데이터 없음으로 처리 (프론트 오류 방지)
+            if (isGet) {
+                return ResponseEntity.ok(Map.of("status", "success", "data", List.of()));
+            }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "등록되지 않은 SQL 키 입니다"));
         }
 
@@ -98,6 +106,10 @@ public class CommonQueryController {
                     "status", "success", "sqlKey", sqlKey, "data", result != null ? result : List.of()
             ));
         } catch (Exception e) {
+            // GET(조회) 실패는 빈 데이터로 응답 (화면 오류 방지)
+            if (isGet) {
+                return ResponseEntity.ok(Map.of("status", "success", "data", List.of()));
+            }
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "쿼리 실행 중 오류가 발생했습니다.", "error", e.getMessage()));
         }

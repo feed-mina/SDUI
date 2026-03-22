@@ -106,6 +106,9 @@ public class UiMetadata {
     @Column(name = "system_prompt_template", columnDefinition = "TEXT")
     private String systemPromptTemplate;
 
+    @Column(name = "component_props", columnDefinition = "jsonb")
+    private String componentProps;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
