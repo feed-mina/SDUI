@@ -1,21 +1,52 @@
 import "./styles/index.css";
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Analytics } from "@vercel/analytics/react";
 import ReactQueryProvider from "@/components/providers/ReactQueryProvider"; // 방금 만든 방 가져오기
 import {MetadataProvider} from "@/components/providers/MetadataProvider";
 import { AuthProvider } from '@/context/AuthContext';
 import AppShell from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-    title: 'SDUI',
+    title: {
+        default: 'SDUI',
+        template: '%s | SDUI'
+    },
     description: '스마트한 일정 관리 앱',
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://yerin.duckdns.org'),
+    keywords: ["SDUI", "일정 관리", "스마트 캘린더", "할일 관리", "투두 리스트"],
+    authors: [{ name: "SDUI Team" }],
+    creator: "SDUI Team",
+    publisher: "SDUI",
+    formatDetection: {
+        email: false,
+        address: false,
+        telephone: false,
+    },
+    alternates: {
+        canonical: "/",
+    },
     openGraph: {
         title: 'SDUI',
         description: '스마트한 일정 관리 앱',
-        images: [{ url: '/icons/icon-512x512.png', width: 512, height: 512 }],
+        images: [{ url: '/icons/icon-512x512.png', width: 512, height: 512, alt: 'SDUI 아이콘' }],
         type: 'website',
         locale: 'ko_KR',
+        siteName: 'SDUI'
     },
+    twitter: {
+        card: "summary_large_image",
+        title: 'SDUI',
+        description: '스마트한 일정 관리 앱',
+        images: ['/icons/icon-512x512.png'],
+    },
+};
+
+export const viewport: Viewport = {
+    themeColor: "#4F46E5",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
 };
 
 //  @@@@ 2026-02-08 수정 MetadataProvider 적용
@@ -28,7 +59,6 @@ export default function RootLayout({children}: Readonly<{
         <html lang="ko">
         <head>
             <link rel="manifest" href="/manifest.json" />
-            <meta name="theme-color" content="#4F46E5" />
             <meta name="mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -47,6 +77,7 @@ export default function RootLayout({children}: Readonly<{
             </MetadataProvider>
             </AuthProvider>
         </ReactQueryProvider>
+        <Analytics />
         </body>
         </html>
     );
