@@ -24,7 +24,7 @@ const DynamicEngine: React.FC = () => {
   const [formData, setFormData] = useState<Record<string, any>>({});
 
   // pageData: EventState의 값을 pageData로 변환
-  const pageData = useMemo(() => ({
+  const pageData: Record<string, any> = useMemo(() => ({
     lang: eventState.lang,
     tab: eventState.tab,
     activeLayer: eventState.activeLayer,
