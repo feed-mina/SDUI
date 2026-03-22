@@ -130,7 +130,9 @@ const DynamicEngine: React.FC = () => {
       }
 
       // 그룹 노드 처리
-      const isGroup = node.children && node.children.length > 0;
+      const isGroup =
+        (node.componentType || node.component_type || "").toUpperCase() === "GROUP" ||
+        (node.children && node.children.length > 0);
 
       if (isGroup) {
         const classList: string[] = [];
