@@ -1313,3 +1313,20 @@ CREATE TABLE interview_questions (
 
 `./gradlew build -x test` — BUILD SUCCESSFUL
 | 2026-03-20 | Slack plain text → Block Kit 포맷 | Block Kit 전환 (header/section/context) + WebClient 교체 — Phase 1-B 완료 |
+
+---
+
+## Slack 알림 대상 멘션 처리 설계 (2026-03-22)
+
+### 1. 개요
+백엔드 `SlackNotificationService`에서 발생하는 모든 슬랙 알림(예: 약속 리마인더, LeetCode, 면접 질문, 가입 알림 등) 발송 시, 특정 사용자의 슬랙 ID(`U0AM4840JFR`)를 멘션(`<@U0AM4840JFR>`)하여 알림이 직접 도달하도록 개선한다.
+
+### 2. 구현 계획 (Plan)
+- **application.yml**: `slack.target-user-id: ${SLACK_TARGET_USER_ID:U0AM4840JFR}` 속성을 추가하여 환경변수를 통한 주입 또는 기본값 하드코딩 지원.
+- **SlackNotificationService 수정**: `@Value("${slack.target-user-id:U0AM4840JFR}")` 값 스캔.
+- **발송 로직 업데이트**: 멘션 구문(`<@USER_ID> `)을 알림 텍스트 또는 Block Kit의 `mrkdwn` 텍스트 앞/뒤에 결합하여 발송하도록 반영.
+
+### 3. 작업 과정 (Process)
+1. `application.yml`에 `target-user-id` 프로퍼티 추가.
+2. `SlackNotificationService.java` 내 각종 발송 메서드(`sendReminder`, `sendDailyLeetcode`, `sendDailyInterviewQuestion`, `sendInterviewReminder`, `sendAlert`)의 메시지 조합부에 멘션 문자열 주입 추가.
+3. 빌드를 통한 검증 수행.

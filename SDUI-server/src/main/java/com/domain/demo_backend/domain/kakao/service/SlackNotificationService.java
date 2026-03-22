@@ -40,6 +40,9 @@ public class SlackNotificationService {
     @Value("${slack.webhook-url:}")
     private String webhookUrl;
 
+    @Value("${slack.target-user-id:U0AM4840JFR}")
+    private String targetUserId;
+
     /**
      * 약속 시간 전 슬랙 알림(Block Kit)을 발송한다.
      * 목표 시간 + 이번 주 도착 성공률 + 각오를 표시한다.
@@ -70,6 +73,9 @@ public class SlackNotificationService {
         blocks.add(Map.of(
                 "type", "header",
                 "text", Map.of("type", "plain_text", "text", "⏰ " + timeLabel + " 뒤 약속 리마인더")));
+        blocks.add(Map.of(
+                "type", "section",
+                "text", Map.of("type", "mrkdwn", "text", "<@" + targetUserId + "> 님, 리마인더입니다!")));
         blocks.add(Map.of(
                 "type", "section",
                 "fields", List.of(
@@ -108,7 +114,7 @@ public class SlackNotificationService {
                 "text", Map.of("type", "plain_text", "text", "🧩 오늘의 LeetCode 문제")));
         blocks.add(Map.of(
                 "type", "section",
-                "text", Map.of("type", "mrkdwn", "text",
+                "text", Map.of("type", "mrkdwn", "text", "<@" + targetUserId + "> 님, 오늘의 문제가 도착했습니다!\n" +
                         "*" + problem.getTitle() + "*\n"
                         + emoji + " " + problem.getDifficulty() + " | " + problem.getCategory() + "\n"
                         + "<" + url + "|문제 풀러 가기>")));
@@ -131,7 +137,7 @@ public class SlackNotificationService {
                 "text", Map.of("type", "plain_text", "text", "🎯 오늘의 면접 질문")));
         blocks.add(Map.of(
                 "type", "section",
-                "text", Map.of("type", "mrkdwn", "text",
+                "text", Map.of("type", "mrkdwn", "text", "<@" + targetUserId + "> 님, 답변해 보세요!\n" +
                         "*[" + question.getCategory() + "]* " + question.getQuestion() + "\n"
                         + "<https://sdui-delta.vercel.app/view/INTERVIEW_PAGE|바로 연습하기>")));
 
@@ -162,7 +168,7 @@ public class SlackNotificationService {
                 "text", Map.of("type", "plain_text", "text", "📋 내일 면접이 있습니다! 파이팅!")));
         blocks.add(Map.of(
                 "type", "section",
-                "text", Map.of("type", "mrkdwn", "text", sectionText.toString())));
+                "text", Map.of("type", "mrkdwn", "text", "<@" + targetUserId + "> 님, 잊지 마세요!\n" + sectionText.toString())));
         blocks.add(Map.of(
                 "type", "context",
                 "elements", List.of(
@@ -181,7 +187,7 @@ public class SlackNotificationService {
             log.debug("Slack-webhook URL 미설정, 운영 알림 skip");
             return;
         }
-        postText(text);
+        postText("<@" + targetUserId + "> " + text);
     }
 
     // ── private helpers ──────────────────────────────────────────────────────
