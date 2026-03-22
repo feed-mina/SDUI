@@ -49,6 +49,9 @@ public class UiResponseDto {
     @JsonProperty("system_prompt_template")
     private String systemPromptTemplate;
 
+    // 컴포넌트 동적 속성 (showWhen 등 조건부 렌더링에 사용)
+    private Object props;
+
     // 트리 구조의 핵심 ㅣ 자식 노드 리스트
     @JsonInclude(JsonInclude.Include.NON_EMPTY) // 자식이 없을 때 필드 자체를 숨기고 싶다면 사용
     private List<UiResponseDto> children = new ArrayList<>();
@@ -74,6 +77,16 @@ public class UiResponseDto {
         this.refDataId = entity.getRefDataId();
         this.groupDirection = entity.getGroupDirection();
         this.systemPromptTemplate = entity.getSystemPromptTemplate();
+
+        // component_props JSONB → props 파싱
+        if (entity.getComponentProps() != null && !entity.getComponentProps().isBlank()) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                this.props = mapper.readValue(entity.getComponentProps(), Object.class);
+            } catch (Exception e) {
+                this.props = null;
+            }
+        }
 
         // 역할별 label_text 오버라이드 처리
         this.labelText = resolveOverriddenValue(
