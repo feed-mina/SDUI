@@ -4,9 +4,9 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { sqlKey: string } }
+  { params }: { params: Promise<{ sqlKey: string }> }
 ) {
-  const { sqlKey } = params;
+  const { sqlKey } = await params;
   const searchParams = req.nextUrl.searchParams.toString();
   const url = `${BACKEND_URL}/api/execute/${sqlKey}${searchParams ? `?${searchParams}` : ""}`;
 
@@ -25,9 +25,9 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { sqlKey: string } }
+  { params }: { params: Promise<{ sqlKey: string }> }
 ) {
-  const { sqlKey } = params;
+  const { sqlKey } = await params;
   const body = await req.json();
   const url = `${BACKEND_URL}/api/execute/${sqlKey}`;
 
