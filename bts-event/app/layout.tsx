@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
+import QueryProvider from "@/engine/QueryProvider";
 import "./globals.css";
 
 const KAKAO_APP_KEY = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
@@ -86,7 +87,9 @@ export default function RootLayout({
         />
       </head>
       <body className="h-full flex flex-col overflow-hidden">
-        {children}
+        <QueryProvider>
+          {children}
+        </QueryProvider>
         <Analytics />
         {/* Kakao JS SDK (window.Kakao) — for Share API */}
         <Script
