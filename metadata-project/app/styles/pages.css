@@ -905,7 +905,14 @@
     /* 사이드바 너비에 맞춤 */
 }
 
-
+/* 범용 중앙 정렬 유틸리티 클래스 */
+.align-center {
+    align-self: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    display: flex !important;
+    margin: 0 auto !important;
+}
 
 /* ==========================================
    5. Readonly / 상세페이지 스타일 (Detail)
