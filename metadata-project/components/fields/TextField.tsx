@@ -1,6 +1,7 @@
 'use client';
 
 import React, { memo } from "react";
+import Image from "next/image";
 import { cn } from "@/components/utils/cn";
 
 interface TextFieldProps {
@@ -92,12 +93,27 @@ const TextField = memo(({ meta, data, value, ...rest }: TextFieldProps) => {
 
     if (!isVisible && meta?.isVisible === false) return null;
 
+    // 리피터 컨텍스트에서 is_private=true인 경우 앱 아이콘(하트) 표시
+    const isPrivate = data?.is_private === true || data?.is_private === 'true';
+    const isTitle = (meta?.componentId || (meta as any)?.component_id) === 'list_item_title';
+    const showPrivateIcon = isPrivate && isTitle;
+
     return (
         <div
-            {...domProps} // 이제 showPassword 같은 값이 div에 들어가지 않음
+            {...domProps}
             className={mergedClassName}
             style={customStyle}
         >
+            {showPrivateIcon && (
+                <Image
+                    src="/icons/icon-192x192.png"
+                    alt="나만 보기"
+                    width={16}
+                    height={16}
+                    unoptimized
+                    style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 4, borderRadius: '50%' }}
+                />
+            )}
             {finalValue || "\u00A0"}
         </div>
     );
