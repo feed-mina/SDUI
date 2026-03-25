@@ -5,7 +5,9 @@ import { cn } from "@/components/utils/cn";
 
 const CheckboxField = memo(({ id, meta, data, onChange }: any) => {
     const targetKey = meta?.ref_data_id || meta?.refDataId || id;
-    const checked = data?.[targetKey] === true || data?.[targetKey] === 'true';
+    const checked = typeof data === 'boolean' ? data :
+                    typeof data === 'string' ? data === 'true' :
+                    (data?.[targetKey] === true || data?.[targetKey] === 'true');
 
     const isReadOnly = meta?.isReadonly === true || meta?.isReadonly === "true" ||
         meta?.is_readonly === true || meta?.is_readonly === "true";
