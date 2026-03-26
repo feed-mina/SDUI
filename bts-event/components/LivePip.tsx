@@ -5,7 +5,7 @@ import { X, ExternalLink, Play } from "lucide-react";
 
 export default function LivePip() {
   const [isOpen, setIsOpen] = useState(true);
-  const videoUrl = "https://www.youtube.com/embed/b-nJ9MZ3vNk?autoplay=1&mute=1";
+  const videoUrl = "https://www.youtube.com/embed/dRXKooC6tTM?autoplay=1&mute=1";
 
   if (!isOpen) return (
     <button 
@@ -24,7 +24,7 @@ export default function LivePip() {
           LIVE
         </span>
         <div className="flex items-center gap-2">
-          <a href="https://youtube.com/live/b-nJ9MZ3vNk" target="_blank" rel="noopener">
+          <a href="https://youtube.com/live/dRXKooC6tTM" target="_blank" rel="noopener">
             <ExternalLink size={10} className="hover:text-white" />
           </a>
           <button onClick={() => setIsOpen(false)}>
