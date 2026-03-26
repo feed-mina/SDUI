@@ -101,7 +101,7 @@ export function useAdminUsers() {
             return;
         }
         const userIds = Array.from(selectedIds);
-        const roleLabel = newRole === 'ROLE_ADMIN' ? '관리자 (ADMIN)' : '일반사용자 (USER)';
+        const roleLabel = newRole === 'ROLE_ADMIN' ? '관리자 (ADMIN)' : newRole === 'ROLE_GUEST' ? '게스트 (GUEST)' : '일반사용자 (USER)';
         const selectedUsers = users.filter(u => selectedIds.has(u.userSqno));
         const names = selectedUsers.map(u => u.userId).join(', ');
 

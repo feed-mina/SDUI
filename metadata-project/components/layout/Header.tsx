@@ -34,6 +34,7 @@ export default function Header() {
 
     // 조건 단순화: Context에서 제공하는 isLoggedIn 불리언 값만 신뢰하도록 수정
     const isRealLoggedIn = Boolean(isLoggedIn);
+    const isAdmin = user?.role === 'ROLE_ADMIN';
 
     const generalLogoutMeta = flatMeta.find(m => getVal(m, 'component_id', 'componentId') === 'header_general_logout');
     const kakaoLogoutMeta = flatMeta.find(m => getVal(m, 'component_id', 'componentId') === 'header_kakao_logout');
@@ -69,7 +70,7 @@ export default function Header() {
                         )}
                     </div>
                 </div>
-                {isRealLoggedIn && (
+                {isRealLoggedIn && !isAdmin && (
                     <div className="header-ai-shortcuts">
                         <button
                             className={`header-ai-btn ja${pathname === '/view/AI_JAPANESE_CHAT_PAGE' ? ' active' : ''}`}

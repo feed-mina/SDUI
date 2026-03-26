@@ -64,7 +64,7 @@ export default function Sidebar() {
                                     onClick={() => handleAction({ actionType: 'ROUTE', actionUrl: '/view/SET_TIME_PAGE' })}>
                                     약속 관리
                                 </div>
-                                <div className="sidebar-ai-section">
+                                {!isAdmin && <div className="sidebar-ai-section">
                                     <span className="sidebar-ai-label">AI 채팅</span>
                                     <button
                                         className={`sidebar-ai-btn ja${pathname === '/view/AI_JAPANESE_CHAT_PAGE' ? ' active' : ''}`}
@@ -78,7 +78,7 @@ export default function Sidebar() {
                                         <span className="ai-badge">AI</span>
                                         영어 채팅
                                     </button>
-                                </div>
+                                </div>}
                             </nav>
                         )
                     ) : (

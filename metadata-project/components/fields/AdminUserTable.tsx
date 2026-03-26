@@ -35,6 +35,7 @@ const AdminUserTable: React.FC<any> = memo(() => {
                         onChange={e => applyRoleFilter(e.target.value)}
                     >
                         <option value="">전체 권한</option>
+                        <option value="ROLE_GUEST">게스트</option>
                         <option value="ROLE_USER">일반사용자</option>
                         <option value="ROLE_ADMIN">관리자</option>
                     </select>
@@ -49,6 +50,7 @@ const AdminUserTable: React.FC<any> = memo(() => {
                         value={newRole}
                         onChange={e => setNewRole(e.target.value)}
                     >
+                        <option value="ROLE_GUEST">게스트 (GUEST)</option>
                         <option value="ROLE_USER">일반사용자 (USER)</option>
                         <option value="ROLE_ADMIN">관리자 (ADMIN)</option>
                     </select>
@@ -101,8 +103,8 @@ const AdminUserTable: React.FC<any> = memo(() => {
                                 <td>{user.userId}</td>
                                 <td>{user.email}</td>
                                 <td>
-                                    <span className={`admin-role-badge ${user.role === 'ROLE_ADMIN' ? 'badge-admin' : 'badge-user'}`}>
-                                        {user.role === 'ROLE_ADMIN' ? '관리자' : '일반사용자'}
+                                    <span className={`admin-role-badge ${user.role === 'ROLE_ADMIN' ? 'badge-admin' : user.role === 'ROLE_GUEST' ? 'badge-guest' : 'badge-user'}`}>
+                                        {user.role === 'ROLE_ADMIN' ? '관리자' : user.role === 'ROLE_GUEST' ? '게스트' : '일반사용자'}
                                     </span>
                                 </td>
                             </tr>
