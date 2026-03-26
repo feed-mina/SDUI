@@ -2568,6 +2568,11 @@ button:hover {
     color: #075985;
 }
 
+.badge-guest {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
 
 /* =============================================
    Admin Sidebar — Dark Theme (.is-admin)
