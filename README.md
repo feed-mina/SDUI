@@ -11,7 +11,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?logo=openai&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?logo=openai&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-지원-5A0FC8?logo=pwa&logoColor=white)
 
 <br/>
@@ -23,9 +23,9 @@
 
 <br/>
 
-| ⚡ UI 변경 배포 시간 | 🔄 컴포넌트 재사용률 | 🗄️ Redis 캐시 | 🔐 인증 방식 | 🤖 AI 기능 | 📱 PWA |
+| ⚡ UI 변경 배포 시간 | 🔄 컴포넌트 재사용률 | 🗄️ UI 메타데이터 조회 | 🔐 인증 방식 | 🤖 AI 기능 | 📱 PWA |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| **0분** | **80%+** | **TTL 1hr** | **JWT + OAuth2(Kakao) + RBAC** | **GPT-4o** | **지원** |
+| **0분** | **80%+** | **요청별 DB 직접 조회** | **JWT + OAuth2(Kakao) + RBAC** | **GPT-4o-mini** | **지원** |
 
 <br/>
 
@@ -94,31 +94,26 @@ UI의 구조(Component, Layout, Action)와 비즈니스 로직을 데이터베�
 
 ### 🔄 핵심 렌더링 파이프라인
 
-메타데이터 로딩 파이프라인에서 발생하는 RDBMS 부하를 막기 위해 **Redis 캐싱 계층**을 두어 Cache Hit 비율을 극대화했습니다.
+저장소 코드(HEAD `9705ae6`) 기준으로 `UiService.getUiTree`는 요청마다 PostgreSQL의 `ui_metadata`를 직접 조회한 뒤 역할 기반 필터링과 재귀 트리 변환을 수행합니다. `UiMetadataService`에는 Redis TTL 1시간 코드가 있지만 Spring 서비스로 등록되거나 이 호출 경로에서 참조되지 않으므로, UI 트리 캐시와 Cache Hit 비율은 현재 동작으로 설명하지 않습니다.
 
 ```mermaid
 sequenceDiagram
     participant Browser as 브라우저
     participant Next as Next.js (MetadataProvider)
     participant Spring as Spring Boot (UiController)
-    participant Redis as Redis (TTL 1hr)
     participant PG as PostgreSQL (ui_metadata)
 
     Browser->>Next: URL 진입 /view/screenId
     Next->>Spring: GET /api/ui/rolePrefix_screenId
-    Spring->>Redis: 캐시 조회
-    alt Cache Hit (95%+)
-        Redis-->>Spring: UI 트리 반환
-    else Cache Miss
-        Spring->>PG: ui_metadata 조회 (역할 필터링)
-        PG-->>Spring: Raw 메타데이터 rows
-        Spring->>Spring: flat rows → 재귀 트리 변환
-        Spring->>Redis: TTL 1hr 캐시 저장
-    end
+    Spring->>PG: ui_metadata 직접 조회 (매 요청)
+    PG-->>Spring: Raw 메타데이터 rows
+    Spring->>Spring: 역할 필터링 + flat rows → 재귀 트리 변환
     Spring-->>Next: UI 트리 JSON
     Next->>Browser: DynamicEngine.tsx 렌더링
     Note over Browser: componentMap 매핑 + ref_data_id 바인딩
 ```
+
+> 저장소 밖 운영 DB에 별도 `pg_notify` 트리거가 있는지는 확인하지 못했습니다.
 
 ### 핵심 파일 구조
 
@@ -145,7 +140,7 @@ SDUI-server/
     ├── domain/
     │   ├── ui/       # UiController → UiService (flat DB → 재귀 트리)
     │   ├── kakao/    # OAuth2, 카카오톡 알림 스케줄러
-    │   ├── ai/       # OpenAI GPT-4o 채팅·면접 API
+    │   ├── ai/       # OpenAI GPT-4o-mini 채팅·면접 API
     │   ├── time/     # 목표 시간 설정 · 도착 기록
     │   ├── membership/ # 멤버십 조회 · 부여
     │   └── user/     # 인증·인가 (JWT, 이메일 인증)
@@ -163,7 +158,7 @@ SDUI-server/
 - `component_type` → React 컴포넌트 자동 매핑 (20+ 컴포넌트)
 - `ref_data_id` 기반 데이터 바인딩 (서버 데이터 ↔ UI 느슨한 결합)
 - 재귀적 Repeater 패턴으로 리스트 UI 무한 확장
-- Redis TTL 1hr 캐싱으로 RDBMS 부하 최소화
+- 현재 `UiService.getUiTree`는 요청별 DB 조회 후 역할 필터링·재귀 트리 변환
 
 ### 2. RBAC (역할 기반 접근 제어)
 - GUEST / USER / ADMIN / PREMIUM 역할별 메타데이터 분기
@@ -172,7 +167,7 @@ SDUI-server/
 
 ### 3. AI 언어 학습 채팅
 - **영어 / 일본어 / 한국어** 3개 언어 AI 대화 상대
-- GPT-4o 기반 실시간 스트리밍 응답
+- GPT-4o-mini 기반 실시간 스트리밍 응답
 - 음성 녹음 입력 지원 (AudioRecorder + Waveform 시각화)
 - PREMIUM 멤버십 전용 기능
 
@@ -310,8 +305,8 @@ usePageHook (액션 라우터)
 | Core | Java 17, Spring Boot 3.x |
 | 인증/인가 | Spring Security, JWT, OAuth 2.0 (Kakao) |
 | 데이터 | PostgreSQL, Flyway (마이그레이션 V1~V27) |
-| 캐시 | Redis (UI 트리 캐시 + SQL 쿼리 캐시, TTL 전략) |
-| AI | OpenAI GPT-4o (채팅 스트리밍, 면접 시뮬레이션) |
+| 캐시 | Redis 구성 및 UI 트리 TTL 캐시 코드 존재 (현재 `getUiTree` 호출 경로에는 미연결) |
+| AI | OpenAI GPT-4o-mini (채팅 스트리밍, 면접 시뮬레이션) |
 | 알림 | 카카오톡 나에게 보내기 API + @Scheduled 폴링 |
 
 ### Infra & DevOps
@@ -370,7 +365,7 @@ usePageHook (액션 라우터)
 
 ### 직접 설계·통제한 영역 (Human)
 
-- **아키텍처 설계**: `ui_metadata` 스키마, `ref_data_id` 바인딩 전략, Redis TTL 캐싱 정책
+- **아키텍처 설계**: `ui_metadata` 스키마, `ref_data_id` 바인딩 전략, 역할 기반 렌더링 구조
 - **코어 로직**: `DynamicEngine` 재귀 트리 렌더링, Spring Security 인증/인가 파이프라인
 - **기능 기획**: AI 채팅·면접 UX, 카카오 알림 타이밍 전략, 멤버십 등급 설계
 - **최종 검수**: AI 작성 코드가 OCP·단일 책임 원칙에 부합하는지 리뷰 후 병합
